@@ -258,6 +258,11 @@ int cpu_exec(CPUArchState *env)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_XTENSA)
+#elif defined(TARGET_Z80)
+    /* store flags in standard format */
+    /* nothing to do - CC_SRC/eflags is for i386 */
+//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
+
     /* XXXXX */
 #else
 #error unsupported target CPU
@@ -564,6 +569,13 @@ int cpu_exec(CPUArchState *env)
                         cc->do_interrupt(cpu);
                         next_tb = 0;
                     }
+#elif defined(TARGET_Z80)
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+//                      Z80 FIXME Z80
+//                        env->exception_index = EXCP_IRQ;
+                        do_interrupt(env);
+                    }
 #endif
                    /* Don't use the cached interrupt_request value,
                       do_interrupt may have updated the EXITTB flag. */
@@ -590,6 +602,8 @@ int cpu_exec(CPUArchState *env)
                     env->sr = (env->sr & 0xffe0)
                               | env->cc_dest | (env->cc_x << 4);
                     log_cpu_state(cpu, 0);
+#elif defined(TARGET_Z80)
+                    cpu_dump_state(env, logfile, fprintf, 0);
 #else
                     log_cpu_state(cpu, 0);
 #endif
@@ -714,6 +728,10 @@ int cpu_exec(CPUArchState *env)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_XTENSA)
     /* XXXXX */
+#elif defined(TARGET_Z80)
+    /* restore flags in standard format */
+    /* nothing to do - CC_SRC/eflags is for i386 */
+//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
 #else
 #error unsupported target CPU
 #endif
