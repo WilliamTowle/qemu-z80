@@ -193,6 +193,7 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 
 #define cpu_init cpu_z80_init
 #define cpu_exec cpu_z80_exec
+#define cpu_gen_code cpu_z80_gen_code
 #define cpu_signal_handler cpu_z80_signal_handler
 
 /* MMU modes definitions */
