@@ -33,6 +33,9 @@ typedef struct QEMUMachine {
 } QEMUMachine;
 
 int qemu_register_machine(QEMUMachine *m);
+/* zx_spectrum.c */
+extern QEMUMachine zxspec_machine;
+
 
 extern QEMUMachine *current_machine;
 
