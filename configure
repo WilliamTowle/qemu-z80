@@ -2388,11 +2388,11 @@ case "$target_arch2" in
     target_phys_bits=64
   ;;
   z80)
-    echo "TARGET_ARCH=z80" >> $config_mak
-    echo "CONFIG_DYNGEN_OP=yes" >> $config_mak
-    echo "#define TARGET_ARCH \"z80\"" >> $config_h
-    echo "#define TARGET_Z80 1" >> $config_h
-    echo "#define CONFIG_DYNGEN_OP 1" >> $config_h
+    #echo "TARGET_ARCH=z80" >> $config_mak		## [WmT] obsolete?
+    #echo "CONFIG_DYNGEN_OP=yes" >> $config_mak		## [WmT] obsolete?
+    #echo "#define TARGET_ARCH \"z80\"" >> $config_h	## [WmT] obsolete?
+    #echo "#define TARGET_Z80 1" >> $config_h		## [WmT] obsolete?
+    target_phys_bits=32
   ;;
   *)
     echo "Unsupported target CPU"
