@@ -2541,6 +2541,9 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
   sparc*)
     echo "CONFIG_SPARC_DIS=y"  >> $config_target_mak
   ;;
+  z80*)
+    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+  ;;
   esac
 done
 

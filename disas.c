@@ -280,6 +280,8 @@ void disas(FILE *out, void *code, unsigned long size)
     print_insn = print_insn_s390;
 #elif defined(__hppa__)
     print_insn = print_insn_hppa;
+#elif defined(TARGET_Z80)	/* TODO: is this right?? */
+    print_insn = print_insn_z80;
 #else
     fprintf(out, "0x%lx: Asm output not supported on this arch\n",
 	    (long) code);
@@ -398,6 +400,8 @@ void monitor_disas(Monitor *mon, CPUState *env,
 #elif defined(TARGET_SH4)
     disasm_info.mach = bfd_mach_sh4;
     print_insn = print_insn_sh;
+#elif defined(TARGET_Z80)
+    print_insn = print_insn_z80;
 #else
     monitor_printf(mon, "0x" TARGET_FMT_lx
                    ": Asm output not supported on this arch\n", pc);
