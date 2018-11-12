@@ -135,6 +135,8 @@
 
 #include "cpu-defs.h"
 
+#define NB_MMU_MODES 2
+
 typedef struct CPUZ80State {
 #if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
 	 * but can't compile else cases
