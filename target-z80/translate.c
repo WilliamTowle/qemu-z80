@@ -34,6 +34,8 @@
 #define GEN_HELPER 1
 #include "helper.h"
 
+#include "qemu-queue.h"
+
 #define PREFIX_CB  0x01
 #define PREFIX_DD  0x02
 #define PREFIX_ED  0x04
@@ -1731,8 +1733,8 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 
     gen_icount_start();
     for (;;) {
-        if (unlikely(!TAILQ_EMPTY(&env->breakpoints))) {
-            TAILQ_FOREACH(bp, &env->breakpoints, entry) {
+        if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
+            QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
                 if (bp->pc == pc_ptr) {
                     gen_debug(dc, pc_ptr - dc->cs_base);
                     break;
