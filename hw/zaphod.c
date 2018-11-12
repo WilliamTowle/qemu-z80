@@ -10,6 +10,7 @@
 #include "qemu-error.h"
 
 #include "boards.h"
+#include "hw/loader.h"
 
 
 /* ZAPHOD_RAM_SIZE:
@@ -55,6 +56,27 @@ static MemoryRegion *zaphod_init_ram(void)
     return ram;
 }
 
+static void zaphod_load_kernel(const char *filename)
+{
+    if (!filename || !filename[0])
+    {
+        hw_error("%s(): No code to run\n", __func__);
+    }
+    else
+    {
+      int    kernel_size;
+        kernel_size= get_image_size(filename);
+        if (kernel_size <= 0)
+        {
+            hw_error("%s(): Kernel with bad size specified - %s\n", __func__, (kernel_size == 0)? "file empty" : "file missing?");
+        }
+        load_image_targphys(filename, 0, kernel_size);
+#ifdef ZAPHOD_DEBUG
+DPRINTF("INFO: %s(): Kernel size %d bytes\n", __func__, kernel_size);
+#endif
+    }
+}
+
 static void zaphod_init_dev_machine(ram_addr_t ram_size,
                      const char *boot_device,
                      const char *kernel_filename, const char *kernel_cmdline,
@@ -67,12 +89,10 @@ static void zaphod_init_dev_machine(ram_addr_t ram_size,
 
     zs->ram= zaphod_init_ram();
 
-#if 1   /* TRACE */
-;DPRINTF("DEBUG: %s() INCOMPLETE - will execute 'nop's from empty RAM\n", __func__);
-#endif
+    zaphod_load_kernel(kernel_filename);
+
     /* TODO
      * Board-specific init, with:
-     * - loading of "kernel" image if filename specified
      * - basic "stdio" I/O mechanism, with 'inkey' state variable
      * - hardware emulation and machine "features" bitmap
      */
