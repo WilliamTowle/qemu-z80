@@ -3493,6 +3493,9 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_SPARC_DIS=y"  >> $config_target_mak
     echo "CONFIG_SPARC_DIS=y"  >> $libdis_config_mak
   ;;
+  z80*)
+    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+  ;;
   esac
 done
 
