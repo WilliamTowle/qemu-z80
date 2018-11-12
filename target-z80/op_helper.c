@@ -173,16 +173,17 @@ void HELPER(halt)(void)
 
 void HELPER(in_T0_im)(uint32_t val)
 {
-    /* FIXME: uint8_t cpu_inb(pio_addr_t addr); */
-    T0 = cpu_inb(env, (A << 8) | val);
+    ////    T0 = cpu_inb(env, (A << 8) | val);
+    //T0 = cpu_inb(env, val);
+    T0 = cpu_inb(val);	/* TODO: 'val' should have type pio_addr_t */
 }
 
 void HELPER(in_T0_bc_cc)(void)
 {
     int sf, zf, pf;
 
-    /* FIXME: uint8_t cpu_inb(pio_addr_t addr); */
-    T0 = cpu_inb(env, BC);
+    //T0 = cpu_inb(env, BC);
+    T0 = cpu_inb(BC);	/* TODO: 'BC' should have type pio_addr_t */
 
     sf = (T0 & 0x80) ? CC_S : 0;
     zf = T0 ? 0 : CC_Z;
@@ -192,14 +193,15 @@ void HELPER(in_T0_bc_cc)(void)
 
 void HELPER(out_T0_im)(uint32_t val)
 {
-    /* FIXME: void cpu_outb(pio_addr_t addr, uint8_t val); */
-    cpu_outb(env, (A << 8) | val, T0);
+    //// cpu_outb(env, (A << 8) | val, T0);
+    //cpu_outb(env, val, T0);
+    cpu_outb(val, T0);		/* TODO: 'val' should have type pio_addr_t */
 }
 
 void HELPER(out_T0_bc)(void)
 {
-    /* FIXME: void cpu_outb(pio_addr_t addr, uint8_t val); */
-    cpu_outb(env, BC, T0);
+    //cpu_outb(env, BC, T0);
+    cpu_outb(BC, T0);		/* TODO: 'BC' should have type pio_addr_t */
 }
 
 /* Misc */
