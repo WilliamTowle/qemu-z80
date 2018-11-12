@@ -164,8 +164,8 @@ int cpu_z80_signal_handler(int host_signum, void *pinfo,
 
 #define TARGET_PAGE_BITS 12
 
-#define TARGET_PHYS_ADDR_SPACE_BITS 32
-#define TARGET_VIRT_ADDR_SPACE_BITS 32
+#define TARGET_PHYS_ADDR_SPACE_BITS  16
+#define TARGET_VIRT_ADDR_SPACE_BITS  16
 
 /* helper.c */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
