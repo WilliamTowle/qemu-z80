@@ -283,6 +283,7 @@ pxe-ne2k_pci.bin pxe-pcnet.bin \
 pxe-rtl8139.bin pxe-virtio.bin \
 bamboo.dtb petalogix-s3adsp1800.dtb \
 multiboot.bin linuxboot.bin
+# [WmT] zx-rom.bin was here in "Z80 target with ZX Spectrum emulation"
 else
 BLOBS=
 endif

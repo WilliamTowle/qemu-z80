@@ -484,6 +484,8 @@ for opt do
   ;;
   --disable-strip) strip_opt="no"
   ;;
+#  --enable-libspectrum) libspectrum="yes"
+#  ;;
   --disable-vnc-tls) vnc_tls="no"
   ;;
   --enable-vnc-tls) vnc_tls="yes"
@@ -807,6 +809,7 @@ sh4-softmmu \
 sh4eb-softmmu \
 sparc-softmmu \
 sparc64-softmmu \
+z80-softmmu \
 "
     fi
 # the following are Linux specific
@@ -2004,6 +2007,10 @@ echo "CONFIG_BDRV_WHITELIST=$block_drv_whitelist" >> $config_host_mak
 if test "$mixemu" = "yes" ; then
   echo "CONFIG_MIXEMU=y" >> $config_host_mak
 fi
+#if test "$libspectrum" = "yes" ; then
+#  echo "CONFIG_LIBSPECTRUM=yes" >> $config_mak
+#  echo "#define CONFIG_LIBSPECTRUM 1" >> $config_h
+#fi
 if test "$vnc_tls" = "yes" ; then
   echo "CONFIG_VNC_TLS=y" >> $config_host_mak
   echo "VNC_TLS_CFLAGS=$vnc_tls_cflags" >> $config_host_mak
@@ -2379,6 +2386,13 @@ case "$target_arch2" in
   ;;
   s390x)
     target_phys_bits=64
+  ;;
+  z80)
+    echo "TARGET_ARCH=z80" >> $config_mak
+    echo "CONFIG_DYNGEN_OP=yes" >> $config_mak
+    echo "#define TARGET_ARCH \"z80\"" >> $config_h
+    echo "#define TARGET_Z80 1" >> $config_h
+    echo "#define CONFIG_DYNGEN_OP 1" >> $config_h
   ;;
   *)
     echo "Unsupported target CPU"

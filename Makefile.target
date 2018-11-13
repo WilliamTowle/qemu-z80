@@ -63,6 +63,11 @@ libobj-$(CONFIG_PPC_DIS) += ppc-dis.o
 libobj-$(CONFIG_S390_DIS) += s390-dis.o
 libobj-$(CONFIG_SH4_DIS) += sh4-dis.o
 libobj-$(CONFIG_SPARC_DIS) += sparc-dis.o
+# [WmT] Original "Z80 target with ZX Spectrum emulation" change:
+#	# LIBOBJS gained z80-dis.o in target-arch-is-z80 case
+#	# LIBOBJS had helper.o, helper2.o (obsolete?)
+#	# LIBS gained "-lspectrum" for TARGET_BASE_ARCH 'z80' with CONFIG_LIBSPECTRUM enabled
+libobj-$(CONFIG_Z80_DIS) += z80-dis.o
 
 # libqemu
 
@@ -294,6 +299,13 @@ obj-m68k-y = an5206.o mcf5206.o mcf_uart.o mcf_intc.o mcf5208.o mcf_fec.o
 obj-m68k-y += m68k-semi.o dummy_m68k.o
 
 obj-s390x-y = s390-virtio-bus.o s390-virtio.o
+
+# [WmT] Original "Z80 target with ZX Spectrum emulation" $OBJ change:
+#	# i8259.o for {irq|pic}_info symbols (required)
+#	# dma.o originally with zx_{spectrum|keyboard|video}.o; not required
+#	# Unclear if serial.o actually important/useful
+obj-z80-y =i8259.o
+#obj-z80-y = serial.o
 
 main.o vl.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
 

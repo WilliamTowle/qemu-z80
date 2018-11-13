@@ -917,6 +917,12 @@ TranslationBlock *tb_gen_code(CPUState *env,
 void tb_invalidate_phys_page_range(target_phys_addr_t start, target_phys_addr_t end,
                                    int is_cpu_write_access)
 {
+	/* [WmT] Some initialisation was here, moved by subsequent
+	 * refactoring { not found? but see notes in cpu-exec.c? }
+		+#elif defined(TARGET_Z80)
+		+                current_flags = env->hflags;
+		+                current_pc = env->pc;
+	 */
     TranslationBlock *tb, *tb_next, *saved_tb;
     CPUState *env = cpu_single_env;
     target_ulong tb_start, tb_end;

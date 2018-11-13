@@ -171,6 +171,17 @@ static TranslationBlock *tb_find_slow(target_ulong pc,
 
 static inline TranslationBlock *tb_find_fast(void)
 {
+	/* [WmT] Some flags, cs_base, pc modifications were here,
+	 * moved by subsequent refactoring { see commit 6b917547
+	 * "Refactor translation block CPU state handling (Jan Kiszka)" }
+		+#elif defined(TARGET_Z80)
+		+    flags = env->hflags;
+		+    cs_base = 0;
+		+    pc = env->pc;
+	 * TODO: belongs in new target-z80/cpu.h function
+	 * cpu_get_tb_cpu_state()?
+	 */
+
     TranslationBlock *tb;
     target_ulong cs_base, pc;
     int flags;
@@ -253,6 +264,15 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
     /* XXXXX */
+#elif defined(TARGET_Z80)
+    env_to_regs();
+    /* put eflags in CPU temporary format */
+    CC_SRC = env->eflags & (CC_S | CC_Z | CC_P | CC_C);
+    CC_OP = CC_OP_EFLAGS;
+    env->eflags &= ~(CC_S | CC_Z | CC_P | CC_C);
+#elif defined(TARGET_Z80)
+    /* restore flags in standard format */
+//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
 #else
 #error unsupported target CPU
 #endif
@@ -528,6 +548,13 @@ int cpu_exec(CPUState *env1)
                         do_interrupt(1);
                         next_tb = 0;
                     }
+#elif defined(TARGET_Z80)
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+//                      Z80 FIXME Z80
+//                        env->exception_index = EXCP_IRQ;
+                        do_interrupt(env);
+                    }
 #endif
                    /* Don't use the cached interupt_request value,
                       do_interrupt may have updated the EXITTB flag. */
@@ -678,6 +705,9 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
     /* XXXXX */
+#elif defined(TARGET_Z80)
+    /* restore flags in standard format */
+//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
 #else
 #error unsupported target CPU
 #endif
