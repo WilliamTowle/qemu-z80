@@ -425,6 +425,7 @@ obj-xtensa-y += core-fsf.o
 obj-z80-y += zaphod.o
 obj-$(CONFIG_ZAPHOD_SERCON) += zaphod_sercon.o
 obj-$(CONFIG_ZAPHOD_SCREEN) += zaphod_screen.o
+obj-$(CONFIG_ZAPHOD_MC6850) += zaphod_mc6850.o
 
 main.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
 
