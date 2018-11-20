@@ -307,7 +307,7 @@ obj-s390x-y = s390-virtio-bus.o s390-virtio.o
 obj-z80-y =i8259.o
 #obj-z80-y = serial.o
 # [WmT] machine-specific
-obj-z80-y += zaphod.o
+obj-z80-y += zaphod.o zaphod_console.o
 
 main.o vl.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
 
