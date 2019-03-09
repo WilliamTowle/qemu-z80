@@ -20,7 +20,11 @@ typedef struct CPUZ80State {
 	CPU_COMMON
 } CPUZ80State;
 
+CPUZ80State *cpu_z80_init(const char *cpu_model);
+
 #define TARGET_VIRT_ADDR_SPACE_BITS 32
+
+#define cpu_init cpu_z80_init
 
 #include "cpu-all.h"
 
