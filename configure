@@ -4499,6 +4499,12 @@ case "$target_name" in
     # an 8-bit CPU with 16-bit addressing, no alignment restrictions
     # 32-bit datatypes sufficient (legacy: target_phys_bits=32)
     echo "INFO: Z80 CPU support configured..." 1>&2
+    echo "NOTE: ...will use default TARGET_ARCH '${TARGET_ARCH}'"
+    echo "NOTE: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
+    echo "NOTE: ...will use default TARGET_ABI_DIR '${TARGET_ABI_DIR}'"
+    echo "NOTE: ...will use default bflt '${bflt}'"
+    echo "NOTE: ...will use target_bigendian '${target_bigendian}'"
+    echo "NOTE: ...will use gdb_xml_files '${gdb_xml_files}'"
   ;;
   *)
     error_exit "Unsupported target CPU"
