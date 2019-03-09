@@ -3307,6 +3307,18 @@ case "$target_arch2" in
     target_int_alignment=1
     target_long_alignment=1
     target_llong_alignment=1
+    echo "NOTE: Z80 case 1 (CPU support - validate target_name)..." 1>&2
+    echo "INFO: gdb_xml_files '${gdb_xml_files}'" 1>&2
+    echo "INFO: target_compiler '${target_compiler}'" 1>&2
+    echo "INFO: ...will use default TARGET_ARCH '${TARGET_ARCH}'"
+    echo "INFO: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
+    echo "INFO: ...will use default TARGET_ABI_DIR '${TARGET_ABI_DIR}'"
+    echo "INFO: ...will use default TARGET_SYSTBL_ABI '${TARGET_SYSTBL_ABI}'"
+    echo "INFO: ...will use default bflt '${bflt}'"
+    echo "INFO: ...will use default mttcg '${mttcg}'"
+    echo "INFO: ...will use default gdb_xml_files '${gdb_xml_files}'"
+    echo "INFO: ...will use default target_compiler '${target_compiler}'"
+    echo "INFO: ...will use target_bigendian '${target_bigendian}'"
   ;;
   *)
     echo "Unsupported target CPU"
@@ -3481,6 +3493,10 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_SPARC_DIS=y"  >> $config_target_mak
     echo "CONFIG_SPARC_DIS=y"  >> $libdis_config_mak
   ;;
+#  z80)
+#    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
+#    disas_config "Z80"
+#  ;;
   esac
 done
 
