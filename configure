@@ -3299,6 +3299,11 @@ case "$target_arch2" in
   unicore32)
     target_phys_bits=32
   ;;
+  z80)
+    # 8-bit CPU with 16-bit addressing, no alignment
+    # target_phys_bits=32 reflects legacy i386 configuration
+    target_phys_bits=32
+  ;;
   *)
     echo "Unsupported target CPU"
     exit 1
