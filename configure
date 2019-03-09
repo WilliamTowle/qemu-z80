@@ -6903,6 +6903,11 @@ case "$target_name" in
     TARGET_ARCH=xtensa
     mttcg="yes"
   ;;
+  z80)
+    # an 8-bit CPU with 16-bit addressing, no alignment restrictions
+    # uses 32-bit host datatypes (legacy: target_phys_bits=32)
+    echo "INFO: Z80 CPU support configured..." 1>&2
+  ;;
   *)
     error_exit "Unsupported target CPU"
   ;;
@@ -7059,6 +7064,11 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
   xtensa*)
     disas_config "XTENSA"
   ;;
+#  z80*)
+#    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+#    echo "CONFIG_Z80_DIS=y"  >> config-all-disas.mak
+#    echo "INFO: Z80 disas support configured..." 1>&2
+#  ;;
   esac
 done
 if test "$tcg_interpreter" = "yes" ; then
