@@ -3489,6 +3489,16 @@ case "$target_arch2" in
     TARGET_ARCH=xtensa
     target_phys_bits=32
   ;;
+  z80)
+    # an 8-bit CPU with 16-bit addressing and no alignment restrictions
+    # target_phys_bits=32 specifies TCG internal 'address type' width
+    target_phys_bits=32
+    target_short_alignment=1
+    target_int_alignment=1
+    target_long_alignment=1
+    target_llong_alignment=1
+#    echo "INFO: Z80 CPU support configured..." 1>&2
+  ;;
   *)
     echo "Unsupported target CPU"
     exit 1
@@ -3672,6 +3682,11 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_XTENSA_DIS=y"  >> $config_target_mak
     echo "CONFIG_XTENSA_DIS=y"  >> $libdis_config_mak
   ;;
+#  z80*)
+#    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+#    echo "CONFIG_Z80_DIS=y"  >> $libdis_config_mak
+#    echo "INFO: Z80 disas support configured..." 1>&2
+#  ;;
   esac
 done
 if test "$tcg_interpreter" = "yes" ; then
