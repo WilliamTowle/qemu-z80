@@ -3303,6 +3303,19 @@ case "$target_arch2" in
     # 8-bit CPU with 16-bit addressing, no word alignment
     # target_phys_bits=32 specifies emulator address type width
     target_phys_bits=32
+    echo "NOTE: Z80 case 1 (CPU support - validate target_name)..." 1>&2
+    echo "INFO: gdb_xml_files '${gdb_xml_files}'" 1>&2
+    echo "INFO: target_compiler '${target_compiler}'" 1>&2
+    echo "INFO: ...will use default TARGET_ARCH '${TARGET_ARCH}'"
+    echo "INFO: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
+    echo "INFO: ...will use default TARGET_ABI_DIR '${TARGET_ABI_DIR}'"
+    echo "INFO: ...will use default TARGET_SYSTBL_ABI '${TARGET_SYSTBL_ABI}'"
+    echo "INFO: ...will use default TARGET_SYSTBL_ABI '${TARGET_SYSTBL_ABI}'"
+    echo "INFO: ...will use default bflt '${bflt}'"
+    echo "INFO: ...will use default mttcg '${mttcg}'"
+    echo "INFO: ...will use default gdb_xml_files '${gdb_xml_files}'"
+    echo "INFO: ...will use default target_compiler '${target_compiler}'"
+    echo "INFO: ...will use target_bigendian '${target_bigendian}'"
   ;;
   *)
     echo "Unsupported target CPU"
@@ -3477,6 +3490,10 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_SPARC_DIS=y"  >> $config_target_mak
     echo "CONFIG_SPARC_DIS=y"  >> $libdis_config_mak
   ;;
+#  z80)
+#    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
+#    disas_config "Z80"
+#  ;;
   esac
 done
 
