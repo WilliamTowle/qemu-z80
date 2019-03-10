@@ -24,4 +24,7 @@ int load_raw_binary(struct bblbrx_binprm *bprm);
 
 void cpu_loop(CPUState *env);
 
+void cpu_list_lock(void);
+void cpu_list_unlock(void);
+
 #endif /* QEMU_H */
