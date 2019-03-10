@@ -49,6 +49,16 @@ static int parse_args(int argc, char **argv)
     return optind;
 }
 
+void cpu_list_lock(void)
+{
+/* Nothing to lock without multiple CPUs? */
+}
+
+void cpu_list_unlock(void)
+{
+/* Nothing to lock without multiple CPUs? */
+}
+
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
