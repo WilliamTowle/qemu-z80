@@ -71,6 +71,16 @@ static int parse_args(int argc, char **argv)
     return optind;
 }
 
+void cpu_list_lock(void)
+{
+/* Nothing to lock without multiple CPUs? */
+}
+
+void cpu_list_unlock(void)
+{
+/* Nothing to lock without multiple CPUs? */
+}
+
 int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
