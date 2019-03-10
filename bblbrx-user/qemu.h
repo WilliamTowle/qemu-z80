@@ -19,6 +19,13 @@ struct bblbrx_binprm {
     long		filesize;
 };
 
+#define VERIFY_READ 0
+#define VERIFY_WRITE 1 /* implies read access */
+
+/* XXX: todo protect every memory access */
+#define lock_user(x,a,b,c)	(void*)(x)
+#define unlock_user(x,y,z)
+
 int bblbrx_exec(const char *filename);
 
 int load_raw_binary(struct bblbrx_binprm *bprm);
