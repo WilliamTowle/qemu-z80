@@ -125,14 +125,19 @@ int main(int argc, char **argv)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: CPU created at %p [env %p]; reset() to follow\n", cpu, env);
 #endif
+    cpu_reset(cpu);
 
-    /* Following CPU init:
-     *  1. a cpu_reset(state) call
-     *  2. initialise 'thread_cpu'
-     *  3. set 'do_strace', if supported
-     *  4. initialisation of 'target_environ' [if required]
+#if 1   /* WmT - TRACE */
+;DPRINTF("%s(): INFO - CPU reset OK; initial state dump follows...\n", __func__);
+;cpu_dump_state(cpu, stderr, 0);
+#endif
+
+    /* Following cpu_reset(), we:
+     *  1. initialise 'thread_cpu'
+     *  2. set 'do_strace', if supported
+     *  3. initialisation of argc/argv and environment [if required]
+     *  4. initialise any TaskState
      */
-    //cpu_reset(cpu);
     thread_cpu= cpu;
 
 
@@ -152,11 +157,6 @@ int main(int argc, char **argv)
     }
 
     guest_base= (unsigned long)target_ram;
-
-    /* PARTIAL: next...
-     * 1. manage passing arg{c|v} to target, if required
-     * 2. initialise any TaskState
-     */
 
     ret= bblbrx_exec(filename);
     if (ret != 0) {
