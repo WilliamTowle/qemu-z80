@@ -137,10 +137,19 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    /* ...in v1.7.5, after cpu_init()
-     * 1. Local variable 'thread_cpu' is set
-     * 2. 'do_strace' is enabled, if environment variable set
-     * 3. There is final environment configuration
+    /* cpu_reset() can contain a tlb_flush() for some platforms. Based
+     * on linux-user/main.c, side effects apply on I386/SPARC/PPC
+     */
+    cpu_reset(env);
+#if 1    /* WmT - TRACE */
+;DPRINTF("%s(): INFO - CPU has reset; initial state follows...\n", __func__);
+;cpu_dump_state(env, stderr, fprintf, 0);
+#endif
+
+    /* Following cpu_reset():
+     * - Local variable 'thread_cpu' is set
+     * - 'do_strace' is enabled, if environment variable set
+     * - There is final environment configuration
      */
 
 #if !defined(CONFIG_USE_GUEST_BASE)
