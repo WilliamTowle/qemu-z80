@@ -17,7 +17,7 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
     CPUZ80State *env= &cpu->env;
     int fl = env->regs[R_F];
 
-#if 1	/* PARTIAL: Full register set not yet implemented */
+#if 0	/* PARTIAL: Full register set not yet implemented */
     cpu_fprintf(f, "AF =%04x BC =%04x DE =%04x HL =%04x IX=%04x\n"
                    "AF'=%04x BC'=%04x DE'=%04x HL'=%04x IY=%04x\n"
                    "PC =%04x SP =%04x F=[%c%c%c%c%c%c%c%c]\n"
