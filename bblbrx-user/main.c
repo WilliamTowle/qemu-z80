@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     const char *cpu_type;
-    //CPUArchState *env;
+    CPUArchState *env;
     CPUState *cpu;
     char *filename;
     void  *target_ram;
@@ -115,23 +115,27 @@ int main(int argc, char **argv)
     }
 
     cpu_type= parse_cpu_model(cpu_model);
-;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
 
     //tcg_exec_init(0);
     /* NOTE: we need to init the CPU at this stage to get
        qemu_host_page_size */
 
     cpu= cpu_create(cpu_type);
-    //env= cpu->env_ptr;
-;DPRINTF("INFO: ...CPU created - ptr %p\n", cpu);
-    /* Following CPU init:
-     *  1. a cpu_reset() call
-     *  2. checks QEMU_STRACE, QEMU_RAND_SEED
+    env= cpu->env_ptr;
+    cpu_reset(env);
+#if 1   /* WmT - TRACE */
+    /* v2 linux-user has this cpu_reset(), although it's overkill */
+;DPRINTF("%s(): INFO - CPU create/reset OK; initial state dump follows...\n", __func__);
+;cpu_dump_state(env, stderr, fprintf, 0);
+#endif
+
+    /* Following cpu_reset(), v2 has:
+     *  1. 'thread_cpu' initialise
+     *  2. checks QEMU_{STRACE|QEMU_RAND_SEED}
      *  3. management of 'target_environ' [if required]
      */
-    //cpu_reset(cpu);
-
     thread_cpu= cpu;
+
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
