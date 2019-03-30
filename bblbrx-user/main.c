@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     const char *cpu_type;
-    //CPUArchState *env;
+    CPUArchState *env;
     CPUState *cpu;
     char *filename;
     void  *target_ram;
@@ -115,21 +115,24 @@ int main(int argc, char **argv)
     }
 
     cpu_type= parse_cpu_model(cpu_model);
-;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
 
     /* init tcg before creating CPUs and to get qemu_host_page_size */
     //tcg_exec_init(0);
 
     cpu= cpu_create(cpu_type);
-    //env= cpu->env_ptr;
-;DPRINTF("INFO: ...CPU created - ptr %p\n", cpu);
-    /* Following CPU init:
-     *  1. a cpu_reset(state) call
+    env= cpu->env_ptr;
+    cpu_reset(env);
+#if 1   /* WmT - TRACE */
+    /* TODO: don't need both create, reset */
+;DPRINTF("%s(): INFO - CPU create/reset OK; initial state dump follows...\n", __func__);
+;cpu_dump_state(env, stderr, fprintf, 0);
+#endif
+
+    /* Following cpu_reset(), v2 has:
+     *  1. 'thread_cpu' initialise
      *  2. check QEMU_{STRACE|QEMU_RAND_SEED}
      *  3. initialisation of 'target_environ' [if required]
      */
-    //cpu_reset(cpu);
-
     //thread_cpu= cpu;
 
     /* Since we have no MMU, the entirety of target RAM is
