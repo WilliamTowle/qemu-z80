@@ -24,12 +24,44 @@
 
 #define TARGET_LONG_BITS 32
 
+/* Z80 registers */
+
+#define R_A     0
+#define R_F     1
+
+#define R_BC    2
+#define R_DE    3
+#define R_HL    4
+#define R_IX    5
+#define R_IY    6
+#define R_SP    7
+
+#define R_I     8
+#define R_R     9
+
+#define R_AX    10
+#define R_FX    11
+#define R_BCX   12
+#define R_DEX   13
+#define R_HLX   14
+
+#define CPU_NB_REGS 15
+
 #define CPUState struct CPUZ80State
 
 #include "cpu-defs.h"
 
 typedef struct CPUZ80State {
-//	CPU_COMMON
+    CPU_COMMON
+
+    /* Z80 registers */
+    uint16_t pc;
+
+    target_ulong regs[CPU_NB_REGS];
+
+    int iff1;
+    int iff2;
+    int imode;
 } CPUZ80State;
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
