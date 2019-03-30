@@ -107,11 +107,19 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    /* ...and after cpu_init()
-     *  1. maybe a cpu_reset(env) call (TARGET_{I386|SPARC|PPC})
-     *  2. initialise 'thread_env' (externed via qemu.h)
-     *  3. set 'do_strace', if supported
-     *  4. initialise 'target_environ'
+    /* cpu_reset() can contain a tlb_flush() for some platforms. Based
+     * on linux-user/main.c, side effects apply on I386/SPARC/PPC
+     */
+    cpu_reset(env);
+#if 1    /* WmT - TRACE */
+;fprintf(stderr, "%s(): INFO - CPU has reset; initial state follows...\n", __func__);
+;cpu_dump_state(env, stderr, fprintf, 0);
+#endif
+
+    /* Following cpu_reset():
+     *  1. initialise 'thread_env' (externed via qemu.h)
+     *  2. set 'do_strace', if supported
+     *  3. initialise 'target_environ'
      */
 
 #if !defined(CONFIG_USE_GUEST_BASE)
