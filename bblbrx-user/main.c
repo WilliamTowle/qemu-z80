@@ -115,7 +115,6 @@ int main(int argc, char **argv)
     }
 
     cpu_type= parse_cpu_model(cpu_model);
-;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
 
     /* init tcg before creating CPUs and to get qemu_host_page_size */
     //tcg_exec_init(0);
@@ -125,14 +124,20 @@ int main(int argc, char **argv)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: CPU created at %p [env %p]; reset() to follow\n", cpu, env);
 #endif
-    /* Following CPU init:
-     *  1. a cpu_reset(state) call
+    cpu_reset(env);
+
+#if 1   /* WmT - TRACE */
+;DPRINTF("%s(): INFO - CPU reset OK; initial state dump follows...\n", __func__);
+;cpu_dump_state(env, stderr, fprintf, 0);
+#endif
+
+    /* Following cpu_reset(), v2 has:
+     *  1. 'thread_cpu' initialise
      *  2. set 'do_strace', if supported
      *  3. initialisation of 'target_environ' [if required]
      */
-    //cpu_reset(cpu);
-
     //thread_cpu= cpu;
+
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
