@@ -96,10 +96,38 @@ static int parse_args(int argc, char **argv)
     return optind;
 }
 
+#if defined(TARGET_Z80)
+void cpu_loop(CPUZ80State *env)
+{
+    /* PARTIAL:
+     * Temporary indication we're doing something
+     */
+#if 1   /* WmT - TRACE */
+;DPRINTF("%s(): PARTIAL - empty infinite loop (TODO: cpu_exec() call missing) follows\n", __func__);
+#endif
+
+    for (;;) {
+        /* TODO:
+         * Call cpu_exec() here; the result tells us the reason
+         * instruction translation has stopped.
+         * i386 has calls to process_queued_cpu_work() and
+         * process_pending_signals()
+         */
+    }
+}
+#else   /* non-z80 CPUs */
+void cpu_loop(CPUZ80State *env)
+{
+    printf("Reached cpu_loop() for unimplemented CPU type\n");
+    cpu_dump_state(env, stderr, fprintf, 0);
+    exit(EXIT_FAILURE);
+}
+#endif
+
 int main(int argc, char **argv)
 {
     const char *cpu_type;
-    //CPUArchState *env;
+    CPUArchState *env;
     CPUState *cpu;
     char *filename;
     void  *target_ram;
@@ -139,7 +167,7 @@ int main(int argc, char **argv)
     //tcg_exec_init(0);
 
     cpu= cpu_create(cpu_type);
-    //env= cpu->env_ptr;
+    env= cpu->env_ptr;
     cpu_reset(cpu);
 #if 1   /* WmT - TRACE */
     /* TODO: don't need both create, reset */
@@ -198,10 +226,9 @@ int main(int argc, char **argv)
      */
 
 #if 1   /* WmT - PARTIAL */
-;return fprintf(stderr, "%s(): INCOMPLETE - need cpu_loop() to execute %s\n", __func__, filename);
-#else
-    /* NB: cpu_loop() exits on ILLOP/KERNEL_TRAP */
-
-  return EXIT_SUCCESS;
+;DPRINTF("%s(): PARTIAL - run filename=%s via cpu_loop() ('%s' CPU, env %p)\n", __func__, filename, cpu_model, env);
 #endif
+    cpu_loop(env);
+
+    return EXIT_SUCCESS; /* if cpu_loop() exits (ILLOP/KERNEL_TRAP) */
 }
