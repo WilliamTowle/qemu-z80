@@ -17,4 +17,6 @@ int bblbrx_exec(const char *filename);
 
 int load_raw_binary(struct bblbrx_binprm *bprm);
 
+void cpu_loop(CPUState *env);
+
 #endif /* QEMU_H */

@@ -56,6 +56,40 @@ static int parse_args(int argc, char **argv)
     return optind;
 }
 
+#if defined(TARGET_Z80)
+void cpu_loop(CPUZ80State *env)
+{
+	/* PARTIAL:
+	 * Temporary indication we're doing something
+	 */
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "%s(): PARTIAL - empty infinite loop (missing cpu_exec() call) follows\n", __func__);
+#endif
+
+	for (;;) {
+            /* PARTIAL: linux-user main.c has a 'trapnr' to store
+             * cpu_TYPE_exec*()'s result. We then interpret its value
+             * Normally:
+             * - cpu.h has cpu_TYPE_exec()'s prototype
+             * - cpu.h define "renames" cpu_exec() [in cpu-exec.c]
+             * - cpu_exec() has cpu-specific #ifdef sections
+             * - internally it fetches/executes "translation blocks"
+             * For new code:
+             *	exec.c logic calls internal tb_gen_code()
+             *	tb_gen_code() calls cpu_gen_code() [translate-all.c]
+             *	cpu_gen_code() calls tcg_gen_code() [tcg/tcg.c]
+             */
+	}
+}
+#else	/* non-z80 CPUs */
+void cpu_loop(CPUState *env)
+{
+	printf("cpu_loop() for unimplemented CPU type\n");
+	cpu_dump_state(env, stderr, fprintf, 0);
+	exit(1);
+}
+#endif
+
 int main(int argc, char **argv)
 {
   const char *cpu_model= NULL;
@@ -171,13 +205,17 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-#if 1	/* WmT - TODO */
-;return fprintf(stderr, "%s(): INCOMPLETE - call cpu_loop() to run %s\n", __func__, filename);
-#else
-	/* PARTIAL: needs to pass 'env' to cpu_loop() here.
-	 * NB: cpu_loop() doesn't exit to our 'return' statement below
+	/* PARTIAL. May now want/need to:
+	 * free memory for any redundant data structures
+	 * log information about the program
+	 * initialise brk and syscall/signal handlers
+	 * further initialise 'env' (esp. registers)
+	 * further initialise TaskState
+	 * manage any GDB stub
 	 */
-
-  return 0;
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "%s(): PARTIAL - run filename=%s via local cpu_loop() (%d bit '%s' CPU, env %p)\n", __func__, filename, TARGET_LONG_BITS, cpu_model, env);
 #endif
+    cpu_loop(env); /* NB: doesn't exit to our 'return' statement below */
+  return 0;
 }
