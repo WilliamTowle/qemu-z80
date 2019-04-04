@@ -41,5 +41,8 @@ int load_raw_binary(struct bblbrx_binprm *bprm)
         exit(-ENOEXEC); /* failed read -> "bad file format" error */
     }
 
+#if 1	/* TRACE */
+;DPRINTF("%s(): PARTIAL - proceeding with naive cpu_loop() implementation\n", __func__);
+#endif
     return 0;   /* "success" */
 }
