@@ -84,4 +84,12 @@ static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
     env->hflags = tb->flags;
 }
 
+static inline void cpu_get_tb_cpu_state(CPUState *env, target_ulong *pc,
+                                        target_ulong *cs_base, int *flags)
+{
+    *pc = env->pc;
+    *cs_base = 0;           /* Z80: no code segments */
+    *flags= env->hflags;    /* TARGET_I386 includes eflags too */
+}
+
 #endif /* CPU_Z80_H */
