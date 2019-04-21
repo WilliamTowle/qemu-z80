@@ -74,4 +74,23 @@ int cpu_z80_exec(CPUZ80State *s);
 
 #include "cpu-all.h"
 
+static inline bool cpu_has_work(CPUState *env)
+{
+#if 1	/* temp'y */
+#if defined(TARGET_Z80)
+;printf("%s(): PARTIAL - assume '1' result OK\n", __func__);
+#endif
+	return 1;
+#else	/* as implemented for i386 */
+    return ((env->interrupt_request & CPU_INTERRUPT_HARD) &&
+            (env->eflags & IF_MASK)) ||
+           (env->interrupt_request & (CPU_INTERRUPT_NMI |
+                                      CPU_INTERRUPT_INIT |
+                                      CPU_INTERRUPT_SIPI |
+                                      CPU_INTERRUPT_MCE));
+#endif
+}
+
+#include "exec-all.h"
+
 #endif /* CPU_Z80_H */
