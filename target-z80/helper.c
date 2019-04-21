@@ -86,6 +86,10 @@ void cpu_reset(CPUZ80State *env)
 
     /* init to reset state */
 
+#ifdef CONFIG_SOFTMMU
+    env->hflags |= HF_SOFTMMU_MASK;
+#endif
+
     env->pc = 0x0000;
     env->iff1 = 0;
     env->iff2 = 0;
