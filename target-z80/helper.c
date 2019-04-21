@@ -73,6 +73,29 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
 }
 
 
+/* return value:
+   -1 = cannot handle fault
+   0  = nothing more to do
+   1  = generate pf fault
+   2  = soft mmu activation required for this block
+*/
+#if 0	/* legacy prototype */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx, int is_softmmu)
+#else
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx)
+#endif
+{
+#if 1	/* temp'y */
+	printf("%s() skeleton ... INCOMPLETE\n", __func__);
+	exit(1);
+#else
+	/* TODO: see g106f733 "Add target-z80 tree, z80-dis.c" */
+#endif
+}
+
+
 void z80_cpu_do_interrupt(CPUState *cs)
 {
     Z80CPU *cpu = Z80_CPU(cs);
