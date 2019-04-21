@@ -198,6 +198,16 @@ int cpu_z80_exec(CPUZ80State *s);
 #define Z80_CPU_R800 2
 
 
+#if 0	/* legacy */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx, int is_softmmu);
+#else	/* v1.7.x */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx);
+#endif
+#define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
+
+
 /* TARGET_PAGE_BITS required by exec-all.h cache */
 #define TARGET_PAGE_BITS 12	/* from target-x86 */
 
