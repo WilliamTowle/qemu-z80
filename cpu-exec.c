@@ -222,6 +222,8 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_SH4)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
+#elif defined(TARGET_Z80)
+    /* TARGET_Z80: 'put eflags in CPU temporary format' step not required */
     /* XXXXX */
 #else
 #error unsupported target CPU
@@ -616,6 +618,8 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_ALPHA)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
+#elif defined(TARGET_Z80)
+    /* TARGET_Z80: restore eflags step not required here */
     /* XXXXX */
 #else
 #error unsupported target CPU
