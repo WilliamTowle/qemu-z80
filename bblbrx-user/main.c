@@ -71,21 +71,33 @@ static int parse_args(int argc, char **argv)
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
+  int	trapnr;
     /* PARTIAL:
      * Temporary indication we're doing something
      */
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - empty infinite loop (TODO: cpu_exec() call missing) follows\n", __func__);
+;DPRINTF("%s(): PARTIAL - trap in cpu_exec() will exit() below...\n", __func__);
 #endif
 
-    for (;;) {
+    for (;;)
+    {
         /* PARTIAL:
-         * Store and act on cpu_TYPE_exec*()'s result here, so we
-         * can react to detection of bad/unsupported instructions
-         * For new code:
-         *	exec.c logic calls internal tb_gen_code()
-         *	tb_gen_code() calls cpu_gen_code() [translate-all.c]
-         *	cpu_gen_code() calls tcg_gen_code() [tcg/tcg.c]
+         * Key exception cases are for ILLOP (bad/unsupported
+         * instruction) and KERNEL_TRAP ("magic ramtop") cases.
+         * The EXCP_KERNEL_TRAP in particular works like a ROM
+         * system call, resulting in program exit in the
+         * simplest case.
+         */
+        printf("%s(): Calling cpu_exec() here...\n", __func__);
+        trapnr= cpu_exec(env);	/* cpu-exec.c cpu_exec() */
+        printf("BAILING - abnormal return %d from cpu_exec() - dump of env at %p follows\n", trapnr, env);
+        cpu_dump_state(env, stderr, fprintf, 0);
+        exit(1);
+
+        /* PARTIAL:
+         * For a system that can generate interrupts and signals
+         * them here, process_pending_signals() is required here,
+         * and we should restart the loop. Abormal exit drops here
          */
     }
 }
