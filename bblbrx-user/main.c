@@ -59,26 +59,31 @@ static int parse_args(int argc, char **argv)
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
+  int	trapnr;
 	/* PARTIAL:
 	 * Temporary indication we're doing something
 	 */
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - empty infinite loop (missing cpu_exec() call) follows\n", __func__);
+;fprintf(stderr, "%s(): PARTIAL - cpu_exec() exit will exit() below...\n", __func__);
 #endif
 
-	for (;;) {
-            /* PARTIAL: linux-user main.c has a 'trapnr' to store
-             * cpu_TYPE_exec*()'s result. We then interpret its value
-             * Normally:
-             * - cpu.h has cpu_TYPE_exec()'s prototype
-             * - cpu.h define "renames" cpu_exec() [in cpu-exec.c]
-             * - cpu_exec() has cpu-specific #ifdef sections
-             * - internally it fetches/executes "translation blocks"
-             * For new code:
-             *	exec.c logic calls internal tb_gen_code()
-             *	tb_gen_code() calls cpu_gen_code() [translate-all.c]
-             *	cpu_gen_code() calls tcg_gen_code() [tcg/tcg.c]
-             */
+	for (;;)
+    {
+        /* PARTIAL:
+         * Machine exceptions (0 to 18 defined, only EXCP06_ILLOP
+         * generated?) should be handled here.
+         */
+        printf("%s(): Calling cpu_exec() here...\n", __func__);
+        trapnr= cpu_exec(env);	/* cpu-exec.c cpu_exec() */
+        printf("BAILING - abnormal return %d from cpu_exec() - dump of env at %p follows\n", trapnr, env);
+        cpu_dump_state(env, stderr, fprintf, 0);
+        exit(1);
+
+        /* PARTIAL:
+         * In a system that can generate interrupts, we need a) to
+         * process them here, and b) to permit loop execution to
+         * continue (linux-user: calls process_pending_signals(env);).
+         */
 	}
 }
 #else	/* non-z80 CPUs */
