@@ -65,10 +65,12 @@ typedef struct CPUZ80State {
 } CPUZ80State;
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
+int cpu_z80_exec(CPUZ80State *s);
 
 #define TARGET_VIRT_ADDR_SPACE_BITS 32
 
 #define cpu_init cpu_z80_init
+#define cpu_exec cpu_z80_exec
 
 #include "cpu-all.h"
 
