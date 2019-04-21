@@ -50,6 +50,9 @@ typedef struct CPUZ80State {
     int iff1;
     int iff2;
     int imode;
+
+    /* emulator internal eflags handling */
+    uint32_t hflags; /* hidden flags, see HF_xxx constants */
 } CPUZ80State;
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
@@ -74,5 +77,11 @@ static inline bool cpu_has_work(CPUState *env)
 }
 
 #include "exec-all.h"
+
+static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
+{
+    env->pc = tb->pc;
+    env->hflags = tb->flags;
+}
 
 #endif /* CPU_Z80_H */
