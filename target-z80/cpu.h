@@ -54,6 +54,9 @@ typedef struct CPUZ80State {
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
 
+#define TARGET_PAGE_BITS 12
+
+#define TARGET_PHYS_ADDR_SPACE_BITS 32
 #define TARGET_VIRT_ADDR_SPACE_BITS 32
 
 #define cpu_init cpu_z80_init
