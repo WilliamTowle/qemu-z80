@@ -60,4 +60,14 @@ CPUZ80State *cpu_z80_init(const char *cpu_model);
 
 #include "cpu-all.h"
 
+static inline bool cpu_has_work(CPUState *env)
+{
+    /* repo.or.cz just triggers on CPU_INTERRUPT_HARD, but i386
+     * also has NMI cause a 'true' result [? for legacy apic.o]
+     */
+    return env->interrupt_request & CPU_INTERRUPT_HARD;
+}
+
+#include "exec-all.h"
+
 #endif /* CPU_Z80_H */
