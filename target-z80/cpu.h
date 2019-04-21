@@ -63,6 +63,11 @@ int cpu_z80_exec(CPUZ80State *s);
 #define TARGET_PHYS_ADDR_SPACE_BITS 32
 #define TARGET_VIRT_ADDR_SPACE_BITS 32
 
+/* helper.c */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx, int is_softmmu);
+#define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
+
 #define cpu_init cpu_z80_init
 #define cpu_exec cpu_z80_exec
 
