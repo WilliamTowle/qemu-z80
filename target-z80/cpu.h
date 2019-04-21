@@ -62,6 +62,16 @@ Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
 int cpu_z80_exec(CPUZ80State *s);
 
 
+#if 0	/* legacy */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx, int is_softmmu);
+#else
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx);
+#endif
+#define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
+
+
 /* TARGET_PAGE_BITS required by exec-all.h cache */
 #define TARGET_PAGE_BITS 12	/* from target-x86 */
 
