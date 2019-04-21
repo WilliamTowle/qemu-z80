@@ -58,6 +58,10 @@ typedef struct CPUZ80State {
 CPUZ80State *cpu_z80_init(const char *cpu_model);
 int cpu_z80_exec(CPUZ80State *s);
 
+struct siginfo;
+int cpu_z80_signal_handler(int host_signum, void *pinfo,
+                           void *puc);
+
 #define TARGET_PAGE_BITS 12
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 32
@@ -70,6 +74,7 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 
 #define cpu_init cpu_z80_init
 #define cpu_exec cpu_z80_exec
+#define cpu_signal_handler cpu_z80_signal_handler
 
 #define MMU_USER_IDX 1
 
