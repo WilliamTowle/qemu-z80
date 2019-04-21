@@ -181,6 +181,9 @@ int cpu_z80_exec(CPUZ80State *s);
 #define Z80_CPU_Z80  1
 #define Z80_CPU_R800 2
 
+struct siginfo;
+int cpu_z80_signal_handler(int host_signum, void *pinfo,
+                           void *puc);
 
 #if 0	/* legacy */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
@@ -207,6 +210,7 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
     return &cpu->env;
 }
 
+#define cpu_signal_handler cpu_z80_signal_handler
 #define cpu_list z80_cpu_list
 
 /* MMU modes definitions */
