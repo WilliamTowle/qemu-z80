@@ -99,27 +99,39 @@ static int parse_args(int argc, char **argv)
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
-    /* PARTIAL:
-     * Temporary indication we're doing something
-     */
-#if 1   /* WmT - TRACE */
-;DPRINTF("%s(): PARTIAL - empty infinite loop (TODO: cpu_exec() call missing) follows\n", __func__);
-#endif
+    CPUState    *cs = CPU(z80_env_get_cpu(env));
+    int         trapnr;
 
-    for (;;) {
+    for (;;)
+    {
+        cpu_exec_start(cs);
+        trapnr= cpu_exec(cs);
+        cpu_exec_end(cs);
+        //process_queued_cpu_work(cs);
+
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("INFO: %s(): got 'trapnr' %d from cpu_exec() - state dump (env at %p) follows\n", __func__, trapnr, env);
         /* TODO:
-         * Call cpu_exec() here; the result tells us the reason
-         * instruction translation has stopped.
-         * i386 has calls to process_queued_cpu_work() and
-         * process_pending_signals()
+         * 'trapnr' tells us why translation has stopped. Our key
+         * exception cases are EXCP_ILLOP (bad/unsupported
+         * instruction) and KERNEL_TRAP (end of usermode program).
          */
+        //cpu_dump_state(env, stderr, fprintf, 0);
+        cpu_dump_state(cs, stderr, fprintf, 0);
+;exit(EXIT_FAILURE);
+#else   /* TODO: as per target-i386? */
+        process_pending_signals(env);
+#endif
     }
 }
 #else   /* non-z80 CPUs */
 void cpu_loop(CPUZ80State *env)
 {
+    CPUState *cs = CPU(z80_env_get_cpu(env));
+
     printf("Reached cpu_loop() for unimplemented CPU type\n");
-    cpu_dump_state(env, stderr, fprintf, 0);
+    //cpu_dump_state(env, stderr, fprintf, 0);
+    cpu_dump_state(cs, stderr, fprintf, 0);
     exit(EXIT_FAILURE);
 }
 #endif
@@ -164,7 +176,7 @@ int main(int argc, char **argv)
     cpu_type= parse_cpu_model(cpu_model);
 
     /* init tcg before creating CPUs and to get qemu_host_page_size */
-    //tcg_exec_init(0);
+    tcg_exec_init(0);
 
     cpu= cpu_create(cpu_type);
     env= cpu->env_ptr;
