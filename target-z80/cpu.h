@@ -62,6 +62,10 @@ Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
 int cpu_z80_exec(CPUZ80State *s);
 
 
+struct siginfo;
+int cpu_z80_signal_handler(int host_signum, void *pinfo,
+                           void *puc);
+
 #if 0	/* legacy */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
                              int is_write1, int mmu_idx, int is_softmmu);
@@ -86,6 +90,8 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
     }
     return &cpu->env;
 }
+
+#define cpu_signal_handler cpu_z80_signal_handler
 
 /* MMU modes definitions */
 #define MMU_USER_IDX 1
