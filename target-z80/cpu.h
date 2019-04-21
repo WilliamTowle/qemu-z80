@@ -62,6 +62,9 @@ typedef struct CPUZ80State {
     int iff1;
     int iff2;
     int imode;
+
+    /* emulator internal eflags handling */
+    uint32_t hflags; /* hidden flags, see HF_xxx constants */
 } CPUZ80State;
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
@@ -79,21 +82,18 @@ int cpu_z80_exec(CPUZ80State *s);
 
 static inline bool cpu_has_work(CPUState *env)
 {
-#if 1	/* temp'y */
-#if defined(TARGET_Z80)
-;printf("%s(): PARTIAL - assume '1' result OK\n", __func__);
-#endif
-	return 1;
-#else	/* as implemented for i386 */
-    return ((env->interrupt_request & CPU_INTERRUPT_HARD) &&
-            (env->eflags & IF_MASK)) ||
-           (env->interrupt_request & (CPU_INTERRUPT_NMI |
-                                      CPU_INTERRUPT_INIT |
-                                      CPU_INTERRUPT_SIPI |
-                                      CPU_INTERRUPT_MCE));
-#endif
+    /* see i386? has env->eflags bit relating to IF_MASK; NMIs (and
+     * others) also cause a 'true' result
+     */
+    return env->interrupt_request & CPU_INTERRUPT_HARD;
 }
 
 #include "exec-all.h"
+
+static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
+{
+    env->pc = tb->pc;
+    env->hflags = tb->flags;
+}
 
 #endif /* CPU_Z80_H */
