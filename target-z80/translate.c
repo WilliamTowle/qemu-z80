@@ -39,6 +39,8 @@
 	do { } while (0)
 #endif
 
+/* global register indexes */
+static TCGv_ptr cpu_env;
 
 #if 0
 #define PREFIX_CB  0x01
