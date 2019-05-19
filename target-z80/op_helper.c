@@ -23,6 +23,23 @@
 #include "helper.h"
 #include "dyngen-exec.h"
 
+#if 1  /* was: TARGET_LONG_BITS > HOST_LONG_BITS
+        * but TCG_AREG{1|2} no longer available for else case
+        */
+
+/* no registers can be used */
+#define T0 (env->t0)
+#define T1 (env->t1)
+
+#else
+/* XXX: use unsigned long instead of target_ulong - better code will
+   be generated for 64 bit CPUs */
+target_ulong T0;
+//register target_ulong T0 asm(AREG1);
+target_ulong T1;
+//register target_ulong T1 asm(AREG2);
+#endif /* ! (TARGET_LONG_BITS > HOST_LONG_BITS) */
+
 //#define A0 (env->a0)
 //
 //#define A   (env->regs[R_A])
@@ -98,4 +115,11 @@ void HELPER(reset_inhibit_irq)(void)
 void HELPER(movl_pc_im)(uint32_t new_pc)
 {
     PC = (uint16_t)new_pc;
+}
+
+/* Z80 instruction-specific helpers */
+
+void HELPER(jmp_T0)(void)
+{
+    PC = T0;
 }
