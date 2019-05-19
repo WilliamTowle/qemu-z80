@@ -41,6 +41,37 @@
 
 #define PC  (env->pc)
 
+/*
+ * Signal an interruption. It is executed in the main CPU loop.
+ * is_int is TRUE if coming from the int instruction. next_eip is the
+ * EIP value AFTER the interrupt instruction. It is only relevant if
+ * is_int is TRUE.
+ */
+void raise_interrupt(int intno, int is_int, int error_code,
+                     int next_eip_addend)
+{
+    env->exception_index = intno;
+#if 0	/* unimplemented */
+    env->error_code = error_code;
+    env->exception_is_int = is_int;
+    env->exception_next_pc = env->pc + next_eip_addend;
+#endif
+#if 0	/* obsolete */
+    cpu_loop_exit();
+#else	/* v0.15.0+ */
+    cpu_loop_exit(env);
+#endif
+}
+
+void raise_exception(int exception_index)
+{
+    raise_interrupt(exception_index, 0, 0, 0);
+}
+
+void HELPER(raise_exception)(uint32_t exception_index)
+{
+    raise_exception(exception_index);
+}
 
 void HELPER(movl_pc_im)(uint32_t new_pc)
 {
