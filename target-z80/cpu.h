@@ -130,4 +130,11 @@ static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
 #endif
 }
 
+/* op_helper.c */
+void QEMU_NORETURN raise_exception(CPUZ80State *env, int exception_index);
+void QEMU_NORETURN raise_exception_err(CPUZ80State *env, int exception_index,
+                                       int error_code);
+void QEMU_NORETURN raise_interrupt(CPUZ80State *env, int intno, int is_int, int error_code,
+                     int next_eip_addend);
+
 #endif /* !defined (CPU_Z80_H) */
