@@ -92,9 +92,9 @@ void cpu_reset(CPUZ80State *env)
     /* PARTIAL: target-z80 version starts with:
      * 1. record of function call in logs
      * 2. memset() for breakpoints
-     * 3. a tlb_flush() call:
-    	tlb_flush(env, 1);
      */
+
+    tlb_flush(env, 1);
 
     /* init to reset state */
 
