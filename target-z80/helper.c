@@ -31,6 +31,7 @@ static int cpu_z80_find_by_name(const char *name);
 CPUZ80State *cpu_z80_init(const char *model)
 {
     CPUZ80State *env;
+    static int inited;
     int id;
 
     id = cpu_z80_find_by_name(model);
@@ -40,6 +41,12 @@ CPUZ80State *cpu_z80_init(const char *model)
 
     env= calloc(1, sizeof *env);
     cpu_exec_init(env);
+
+    /* init various static tables */
+    if (!inited) {
+        inited = 1;
+        z80_translate_init();
+    }
 
 #if defined(TARGET_Z80)
 ;printf("%s(): PARTIAL - model/flags init missing...\n", __func__);
@@ -57,7 +64,6 @@ CPUZ80State *cpu_z80_init(const char *model)
      */
 
     cpu_reset(env);		/* target-i386: in wrapper functions */
-
     qemu_init_vcpu(env);
 
     return env;
