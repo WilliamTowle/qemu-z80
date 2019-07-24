@@ -1333,3 +1333,17 @@ void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb, int pc_pos)
         env->cc_op = cc_op;
 #endif
 }
+
+
+void z80_translate_init(void)
+{
+#if 1	/* WmT - PARTIAL */
+;DPRINTF("[%s:%d] *** ENTERED %s() - PARTIAL ONLY ***\n", __FILE__, __LINE__, __func__);
+#endif
+	/* PARTIAL. Missing steps:
+	 * 1. assignment of tcg_global_reg_new_ptr() result to 'cpu_env'
+	 * 2. cpu_T[n] (n=0..1) and cpu_A0 init
+	 * 3. import helper.h "register helpers"
+	 */
+    cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
+}

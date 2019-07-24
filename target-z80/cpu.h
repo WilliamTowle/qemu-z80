@@ -131,6 +131,7 @@ typedef struct CPUZ80State {
 #include "cpu-qom.h"
 
 Z80CPU *cpu_z80_init(const char *cpu_model);
+void z80_translate_init(void);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
 int cpu_z80_exec(CPUZ80State *s);
