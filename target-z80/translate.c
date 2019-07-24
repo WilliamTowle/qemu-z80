@@ -1268,3 +1268,16 @@ void restore_state_to_opc(CPUState *env, TranslationBlock *tb, int pc_pos)
 	/* FIXME: see target-i386/translate.c */
 #endif
 }
+
+void z80_translate_init(void)
+{
+#if 1	/* WmT - PARTIAL */
+;DPRINTF("[%s:%d] *** ENTERED %s() - PARTIAL ONLY ***\n", __FILE__, __LINE__, __func__);
+;exit(1);
+#endif
+	/* PARTIAL. Missing steps:
+	 * 1. assignment of tcg_global_reg_new_ptr() result to 'cpu_env'
+	 * 2. cpu_T[n] (n=0..1) and cpu_A0 init
+	 * 3. import helper.h "register helpers"
+	 */
+}
