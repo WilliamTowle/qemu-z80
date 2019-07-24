@@ -149,7 +149,7 @@ static void z80_cpu_instance_init(Object *obj)
     /* init various static tables used in TCG mode */
     if (tcg_enabled() && !inited) {
         inited = 1;
-#if 0   /* x86-specific? */
+#if 0   /* x86-specific name */
         optimize_flags_init();
 #endif
 #ifndef CONFIG_USER_ONLY
