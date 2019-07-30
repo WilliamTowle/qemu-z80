@@ -226,10 +226,10 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 #define cpu_exec cpu_z80_exec
 
 #define cpu_list z80_cpu_list
-/* TODO: cpu_mmu_index() */
 
-///* MMU modes definitions */
-//// No modes to define - unlike x86 there is no kernel/usr/SMAP distinction
+/* TODO: cpu_mmu_index() */
+// No modes to define? - unlike x86 there is no kernel/usr/SMAP distinction
+#define MMU_USER_IDX 1
 //static inline int cpu_mmu_index (CPUZ80State *env)
 //{
 //    return 0;	/* verbatim from target-lm32 */
