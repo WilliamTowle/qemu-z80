@@ -83,6 +83,8 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 #define cpu_init cpu_z80_init
 #define cpu_exec cpu_z80_exec
 
+#define MMU_USER_IDX 1
+
 #include "cpu-all.h"
 
 static inline bool cpu_has_work(CPUState *env)
