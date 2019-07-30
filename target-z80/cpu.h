@@ -87,8 +87,8 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
     return &cpu->env;
 }
 
-
-// MMU modes definitions?
+/* MMU modes definitions */
+#define MMU_USER_IDX 1
 
 #define cpu_exec cpu_z80_exec
 
