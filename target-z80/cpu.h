@@ -209,7 +209,8 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 
 #define cpu_list z80_cpu_list
 
-// MMU modes definitions?
+/* MMU modes definitions */
+#define MMU_USER_IDX 1
 
 #define cpu_exec cpu_z80_exec
 
