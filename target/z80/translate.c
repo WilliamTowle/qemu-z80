@@ -64,7 +64,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("** ENTER %s() [PARTIAL] **\n", __func__);
 #endif
-#if 1   /* WmT - PARTIAL */
     /* PARTIAL. For testing purposes, we implement:
      * 1. Reading of a byte (at least one ensures TB has non-zero size)
      * 2. Triggering of ILLOP exception for missing translation cases
@@ -74,46 +73,66 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     target_ulong pc_start = s->base.pc_next;
     unsigned int b;     /* instruction byte */
 
-    //s->pc_start = s->pc = pc_start;
     s->pc = pc_start;
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, pc_start);
-#endif
-    b= z80_ldub_code(env, s);
-    //s->pc++;
 
-    switch (b)
+    /* TODO: zprintf() of PC/insns and tracking of prefixes */
+
+    /* This first block will handle DD/FD/plain insns without CB/ED */
     {
-    case 0xc9:  /* unconditional 'ret' */
+        unsigned int x, y, z, p, q;
+
+        b= z80_ldub_code(env, s);
+        //s->pc++;
+
+        x = (b >> 6) & 0x03;    /* isolate bits 7, 6 */
+        y = (b >> 3) & 0x07;    /* isolate bits 5, 4, 3 */
+        z = b & 0x07;           /* isolate bits 2, 1, 0 */
+        p = y >> 1;
+        q = y & 0x01;
+
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: Byte read at pc_start 0x%04x got value 0x%02x - has x %o, y %o [p=%o/q=%o], z %o\n", pc_start, b, x, y,p,q, z);
+#endif
+
+        switch (b)
+        {
+        case 0xc9:  /* unconditional 'ret' */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
-        /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
+            /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
 ;exit(1);
 #endif
-        break;
-    default:    /* other op */
+            break;
+        default:    /* other op */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, was non-ret op with value 0x%02x\n", b);
-        /* TODO: trigger ILLOP if translation is unimplemented */
+            /* TODO: trigger ILLOP if translation is unimplemented */
 ;exit(1);
 #endif
+        }
     }
-#else   /* normal parsing continues ... */
+    /* TODO: missing else cases:
+     * - for "cb mode" (bit manipulation) instructions
+     * - for "ed mode" (miscellaneous) instructions
+     */
+
     /* For Z80, there are no "illegal" instructions to signal here.
      * After parsing either we have acted on a fetch; we saw a 'nop'
      * and should do nothing; or we should otherwise simulate a 'nop'
      * [by not acting further]. In the last case, the fetch is allowed
      * to have side effects on internal state/interrupt configuration
      */
+#if 1   /* WmT - TRACE */
+;DPRINTF("** EXIT %s(), with s->pc 0x%04x **\n", __func__, s->pc);
+#endif
     return s->pc;
 
- unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
-    gen_unknown_opcode(env, s);
-#endif
-#if 1   /* WmT - TRACE */
-;DPRINTF("** EXIT %s(), with unmodified s->pc 0x%04x **\n", __func__, s->pc);
-#endif
-    return s->pc;
+// unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
+//    gen_unknown_opcode(env, s);
+//#if 1   /* WmT - TRACE */
+//;DPRINTF("** EXIT %s() [unknown op], with s->pc 0x%04x **\n", __func__, s->pc);
+//#endif
+//    return s->pc;
 }
 
 
