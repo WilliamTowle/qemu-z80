@@ -142,6 +142,31 @@ obj-y += $(libobj-y)
 endif #CONFIG_LINUX_USER
 
 #########################################################
+# bblbrx (Barebones Layer for Binary Execution) user target
+
+ifdef CONFIG_BBLBRX_USER
+
+$(call set-vpath, $(SRC_PATH)/bblbrx-user)
+
+#QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ARCH)
+QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
+
+## build objects from 'bblbrx' tree
+obj-y = main.o bblbrxload.o
+
+$(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
+
+## build subset (or none) of cpu emulator library
+libobj-y =
+#libobj-y += ...
+
+#obj-y += $(addprefix ../libuser/, $(user-obj-y))
+#obj-y += $(addprefix ../libdis-user/, $(libdis-y))
+obj-y += $(libobj-y)
+
+endif #CONFIG_BBLBRX_USER
+
+#########################################################
 # Darwin user emulator target
 
 ifdef CONFIG_DARWIN_USER
