@@ -102,6 +102,22 @@ op_helper.o user-exec.o: QEMU_CFLAGS += $(HELPER_CFLAGS)
 signal.o: QEMU_CFLAGS += $(HELPER_CFLAGS)
 
 #########################################################
+# bblbrx (Barebones Layer for Binary Execution) user target
+
+ifdef CONFIG_BBLBRX_USER
+
+$(call set-vpath, $(SRC_PATH)/bblbrx-user)
+#$(call set-vpath, $(SRC_PATH)/bblbrx-user:$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR))
+
+QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
+#QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR)
+
+obj-y = $(GENERATED_HEADERS)
+obj-y += main.o bblbrxload.o
+
+endif #CONFIG_BBLBRX_USER
+
+#########################################################
 # Linux user emulator target
 
 ifdef CONFIG_LINUX_USER
