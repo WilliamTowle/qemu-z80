@@ -158,6 +158,7 @@ solaris="no"
 profiler="no"
 cocoa="no"
 softmmu="yes"
+bblbrx_user="no"
 linux_user="no"
 darwin_user="no"
 bsd_user="no"
@@ -653,11 +654,16 @@ for opt do
   --enable-system) softmmu="yes"
   ;;
   --disable-user)
+      bblbrx_user="no" ;
       linux_user="no" ;
       bsd_user="no" ;
       darwin_user="no"
   ;;
   --enable-user) ;;
+  --disable-bblbrx-user) bblbrx_user="no"
+  ;;
+  --enable-bblbrx-user) bblbrx_user="yes"
+  ;;
   --disable-linux-user) linux_user="no"
   ;;
   --enable-linux-user) linux_user="yes"
@@ -990,6 +996,8 @@ echo "  --enable-system          enable all system emulation targets"
 echo "  --disable-system         disable all system emulation targets"
 echo "  --enable-user            enable supported user emulation targets"
 echo "  --disable-user           disable all user emulation targets"
+echo "  --enable-bblbrx-user     enable all bblbrx usermode emulation targets"
+echo "  --disable-bblbrx-user    disable all bblbrx usermode emulation targets"
 echo "  --enable-linux-user      enable all linux usermode emulation targets"
 echo "  --disable-linux-user     disable all linux usermode emulation targets"
 echo "  --enable-darwin-user     enable all darwin usermode emulation targets"
@@ -3110,12 +3118,17 @@ case "$target_arch2" in
 esac
 target_softmmu="no"
 target_user_only="no"
+target_bblbrx_user="no"
 target_linux_user="no"
 target_darwin_user="no"
 target_bsd_user="no"
 case "$target" in
   ${target_arch2}-softmmu)
     target_softmmu="yes"
+    ;;
+  ${target_arch2}-bblbrx-user)
+    target_user_only="yes"
+    target_bblbrx_user="yes"
     ;;
   ${target_arch2}-linux-user)
     if test "$linux" != "yes" ; then
@@ -3365,6 +3378,9 @@ if test "$target_softmmu" = "yes" ; then
 fi
 if test "$target_user_only" = "yes" ; then
   echo "CONFIG_USER_ONLY=y" >> $config_target_mak
+fi
+if test "$target_bblbrx_user" = "yes" ; then
+  echo "CONFIG_BBLBRX_USER=y" >> $config_target_mak
 fi
 if test "$target_linux_user" = "yes" ; then
   echo "CONFIG_LINUX_USER=y" >> $config_target_mak
