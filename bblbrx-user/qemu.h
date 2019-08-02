@@ -10,8 +10,16 @@
 #define QEMU_H
 
 
+struct bblbrx_binprm {
+    const char  *filename;
+    int         fd;
+    long        filesize;
+};
+
+
 /* bblbrx-specific routines */
 
+int load_raw_binary(struct bblbrx_binprm *bprm);
 int bblbrx_exec(const char *filename);
 
 #endif /* QEMU_H */

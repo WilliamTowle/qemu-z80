@@ -16,14 +16,16 @@
     do { if (EMIT_DEBUG) error_printf("bblbrx-user bblbrxload: " fmt , ## __VA_ARGS__); } while(0)
 
 
-/* handle raw binary loading */
-int bblbrx_exec(const char *filename)
+static int prepare_binprm(struct bblbrx_binprm *bprm)
 {
     struct stat	st;
 
-    if (stat(filename, &st) < 0)
+    /* values in case of error */
+    bprm->filesize= 0;
+
+    if (fstat(bprm->fd, &st) < 0)
     {
-        printf("%s(): stat() failed on %s\n", __func__, filename);
+        printf("%s(): fstat() failed on filename '%s'\n", __func__, bprm->filename);
         return -errno;
     }
     if (!S_ISREG(st.st_mode))
@@ -31,20 +33,40 @@ int bblbrx_exec(const char *filename)
          * considers this to be executable is unimportant.
          */
 
-        printf("%s(): %s not a regular file\n", __func__, filename);
+        printf("%s(): %s not a regular file\n", __func__, bprm->filename);
         return -EACCES;
     }
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): INFO - file %s has %llu bytes\n", __func__, filename, st.st_size);
-#endif
-    /* PARTIAL.
-     * Some formats have sections and a code entry point; for bblbrx:
-     *  - we have a flat file format (no sections)
-     *	- we always load the file to 0x0000
-     *	- we always execute from 0x000 (as per initial PC)
-     *	- we always assume a stack growing down from 64K (initial SP)
-     */
+    bprm->filesize= st.st_size;
 
-    return fprintf(stderr, "%s(): exec %s: PARTIAL - load routines absent\n", __func__, filename);
+    return 0;
+}
+
+/* handle raw binary loading */
+int bblbrx_exec(const char *filename)
+{
+    struct bblbrx_binprm    bprm;
+    int                     ret;
+
+    ret= open(filename, O_RDONLY);
+    if (ret < 0)
+    {
+        printf("%s(): open() failed on filename '%s'\n", __func__, filename);
+        return -errno;
+    }
+
+    bprm.filename= filename;
+    bprm.fd= ret;		/* for subsequent fstat() */
+
+    ret= prepare_binprm(&bprm);
+    if (ret >= 0)
+        ret= load_raw_binary(&bprm);
+
+    /* Store an invalid file descriptor if loading failed */
+    if (ret <= 0)
+    {
+        close(bprm.fd);
+        bprm.fd= -1;
+    }
+    return ret;
 }
