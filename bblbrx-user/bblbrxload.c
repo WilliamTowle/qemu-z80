@@ -7,10 +7,11 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "qemu.h"
-
 
 #if 1	/* debug */
 	/* TODO: version with error_printf() needs CPU headers */
@@ -22,40 +23,55 @@
 #endif
 
 
-/* handle raw binary loading */
-int bblbrx_exec(const char *filename)
+static int prepare_binprm(struct bblbrx_binprm *bprm)
 {
     struct stat	st;
 
-    /* PARTIAL.
-     * Naive check the file exists and is valid (only requires a
-     * regular file; our binaries do not need be executable as far
-     * as the host OS is concerned)
-     * CONSIDER: *if* we target_mmap() the file's permissions affect
-     * the parameters passed
-     */
-    if (stat(filename, &st) < 0)
+    /* values in case of error */
+    bprm->filesize= 0;
+
+    if (fstat(bprm->fd, &st) < 0)
     {
-        printf("%s(): stat() failed on %s\n", __func__, filename);
+        printf("%s(): fstat() failed on filename '%s'\n", __func__, bprm->filename);
         return -errno;
     }
     if (!S_ISREG(st.st_mode))
-    {
+    {	/* Check for a regular file only - we don't also expect to
+         * find a file mode that tells us this is executable
+         */
         return -EACCES;
     }
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): INFO - file %s has %llu bytes\n", __func__, filename, st.st_size);
-#endif
-    /* PARTIAL.
-     * Normally there are functions specific to file types
-     *	...files can have sections
-     *	...for our raw files, we can just load 'filesize' bytes
-     * Some formats have code entry point, initialise stack/registers
-     *	...our code is always in low RAM addresses
-     *	...our stack always grows downward from RAMTOP (64K)
-     *	...we might want to set ROM/RAM split based on arguments
-     */
+    bprm->filesize= st.st_size;
 
-    return fprintf(stderr, "%s(): exec %s: PARTIAL - load routines absent\n", __func__, filename);
+    return 0;
+}
+
+/* handle raw binary loading */
+int bblbrx_exec(const char *filename)
+{
+    struct bblbrx_binprm	bprm;
+    int				ret;
+
+    ret= open(filename, O_RDONLY);
+    if (ret < 0)
+    {
+        printf("%s(): open() failed on filename '%s'\n", __func__, filename);
+        return -errno;
+    }
+
+    bprm.filename= filename;
+    bprm.fd= ret;		/* for subsequent fstat() */
+
+    ret= prepare_binprm(&bprm);
+    if (ret >= 0)
+        ret= load_raw_binary(&bprm);
+
+    /* Don't store a file descriptor if loading failed */
+    if (ret <= 0)
+    {
+        close(ret);
+        bprm.fd= -1;
+    }
+    return ret;
 }
