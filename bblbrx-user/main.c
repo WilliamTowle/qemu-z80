@@ -69,6 +69,7 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+  const char *cpu_model= NULL;
     char *filename;
   void  *target_ram;
     int optind;
@@ -85,13 +86,21 @@ int main(int argc, char **argv)
      * 2. log filename is set to default
      * 3. may need to initialise environment list
      * 4. consider support for cpu model change in arguments
-     * 5. want to manage cpu_model default value if not in args
      */
 
     optind= parse_args(argc, argv);
     if (optind >= argc)
         usage(EXIT_FAILURE);
     filename= argv[optind];
+
+    if (cpu_model == NULL)
+    {
+#if defined(TARGET_Z80)
+        cpu_model = "z80";	/* TODO: support specifying "r800"? */
+#else
+#error unsupported target CPU
+#endif
+    }
 
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
@@ -121,6 +130,7 @@ int main(int argc, char **argv)
      * to ensure any ROM regions can be protected from writes. In
      * the meantime we get to have self-modifying code anywhere.
      */
+
     target_ram= mmap(0, 64*1024,
                      PROT_READ | PROT_WRITE,
                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
