@@ -1,2 +1,2 @@
 obj-y = main.o
-obj-y += bblbrxload.o
+obj-y += bblbrxload.o rawload.o
