@@ -152,7 +152,7 @@ $(call set-vpath, $(SRC_PATH)/bblbrx-user)
 QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 
 ## build objects from 'bblbrx' tree
-obj-y = main.o bblbrxload.o
+obj-y += main.o bblbrxload.o rawload.o
 
 $(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
 
