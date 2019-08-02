@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 
 #include "qemu.h"
+#include "cpu.h"
 
 #if defined(CONFIG_USE_GUEST_BASE)
 unsigned long guest_base;
@@ -59,6 +60,7 @@ int main(int argc, char **argv)
 {
   const char *cpu_model= NULL;
   char *filename;
+  CPUState *env;
   void  *target_ram;
   int optind;
   int ret;
@@ -94,16 +96,22 @@ int main(int argc, char **argv)
 ;fprintf(stderr, "%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
 #endif
     /* PARTIAL:
-     * to effect CPU init, we do:
-     *    1. call to cpu_exec_init_all(0);
-     *    2. call env = cpu_init(cpu_model);
-     *    3. maybe a cpu_reset(env) call (TARGET_{I386|SPARC|PPC})
-     *    4. initialise 'thread_env' (externed via qemu.h)
-     *    5. set 'do_strace', if supported
-     *    6. initialise 'target_environ'
-     *    7. handle CONFIG_USE_GUEST_BASE
-     *    8. manage passing arg{c|v} to target, if required
-     *    9. allocate/initialise any TaskState
+     * prior to CPU init, we do:
+     *  1. tcg_exec_init(0);
+     *  2. call to cpu_exec_init_all(0);
+     */
+
+    env = cpu_init(cpu_model);
+    if (!env) {
+        fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
+        exit(1);
+    }
+
+    /* ...and after cpu_init()
+     *  1. maybe a cpu_reset(env) call (TARGET_{I386|SPARC|PPC})
+     *  2. initialise 'thread_env' (externed via qemu.h)
+     *  3. set 'do_strace', if supported
+     *  4. initialise 'target_environ'
      */
 
 #if !defined(CONFIG_USE_GUEST_BASE)
@@ -131,6 +139,7 @@ int main(int argc, char **argv)
     /* Giving guest_base a value causes ldub_code() to retrieve bytes
      * from addresses that won't segfault
      */
+
     guest_base= (unsigned long)target_ram;
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "%s(): INFO - set guest_base=%p\n", __func__, (void *)guest_base);
@@ -141,9 +150,8 @@ int main(int argc, char **argv)
 ;fprintf(stderr, "%s(): PARTIAL - missing initialisation 3/3...\n", __func__);
 #endif
     /* PARTIAL: next...
-     * 1. handle CONFIG_USE_GUEST_BASE
-     * 2. manage passing arg{c|v} to target, if required
-     * 3. initialise any TaskState
+     *  1. manage passing arg{c|v} to target, if required
+     *  2. allocate/initialise any TaskState
      */
 
     ret= bblbrx_exec(filename);
