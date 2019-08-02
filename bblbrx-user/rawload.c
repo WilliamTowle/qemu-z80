@@ -20,5 +20,6 @@ int load_raw_binary(struct bblbrx_binprm *bprm)
         exit(-1);
     }
 
+;fprintf(stderr, "%s(): PARTIAL - proceeding with RAM containing a minimal program\n", __func__);
     return 0;	/* "success" */
 }
