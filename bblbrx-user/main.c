@@ -57,6 +57,7 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+  const char *cpu_model= NULL;
     char *filename;
   void  *target_ram;
     int optind;
@@ -73,13 +74,21 @@ int main(int argc, char **argv)
      * 2. log filename is set to default
      * 3. may need to initialise environment list
      * 4. consider support for cpu model change in arguments
-     * 5. want to manage cpu_model default value if not in args
      */
 
     optind= parse_args(argc, argv);
     if (optind >= argc)
         usage(EXIT_FAILURE);
     filename= argv[optind];
+
+    if (cpu_model == NULL)
+    {
+#if defined(TARGET_Z80)
+        cpu_model = "z80";
+#else
+#error unsupported target CPU
+#endif
+    }
 
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
@@ -95,28 +104,29 @@ int main(int argc, char **argv)
 	 *	7. handle CONFIG_USE_GUEST_BASE
 	 *	8. manage passing arg{c|v} to target, if required
 	 *	9. allocate/initialise any TaskState
-     */
+	 */
 
 #if !defined(CONFIG_USE_GUEST_BASE)
-    /* cpu-all.h requires us to define CONFIG_USE_GUEST_BASE if parts of
-     * the guest address space are reserved on the host.
-     */
+	/* cpu-all.h requires us to define CONFIG_USE_GUEST_BASE if parts of
+	 * the guest address space are reserved on the host.
+	 */
 #error "CONFIG_USE_GUEST_BASE not defined"
 #else
-    /* TODO:
-     * We have no MMU, and therefore no paging/memory protection.
-     * Nevertheless, we *may* want to to use the facilities of the host
-     * to ensure any ROM regions can be protected from writes. In
-     * the meantime we get to have self-modifying code anywhere.
-     */
-    target_ram= mmap(0, 64*1024,
+	/* TODO:
+	 * We have no MMU, and therefore no paging/memory protection.
+	 * Nevertheless, we *may* want to to use the facilities of the host
+	 * to ensure any ROM regions can be protected from writes. In
+	 * the meantime we get to have self-modifying code anywhere.
+	 */
+
+	target_ram= mmap(0, 64*1024,
                      PROT_READ | PROT_WRITE,
                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (target_ram == MAP_FAILED)
-    {
-        perror("MAP_FAILED");
-        exit(-1);
-    }
+        if (target_ram == MAP_FAILED)
+        {
+            perror("MAP_FAILED");
+            exit(-1);
+        }
 
     /* Giving guest_base a value causes ldub_code() to retrieve bytes
      * from addresses that won't segfault
@@ -130,11 +140,11 @@ int main(int argc, char **argv)
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "%s(): PARTIAL - missing initialisation 3/3...\n", __func__);
 #endif
-	/* PARTIAL: next...
-	 * 1. handle CONFIG_USE_GUEST_BASE
-	 * 2. manage passing arg{c|v} to target, if required
-	 * 3. initialise any TaskState
-	 */
+        /* PARTIAL: next...
+         *	1. handle CONFIG_USE_GUEST_BASE
+         *	2. manage passing arg{c|v} to target, if required
+         *	3. initialise any TaskState
+         */
 
 	ret= bblbrx_exec(filename);
 	if (ret != 0) {
