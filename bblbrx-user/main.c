@@ -13,6 +13,7 @@
 
 #include "config-target.h"
 #include "qemu.h"
+#include "cpu.h"
 
 #if 1	/* debug */
 	/* TODO: version with error_printf() needs CPU headers */
@@ -77,6 +78,7 @@ static int parse_args(int argc, char **argv)
 int main(int argc, char **argv)
 {
     char *filename;
+    CPUState *env;
     void  *target_ram;
     int optind;
     int ret;
@@ -113,10 +115,18 @@ int main(int argc, char **argv)
      * 3. TCG and exec subsystems are initialised:
      *    1. with call to tcg_exec_init(0);
      *    2. with call to cpu_exec_init_all();
-     * 4. CPU is initialised, and reset called
-     * 5. Local variable 'thread_cpu' is set
-     * 6. 'do_strace' is enabled, if environment variable set
-     * 7. There is final environment configuration
+     */
+
+    env = cpu_init(cpu_model);
+    if (!env) {
+        fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
+        exit(EXIT_FAILURE);
+    }
+
+    /* ...in v1.7.5, after cpu_init()
+     * 1. Local variable 'thread_cpu' is set
+     * 2. 'do_strace' is enabled, if environment variable set
+     * 3. There is final environment configuration
      */
 
 #if !defined(CONFIG_USE_GUEST_BASE)
