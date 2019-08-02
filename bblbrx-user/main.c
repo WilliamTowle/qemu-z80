@@ -72,6 +72,7 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    const char *cpu_model= NULL;
     char *filename;
     void  *target_ram;
     int optind;
@@ -94,6 +95,15 @@ int main(int argc, char **argv)
     if (optind >= argc)
         usage(EXIT_FAILURE);
     filename= argv[optind];
+
+    if (cpu_model == NULL)
+    {
+#if defined(TARGET_Z80)
+        cpu_model = "z80";	/* TODO: support specifying "r800"? */
+#else
+#error unsupported target CPU
+#endif
+    }
 
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
