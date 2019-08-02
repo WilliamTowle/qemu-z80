@@ -23,6 +23,7 @@
 #endif
 
 
+const char *cpu_model= NULL;
 #if defined(CONFIG_USE_GUEST_BASE)
 unsigned long guest_base;
 #endif
@@ -90,10 +91,20 @@ int main(int argc, char **argv)
      * 5. cpudef_setup() called [if defined - for x86 support]
      */
 
+    cpu_model= NULL;
     optind= parse_args(argc, argv);
     if (optind >= argc)
         usage(EXIT_FAILURE);
     filename= argv[optind];
+
+    if (cpu_model == NULL)
+    {
+#if defined(TARGET_Z80)
+        cpu_model = "z80";	/* TODO: support specifying "r800"? */
+#else
+#error unsupported target CPU
+#endif
+    }
 
     /* PARTIAL - following argument parse v1.7.5 has:
      * 1. CPU register, binary image info, paths are prepared
