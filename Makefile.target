@@ -113,7 +113,7 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 #QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR)
 
 obj-y = $(GENERATED_HEADERS)
-obj-y += main.o bblbrxload.o
+obj-y += main.o bblbrxload.o rawload.o
 
 endif #CONFIG_BBLBRX_USER
 
