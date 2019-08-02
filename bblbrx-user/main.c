@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 
 #include "qemu.h"
+#include "cpu.h"
 
 
 #if 1	/* debug */
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     char *filename;
+    CPUState *env;
   void  *target_ram;
     int optind;
     int ret;
@@ -118,6 +120,19 @@ int main(int argc, char **argv)
      * 8. Initialisation of 'target_environ'
      */
 
+    env = cpu_init(cpu_model);
+    if (!env) {
+        fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
+        exit(1);
+    }
+
+    /* ...and after cpu_init()
+     *  1. maybe a cpu_reset(env) call (TARGET_{I386|SPARC|PPC})
+     *  2. initialise 'thread_env' (externed via qemu.h)
+     *  3. set 'do_strace', if supported
+     *  4. initialise 'target_environ'
+     */
+
 #if !defined(CONFIG_USE_GUEST_BASE)
     /* cpu-all.h requires us to define CONFIG_USE_GUEST_BASE if parts of
      * the guest address space are reserved on the host.
@@ -142,6 +157,7 @@ int main(int argc, char **argv)
     /* Giving guest_base a value causes ldub_code() to retrieve bytes
      * from addresses that won't segfault
      */
+
     guest_base= (unsigned long)target_ram;
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): INFO - set guest_base=%p\n", __func__, (void *)guest_base);
