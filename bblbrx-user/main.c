@@ -18,6 +18,9 @@
     do { if (EMIT_DEBUG) error_printf("bblbrx-user main: " fmt , ## __VA_ARGS__); } while(0)
 
 
+unsigned long guest_base;
+
+
 static void usage(int exitcode)
 {
     /* NB: platforms may pass program arguments */
@@ -62,6 +65,7 @@ static int parse_args(int argc, char **argv)
 int main(int argc, char **argv)
 {
     char *filename;
+    void  *target_ram;
     int optind;
     int ret;
 
@@ -90,6 +94,28 @@ int main(int argc, char **argv)
      *  5. handle CONFIG_USE_GUEST_BASE/target_ram and TCG init
      *  6. manage passing arg{c|v} to target, if required
      *  7. allocate/initialise any TaskState
+     */
+
+    /* Since we have no MMU, the entirety of target RAM is
+     * effectively available to programs at all times without
+     * protection (ie. not just where we load any code).
+     * Setting guest_base ensures that disas_insn()'s byte fetch
+     * doesn't segfault
+     */
+    target_ram= mmap(0, 64*1024,
+                     PROT_READ | PROT_WRITE,
+                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (target_ram == MAP_FAILED)
+    {
+        perror("MAP_FAILED");
+        exit(-1);
+    }
+
+    guest_base= (unsigned long)target_ram;
+
+    /* PARTIAL: next...
+     * 1. manage passing arg{c|v} to target, if required
+     * 2. initialise any TaskState
      */
 
     ret= bblbrx_exec(filename);
