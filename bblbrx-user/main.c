@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include "config-target.h"
 #include "qemu.h"
@@ -19,6 +20,11 @@
 #else
 #define DPRINTF(fmt, ...) \
 	do { } while (0)
+#endif
+
+
+#if defined(CONFIG_USE_GUEST_BASE)
+unsigned long guest_base;
 #endif
 
 
@@ -69,6 +75,7 @@ static int parse_args(int argc, char **argv)
 int main(int argc, char **argv)
 {
     char *filename;
+    void  *target_ram;
     int optind;
     int ret;
 
@@ -98,8 +105,37 @@ int main(int argc, char **argv)
      * 5. Local variable 'thread_cpu' is set
      * 6. 'do_strace' is enabled, if environment variable set
      * 7. There is final environment configuration
-     * 9. Handling of CONFIG_USE_GUEST_BASE/target_ram setup
      */
+
+#if !defined(CONFIG_USE_GUEST_BASE)
+    /* cpu-all.h requires us to define CONFIG_USE_GUEST_BASE if parts of
+     * the guest address space are reserved on the host.
+     */
+#error "CONFIG_USE_GUEST_BASE not defined"
+#else
+    /* TODO:
+     * We have no MMU, and therefore no paging/memory protection.
+     * Nevertheless, we *may* want to to use the facilities of the host
+     * to ensure any ROM regions can be protected from writes. In
+     * the meantime we get to have self-modifying code anywhere.
+     */
+    target_ram= mmap(0, 64*1024,
+                     PROT_READ | PROT_WRITE,
+                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (target_ram == MAP_FAILED)
+    {
+        perror("MAP_FAILED");
+        exit(-1);
+    }
+
+    /* Giving guest_base a value causes ldub_code() to retrieve bytes
+     * from addresses that won't segfault
+     */
+    guest_base= (unsigned long)target_ram;
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): INFO - set guest_base=%p\n", __func__, (void *)guest_base);
+#endif
+#endif
 
     ret= bblbrx_exec(filename);
     if (ret != 0) {
