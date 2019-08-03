@@ -3129,6 +3129,7 @@ case "$target" in
   ${target_arch2}-bblbrx-user)
     target_user_only="yes"
     target_bblbrx_user="yes"
+    guest_base="yes"
     ;;
   ${target_arch2}-linux-user)
     if test "$linux" != "yes" ; then
