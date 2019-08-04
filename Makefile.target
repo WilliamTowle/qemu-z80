@@ -116,7 +116,7 @@ obj-y = $(GENERATED_HEADERS)
 obj-y += main.o bblbrxload.o rawload.o mmap.o
 
 # cpu emulator library
-libobj-y = exec.o translate-all.o cpu-exec.o
+libobj-y = exec.o translate-all.o cpu-exec.o translate.o
 libobj-y += tcg/tcg.o
 libobj-y += helper.o
 libobj-y += disas.o
