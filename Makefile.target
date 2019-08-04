@@ -159,7 +159,7 @@ $(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
 
 ## build subset (or none) of cpu emulator library
 libobj-y =
-libobj-y += exec.o cpu-exec.o
+libobj-y += exec.o translate-all.o cpu-exec.o
 libobj-y += tcg/tcg.o
 libobj-y += helper.o
 libobj-y += disas.o
