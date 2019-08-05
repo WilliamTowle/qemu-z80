@@ -219,6 +219,13 @@ int main(int argc, char **argv)
 #endif
     }
 
+#if 0	/* No tcg_exec_init() in v0.15.0+ */
+	/* cpu_exec_init_all() ensures we can perform tb_alloc() later */
+	cpu_exec_init_all(0);
+#else	/* v1.0 */
+	tcg_exec_init(0);
+	cpu_exec_init_all(); 	/* ensures we can perform tb_alloc() later */
+#endif
     /* PARTIAL - following argument parse v1.7.5 has:
      * 1. CPU register, binary image info, paths are prepared
      * 2. 'cpu_model' is defaulted based on target CPU
@@ -227,8 +234,8 @@ int main(int argc, char **argv)
      *    2. with call to cpu_exec_init_all();
      */
 
-    tcg_exec_init(0);
-    /* TODO: cpu_exec_init_all(); here */
+    /* initialising the CPU at this stage allows us to get
+       qemu_host_page_size */
 
     env = cpu_init(cpu_model);
     if (!env) {
@@ -245,7 +252,7 @@ int main(int argc, char **argv)
 ;cpu_dump_state(ENV_GET_CPU(env), stderr, fprintf, 0);
 #endif
 
-    /* Following cpu_reset():
+    /* PARTIAL: next...
      * - Local variable 'thread_cpu' is set
      * - 'do_strace' is enabled, if environment variable set
      * - There is final environment configuration
