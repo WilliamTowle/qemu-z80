@@ -158,22 +158,25 @@ int main(int argc, char **argv)
 #endif
     }
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
+#if 0	/* No tcg_exec_init() in v0.15.0+ */
+	/* cpu_exec_init_all() ensures we can perform tb_alloc() later */
+	cpu_exec_init_all(0);
+#else	/* v1.0 */
+	tcg_exec_init(0);
+	cpu_exec_init_all(); 	/* ensures we can perform tb_alloc() later */
 #endif
     /* PARTIAL - in v1.0.1 here:
      * 1. CPU register/image info/paths are prepared
      * 2. cpu_model default value is set based on platform
-     * 3. TCG and exec subsystems are initialised with:
-     *    1. call to tcg_exec_init(0);
-     *    2. call to cpu_exec_init_all();
-     * 4. Call to cpu_init();
-     * 5. Optional call to cpu_reset(env) for I386/SPARC/PPC targets
-     * 6. Initialise 'thread_env' (externed via qemu.h)
-     * 7. Set 'do_strace', if supported
-     * 8. Initialisation of 'target_environ'
+     * 3. Call to cpu_init();
+     * 4. Optional call to cpu_reset(env) for I386/SPARC/PPC targets
+     * 5. Initialise 'thread_env' (externed via qemu.h)
+     * 6. Set 'do_strace', if supported
+     * 7. Initialisation of 'target_environ'
      */
 
+    /* initialising the CPU at this stage allows us to get
+       qemu_host_page_size */
     env = cpu_init(cpu_model);
     if (!env) {
         fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
@@ -190,6 +193,15 @@ int main(int argc, char **argv)
 #endif
 
     /* Following cpu_reset():
+     *	1. initialise 'thread_env' (externed via qemu.h)
+     *	2. set 'do_strace', if supported
+     *	3. initialise 'target_environ'
+     */
+
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
+#endif
+    /* PARTIAL: next...
      *  1. initialise 'thread_env' (externed via qemu.h)
      *  2. set 'do_strace', if supported
      *  3. initialise 'target_environ'
