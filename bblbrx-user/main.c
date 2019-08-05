@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 	cpu_exec_init_all(0);
 #else	/* v1.0+ */
 	tcg_exec_init(0);
-	/* TODO: need cpu_exec_init_all(); */ 	/* ensures we can perform tb_alloc() later */
+	cpu_exec_init_all(); 	/* ensures we can perform tb_alloc() later */
 #endif
     /* PARTIAL - in v1.0.1 here:
      * 1. CPU register/image info/paths are prepared
