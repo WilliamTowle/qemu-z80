@@ -142,20 +142,21 @@ int main(int argc, char **argv)
 #endif
     }
 
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
+#if 1	/* No tcg_exec_init() in v0.15.0+ */
+	/* cpu_exec_init_all() ensures we can perform tb_alloc() later */
+	cpu_exec_init_all(0);
+#else	/* v1.0 */
+	tcg_exec_init(0);
+	cpu_exec_init_all();
 #endif
-	/* PARTIAL:
-	 * prior to CPU init, we do:
-	 *	1. tcg_exec_init(0);
-	 *	2. call to cpu_exec_init_all(0);
-	 */
 
-	env = cpu_init(cpu_model);
-	if (!env) {
-		fprintf(stderr, "Unable to find CPU definition\n");
-		exit(1);
-	}
+    /* initialising the CPU at this stage allows us to get
+       qemu_host_page_size */
+    env = cpu_init(cpu_model);
+    if (!env) {
+		fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
+        exit(1);
+    }
 
 	/* cpu_reset() can contain a tlb_flush() for some platforms. Based
 	 * on linux-user/main.c, side effects apply on I386/SPARC/PPC
@@ -167,6 +168,15 @@ int main(int argc, char **argv)
 #endif
 
 	/* Following cpu_reset():
+	 *	1. initialise 'thread_env' (externed via qemu.h)
+	 *	2. set 'do_strace', if supported
+	 *	3. initialise 'target_environ'
+	 */
+
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
+#endif
+    /* PARTIAL: next...
 	 *	1. initialise 'thread_env' (externed via qemu.h)
 	 *	2. set 'do_strace', if supported
 	 *	3. initialise 'target_environ'
