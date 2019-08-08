@@ -54,6 +54,9 @@
 #define MODE_FD     2
 #endif
 
+#define EMIT_INSNS 1
+#define zprintf(fmt, ...) \
+    do { if (EMIT_INSNS) printf(fmt , ## __VA_ARGS__); } while(0)
 
 /* global register indexes and instruction counting routines */
 static TCGv_ptr cpu_env;
