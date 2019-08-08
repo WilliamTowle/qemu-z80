@@ -48,6 +48,12 @@
 #define MODE_FD     2
 #endif
 
+#if 0	/* debug instruction decode? */
+#define zprintf printf
+#else
+#define zprintf(...)
+#endif
+
 typedef struct DisasContext {
     /* current insn context */
 //    int override; /* -1 if no override */
@@ -102,7 +108,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
 #endif
-    printf("PC = %04x: ", s->pc);
+    zprintf("PC = %04x: ", s->pc);
 //next_byte:
     s->prefix = prefixes;
 
