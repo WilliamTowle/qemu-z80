@@ -36,6 +36,9 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
+//#define zprintf(...)
+#define zprintf printf
+
 typedef struct DisasContext {
     /* current insn context */
 //    int override; /* -1 if no override */
