@@ -46,6 +46,8 @@
 static TCGv cpu_env, cpu_T[3], cpu_A0;
 #include "gen-icount.h"
 
+#define MEM_INDEX 0
+
 
 typedef struct DisasContext {
     /* current insn context */
@@ -64,6 +66,32 @@ typedef struct DisasContext {
 } DisasContext;
 
 static void gen_eob(DisasContext *s);
+
+#if defined(WORDS_BIGENDIAN)
+#define UNIT_OFFSET(type, units, num) (sizeof(type) - ((num + 1) * units))
+#else
+#define UNIT_OFFSET(type, units, num) (num * units)
+#endif
+
+#define BYTE_OFFSET(type, num) UNIT_OFFSET(type, 1, num)
+#define WORD_OFFSET(type, num) UNIT_OFFSET(type, 2, num)
+
+
+#define REGPAIR SP
+#include "genreg_template.h"
+#undef REGPAIR
+
+
+static inline void gen_popw(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_SP(addr);
+    tcg_gen_qemu_ld16u(v, addr, MEM_INDEX);
+    tcg_gen_addi_i32(addr, addr, 2);
+    tcg_gen_ext16u_i32(addr, addr);
+    gen_movw_SP_v(addr);
+    tcg_temp_free(addr);
+}
 
 static inline void gen_jmp_im(target_ulong pc)
 {
@@ -490,21 +518,19 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 
 /* [WmT] 'ret' has p=0 */
                     case 0:
-#if 0	/* WmT - HACK */
-;DPRINTF("[%s:%d] PARTIAL - missing 'ret' opcode handling in %s() -> bail\n", __FILE__, __LINE__, __func__);
-;goto illegal_op;
-//;DPRINTF("%s(): INFO - process 'ret' opcode\n", __func__);
-#else
-;DPRINTF("[%s:%d] HACK - 'ret' causes forced EXCP_KERNEL_TRAP (n=%d) exception (insn at s->pc 0x%04x follows)\n", __FILE__, __LINE__, EXCP_KERNEL_TRAP, s->pc);
-;gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
-;return s->pc;
+#if 1	/* WmT - TRACE */
+;DPRINTF("[%s:%d] INFO - process 'ret' opcode...\n", __FILE__, __LINE__);
 #endif
-//                        gen_popw(cpu_T[0]);
-//                        gen_helper_jmp_T0();
-//                        zprintf("ret\n");
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-////                      s->is_ei = 1;
+                        gen_popw(cpu_T[0]);
+                        gen_helper_jmp_T0();
+                        zprintf("ret\n");
+                        gen_eob(s);
+                        s->is_jmp = 3;
+//                      s->is_ei = 1;
+#if 1
+;DPRINTF("[%s:%d] PARTIAL: bailing - need 'magic ramtop' handler elsewhere...\n", __FILE__, __LINE__);
+;exit(1);
+#endif
                         break;
 
 //                    case 1:
@@ -527,8 +553,18 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                        gen_movw_SP_v(cpu_T[0]);
 //                        zprintf("ld sp,%s\n", regpairnames[r1]);
 //                        break;
+#if 1	/* WmT - HACK */
+                      default:
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled p case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
                     }
                     break;
+#if 1	/* WmT - HACK */
+                default:
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled q case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
                 }
                 break;
 //
@@ -670,14 +706,19 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                gen_eob(s);
 //                s->is_jmp = 3;
 //                break;
-            }
-            break;
-        }
-
 #if 1	/* WmT - HACK */
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+            default:
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #endif
+            }
+            break;
+#if 1	/* WmT - HACK */
+          default:
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled x case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
+        }
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
 
@@ -1054,14 +1095,16 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 ////        goto illegal_op;
 ////    }
 //    /* lock generation */
-//#if 1        /* WmT - TRACE */
-//;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
-//#endif
-//    return s->pc;
-
+#if 1  /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
+goto illegal_op;
+#else
+;DPRINTF("EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
+    return s->pc;
+#endif
  illegal_op:
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
+;DPRINTF("EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
 #endif
     /* XXX: ensure that no lock was generated */
     //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
