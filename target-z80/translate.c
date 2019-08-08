@@ -54,6 +54,11 @@
 #define MODE_FD     2
 #endif
 
+#if 0	/* debug instruction decode? */
+#define zprintf printf
+#else
+#define zprintf(...)
+#endif
 
 /* global register indexes and instruction counting routines */
 static TCGv_ptr cpu_env;
