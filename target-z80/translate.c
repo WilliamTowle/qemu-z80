@@ -53,6 +53,12 @@ static TCGv_ptr cpu_env;
 #define MODE_FD     2
 #endif
 
+#if 0	/* debug instruction decode? */
+#define zprintf printf
+#else
+#define zprintf(...)
+#endif
+
 typedef struct DisasContext {
     /* current insn context */
 //    int override; /* -1 if no override */
