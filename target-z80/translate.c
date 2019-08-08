@@ -37,7 +37,6 @@
 #endif
 
 
-#if 0
 #define PREFIX_CB  0x01
 #define PREFIX_DD  0x02
 #define PREFIX_ED  0x04
@@ -46,7 +45,6 @@
 #define MODE_NORMAL 0
 #define MODE_DD     1
 #define MODE_FD     2
-#endif
 
 #if 0	/* debug instruction decode? */
 #define zprintf printf
@@ -112,7 +110,6 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
    be stopped. Return the next pc value */
 static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 {
-#if 0
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
@@ -166,7 +163,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 ;DPRINTF("[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
 //...
 #endif
-//        switch (x) {
+        switch (x) {
 //        case 0:	/* instr pattern 00yyyzzz */
 //            switch (z) {
 //
@@ -479,32 +476,43 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                zprintf("%s%s\n", alu[y], regnames[r1]);
 //            }
 //            break;
-//
-//        case 3:	/* instr pattern 11yyyzzz */
-//            switch (z) {
+
+/* [WmT] 'ret' has x=3 */
+        case 3:	/* instr pattern 11yyyzzz */
+            switch (z) {
 //            case 0:
 //                gen_retcc(s, y, s->pc);
 //                zprintf("ret %s\n", cc[y]);
 //                break;
-//            case 1:
-//                switch (q) {
-//                case 0:
+
+/* [WmT] 'ret' has z=1 */
+            case 1:
+                switch (q) {
+                case 0:
 //                    r1 = regpairmap(regpair2[p], m);
 //                    gen_popw(cpu_T[0]);
 //                    gen_movw_reg_v(r1, cpu_T[0]);
 //                    zprintf("pop %s\n", regpairnames[r1]);
 //                    break;
-//                case 1:
-//                    switch (p) {
-//                    case 0:
+
+/* [WmT] 'ret' has q=1 */
+                case 1:
+                    switch (p) {
+
+/* [WmT] 'ret' has p=0 */
+                    case 0:
+#if 1	/* WmT - HACK */
+;DPRINTF("[%s:%d] PARTIAL - missing 'ret' opcode handling in %s() -> bail\n", __FILE__, __LINE__, __func__);
+;goto illegal_op;
+#endif
 //                        gen_popw(cpu_T[0]);
 //                        gen_helper_jmp_T0();
 //                        zprintf("ret\n");
 //                        gen_eob(s);
 //                        s->is_jmp = 3;
 ////                      s->is_ei = 1;
-//                        break;
-//
+                        break;
+
 //                    case 1:
 //                        gen_ex(OR2_BC, OR2_BCX);
 //                        gen_ex(OR2_DE, OR2_DEX);
@@ -525,10 +533,10 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                        gen_movw_SP_v(cpu_T[0]);
 //                        zprintf("ld sp,%s\n", regpairnames[r1]);
 //                        break;
-//                    }
-//                    break;
-//                }
-//                break;
+                    }
+                    break;
+                }
+                break;
 //
 //            case 2:
 //                n = lduw_code(s->pc);
@@ -668,9 +676,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                gen_eob(s);
 //                s->is_jmp = 3;
 //                break;
-//            }
-//            break;
-//        }
+            }
+            break;
+        }
+
+#if 1	/* WmT - HACK */
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
 
@@ -1051,9 +1064,8 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //;DPRINTF("EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
 //#endif
 //    return s->pc;
-#endif
 
- //illegal_op:
+ illegal_op:
 #if 1	/* WmT - TRACE */
 ;DPRINTF("EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
 #endif
