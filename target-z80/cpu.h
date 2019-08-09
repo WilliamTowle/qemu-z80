@@ -35,6 +35,50 @@
 
 #define CPU_NB_REGS 15
 
+/* hidden flags - used internally by qemu to represent additionnal cpu
+   states. Only the CPL and INHIBIT_IRQ are not redundant. We avoid
+   using the IOPL_MASK, TF_MASK and VM_MASK bit position to ease oring
+   with eflags. */
+/* current cpl */
+#define HF_CPL_SHIFT         0
+/* true if soft mmu is being used */
+#define HF_SOFTMMU_SHIFT     2
+/* true if hardware interrupts must be disabled for next instruction */
+#define HF_INHIBIT_IRQ_SHIFT 3
+/* 16 or 32 segments */
+#define HF_CS32_SHIFT        4
+#define HF_SS32_SHIFT        5
+/* zero base for DS, ES and SS : can be '0' only in 32 bit CS segment */
+#define HF_ADDSEG_SHIFT      6
+/* copy of CR0.PE (protected mode) */
+#define HF_PE_SHIFT          7
+#define HF_TF_SHIFT          8 /* must be same as eflags */
+#define HF_MP_SHIFT          9 /* the order must be MP, EM, TS */
+#define HF_EM_SHIFT         10
+#define HF_TS_SHIFT         11
+#define HF_IOPL_SHIFT       12 /* must be same as eflags */
+#define HF_LMA_SHIFT        14 /* only used on x86_64: long mode active */
+#define HF_CS64_SHIFT       15 /* only used on x86_64: 64 bit code segment  */
+#define HF_OSFXSR_SHIFT     16 /* CR4.OSFXSR */
+#define HF_VM_SHIFT         17 /* must be same as eflags */
+#define HF_SMM_SHIFT        19 /* CPU in SMM mode */
+
+#define HF_CPL_MASK          (3 << HF_CPL_SHIFT)
+#define HF_SOFTMMU_MASK      (1 << HF_SOFTMMU_SHIFT)
+#define HF_INHIBIT_IRQ_MASK  (1 << HF_INHIBIT_IRQ_SHIFT)
+#define HF_CS32_MASK         (1 << HF_CS32_SHIFT)
+#define HF_SS32_MASK         (1 << HF_SS32_SHIFT)
+#define HF_ADDSEG_MASK       (1 << HF_ADDSEG_SHIFT)
+#define HF_PE_MASK           (1 << HF_PE_SHIFT)
+#define HF_TF_MASK           (1 << HF_TF_SHIFT)
+#define HF_MP_MASK           (1 << HF_MP_SHIFT)
+#define HF_EM_MASK           (1 << HF_EM_SHIFT)
+#define HF_TS_MASK           (1 << HF_TS_SHIFT)
+#define HF_LMA_MASK          (1 << HF_LMA_SHIFT)
+#define HF_CS64_MASK         (1 << HF_CS64_SHIFT)
+#define HF_OSFXSR_MASK       (1 << HF_OSFXSR_SHIFT)
+#define HF_SMM_MASK          (1 << HF_SMM_SHIFT)
+
 //#define EXCP00_DIVZ	0
 //#define EXCP01_SSTP	1
 //#define EXCP02_NMI	2
