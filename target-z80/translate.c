@@ -54,6 +54,12 @@
 #define zprintf(...)
 #endif
 
+/* global register indexes */
+static TCGv cpu_env;
+
+#include "gen-icount.h"
+
+
 typedef struct DisasContext {
     /* current insn context */
 //    int override; /* -1 if no override */
@@ -1081,8 +1087,8 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 //    int flags, j, lj, cflags;
     target_ulong pc_start;
     target_ulong cs_base;
-//    int num_insns;
-//    int max_insns;
+    int num_insns;
+    int max_insns;
 #if 1	/* WmT - TRACE */
 ;DPRINTF("*** ENTER %s() ****\n", __func__);
 #endif
@@ -1118,15 +1124,18 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 #endif
 //    lj = -1;
 //    dc->model = env->model;
-//
-//    num_insns = 0;
-//    max_insns = tb->cflags & CF_COUNT_MASK;
-//    if (max_insns == 0) {
-//        max_insns = CF_COUNT_MASK;
-//    }
-//
-//    gen_icount_start();
-//    for (;;) {
+
+    num_insns = 0;
+    max_insns = tb->cflags & CF_COUNT_MASK;
+    if (max_insns == 0) {
+        max_insns = CF_COUNT_MASK;
+    }
+#if 1	/* WmT - TRACE */
+;DPRINTF("[%s:%d] decided on max_insns %d\n", __FILE__, __LINE__, max_insns);
+#endif
+
+    gen_icount_start();
+    for (;;) {
 //        if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
 //            QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
 //                if (bp->pc == pc_ptr) {
@@ -1135,6 +1144,9 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 //                }
 //            }
 //        }
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): PARTIAL - should check search_pc %d\n", __func__, search_pc);
+#endif
 //        if (search_pc) {
 //            j = gen_opc_ptr - gen_opc_buf;
 //            if (lj < j) {
@@ -1147,21 +1159,27 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 //            gen_opc_instr_start[lj] = 1;
 //            gen_opc_icount[lj] = num_insns;
 //        }
-//        if (num_insns + 1 == max_insns && (tb->cflags & CF_LAST_IO)) {
-//            gen_io_start();
-//        }
+        if (num_insns + 1 == max_insns && (tb->cflags & CF_LAST_IO)) {
+            gen_io_start();
+        }
 
         pc_ptr = disas_insn(dc, pc_ptr);
-//        num_insns++;
-//        /* stop translation if indicated */
-//        if (dc->is_jmp) {
-//            break;
-//        }
+        num_insns++;
+        /* stop translation if indicated */
+        if (dc->is_jmp) {
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): is_jmp %d -> stop translation\n", __func__, dc->is_jmp);
+#endif
+            break;
+        }
 //        /* if single step mode, we generate only one instruction and
 //           generate an exception */
 //        /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
 //           the flag and abort the translation to give the irqs a
 //           change to be happen */
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): singlestep would also stop translation...\n", __func__);
+#endif
 //        if (dc->singlestep_enabled ||
 //            (flags & HF_INHIBIT_IRQ_MASK)) {
 //            gen_jmp_im(pc_ptr - dc->cs_base);
@@ -1181,11 +1199,14 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 //            gen_eob(dc);
 //            break;
 //        }
-//    }
-//    if (tb->cflags & CF_LAST_IO) {
-//        gen_io_end();
-//    }
-//    gen_icount_end(tb, num_insns);
+    }
+    if (tb->cflags & CF_LAST_IO) {
+        gen_io_end();
+    }
+    gen_icount_end(tb, num_insns);
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): INCOMPLETE - more 'last values' tests here...\n", __func__);
+#endif
 //    *gen_opc_ptr = INDEX_op_end;
 //    /* we don't forget to fill the last values */
 //    if (search_pc) {
