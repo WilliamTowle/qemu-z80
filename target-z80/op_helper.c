@@ -123,6 +123,15 @@ void raise_exception(CPUZ80State *env, int exception_index)
     raise_interrupt2(env, exception_index, 0, 0, 0);
 }
 
+void HELPER(debug)(void)
+{
+    env->exception_index = EXCP_DEBUG;
+#if 0	/* obsolete */
+    cpu_loop_exit();
+#else	/* v0.15.0+ */
+    cpu_loop_exit(env);
+#endif
+}
 
 //void HELPER(set_inhibit_irq)(void)
 //{
