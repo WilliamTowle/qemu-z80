@@ -69,7 +69,7 @@ typedef struct DisasContext {
     int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
                    static state change (stop translation) */
 //    int model;
-//    /* current block context */
+    /* current block context */
     target_ulong cs_base; /* base of CS segment */
     int singlestep_enabled; /* "hardware" single step enabled */
     int jmp_opt; /* use direct block chaining for direct jumps */
@@ -1096,18 +1096,18 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //        }
     }
 
-//    prefixes = 0;
-//
+    prefixes = 0;
+
 //    /* now check op code */
-//#if 1	/* WmT - INFO */
-//;DPRINTF("** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
-//#endif
-////    switch (b) {
-////    default:
-////        goto illegal_op;
-////    }
-//    /* lock generation */
-#if 1  /* WmT - TRACE */
+#if 1	/* WmT - INFO */
+;DPRINTF("** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
+#endif
+//    switch (b) {
+//    default:
+//        goto illegal_op;
+//    }
+    /* lock generation */
+#if 0  /* WmT - TRACE */
 ;DPRINTF("[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
 goto illegal_op;
 #else
@@ -1133,7 +1133,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
     uint16_t *gen_opc_end;
-//    CPUBreakpoint *bp;
+    CPUBreakpoint *bp;
     int flags, j, lj /* , cflags - set but unused */ ;
     target_ulong pc_start;
     target_ulong cs_base;
@@ -1164,9 +1164,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
                     );
 
     gen_opc_ptr = gen_opc_buf;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set gen_opc_ptr: to gen_opc_buf value %p\n", __func__, gen_opc_ptr);
-#endif
     gen_opc_end = gen_opc_buf + OPC_MAX_SIZE;
     gen_opparam_ptr = gen_opparam_buf;
 
@@ -1227,9 +1224,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
         }
 #endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
 
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
-#else
         if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
             QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
                 if (bp->pc == pc_ptr) {
@@ -1238,7 +1232,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
                 }
             }
         }
-#endif
         if (search_pc) {
             j = gen_opc_ptr - gen_opc_buf;
             if (lj < j) {
@@ -1276,15 +1269,14 @@ static inline int gen_intermediate_code_internal(CPUState *env,
            the flag and abort the translation to give the irqs a
            change to be happen */
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "[%s:%d] PARTIAL - unimplemented 'singlestep'...\n", __FILE__, __LINE__);
-#else
+;fprintf(stderr, "%s(): singlestep would also stop translation...\n", __func__);
+#endif
         if (dc->singlestep_enabled ||
             (flags & HF_INHIBIT_IRQ_MASK)) {
             gen_jmp_im(pc_ptr - dc->cs_base);
             gen_eob(dc);
             break;
         }
-#endif
         /* if too long translation, stop generation too */
         if (gen_opc_ptr >= gen_opc_end ||
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
