@@ -62,18 +62,19 @@ static TCGv_ptr cpu_env;
 
 typedef struct DisasContext {
     /* current insn context */
-//    int override; /* -1 if no override */
+    int override; /* -1 if no override */
     int prefix;
     uint16_t pc; /* pc = pc + cs_base */
     int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
                    static state change (stop translation) */
 //    int model;
-//    /* current block context */
+
+    /* current block context */
 //    target_ulong cs_base; /* base of CS segment */
-//    int singlestep_enabled; /* "hardware" single step enabled */
-//    int jmp_opt; /* use direct block chaining for direct jumps */
-//    int flags; /* all execution flags */
-//    struct TranslationBlock *tb;
+    int singlestep_enabled; /* "hardware" single step enabled */
+    int jmp_opt; /* use direct block chaining for direct jumps */
+    int flags; /* all execution flags */
+    struct TranslationBlock *tb;
 } DisasContext;
 
 static inline void gen_jmp_im(target_ulong pc)
@@ -154,7 +155,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 
     s->pc = pc_start;
     prefixes = 0;
-//    s->override = -1;
+    s->override = -1;
     //rex_w = -1;
     //rex_r = 0;
 
@@ -1102,17 +1103,13 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
                                                  TranslationBlock *tb,
                                                  int search_pc)
 {
-#if 0	/* WmT - PARTIAL */
-;DPRINTF("BAIL %s() - INCOMPLETE\n", __func__);
-;exit(1);
-#else
     //CPUState *cs = CPU(cpu);
     CPUZ80State *env = &cpu->env;
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
-//    uint16_t *gen_opc_end;
+    uint16_t *gen_opc_end;
 //    CPUBreakpoint *bp;
-//    int flags, j, lj, cflags;
+    int flags, j, lj /* , cflags - set but unused */ ;
     target_ulong pc_start;
 //    target_ulong cs_base;
     int num_insns;
@@ -1121,36 +1118,42 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 ;DPRINTF("*** ENTER %s() ****\n", __func__);
 #endif
 
-//    /* generate intermediate code */
+    /* generate intermediate code */
     pc_start = tb->pc;
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
 #endif
 //    cs_base = tb->cs_base;
-//    flags = tb->flags;
-//    cflags = tb->cflags;
+    flags = tb->flags;
+    //cflags = tb->cflags;
 
-//    dc->singlestep_enabled = env->singlestep_enabled;
+    dc->singlestep_enabled = env->singlestep_enabled;
 //    dc->cs_base = cs_base;
-//    dc->tb = tb;
-//    dc->flags = flags;
-//    dc->jmp_opt = !(env->singlestep_enabled ||
-//                    (flags & HF_INHIBIT_IRQ_MASK)
-//#ifndef CONFIG_SOFTMMU
-//                    || (flags & HF_SOFTMMU_MASK)
-//#endif
-//                    );
-//
-//    gen_opc_ptr = gen_opc_buf;
-//    gen_opc_end = gen_opc_buf + OPC_MAX_SIZE;
-//    gen_opparam_ptr = gen_opparam_buf;
+    dc->tb = tb;
+    dc->flags = flags;
+    dc->jmp_opt = !(env->singlestep_enabled ||
+                    (flags & HF_INHIBIT_IRQ_MASK)
+#ifndef CONFIG_SOFTMMU
+                    || (flags & HF_SOFTMMU_MASK)
+#endif
+                    );
+
+    gen_opc_ptr = gen_opc_buf;
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): set gen_opc_ptr: to gen_opc_buf value %p\n", __func__, gen_opc_ptr);
+#endif
+    gen_opc_end = gen_opc_buf + OPC_MAX_SIZE;
+    gen_opparam_ptr = gen_opparam_buf;
 
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
 #endif
-//    lj = -1;
+    lj = -1;
+#if 1	/* WmT - TRACE */
+;DPRINTF("%s(): PARTIAL - not considering model (missing in env?)\n", __func__);
+#endif
 //    dc->model = env->model;
 
     num_insns = 0;
@@ -1164,29 +1167,30 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 
     gen_tb_start();
     for (;;) {
-//        if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
-//            QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
-//                if (bp->pc == pc_ptr) {
-//                    gen_debug(dc, pc_ptr - dc->cs_base);
-//                    break;
-//                }
-//            }
-//        }
 #if 1	/* WmT - TRACE */
-;DPRINTF("%s(): PARTIAL - should check search_pc %d\n", __func__, search_pc);
+;DPRINTF("[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
+#else
+        if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
+            QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
+                if (bp->pc == pc_ptr) {
+                    gen_debug(dc, pc_ptr - dc->cs_base);
+                    break;
+                }
+            }
+        }
 #endif
-//        if (search_pc) {
-//            j = gen_opc_ptr - gen_opc_buf;
-//            if (lj < j) {
-//                lj++;
-//                while (lj < j) {
-//                    gen_opc_instr_start[lj++] = 0;
-//                }
-//            }
-//            gen_opc_pc[lj] = pc_ptr;
-//            gen_opc_instr_start[lj] = 1;
-//            gen_opc_icount[lj] = num_insns;
-//        }
+        if (search_pc) {
+            j = gen_opc_ptr - gen_opc_buf;
+            if (lj < j) {
+                lj++;
+                while (lj < j) {
+                    gen_opc_instr_start[lj++] = 0;
+                }
+            }
+            gen_opc_pc[lj] = pc_ptr;
+            gen_opc_instr_start[lj] = 1;
+            gen_opc_icount[lj] = num_insns;
+        }
         if (num_insns + 1 == max_insns && (tb->cflags & CF_LAST_IO)) {
             gen_io_start();
         }
@@ -1200,52 +1204,51 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 #endif
             break;
         }
-//        /* if single step mode, we generate only one instruction and
-//           generate an exception */
-//        /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
-//           the flag and abort the translation to give the irqs a
-//           change to be happen */
+        /* if single step mode, we generate only one instruction and
+           generate an exception */
+        /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
+           the flag and abort the translation to give the irqs a
+           change to be happen */
 #if 1	/* WmT - TRACE */
-;DPRINTF("%s(): singlestep would also stop translation...\n", __func__);
+;DPRINTF("[%s:%d] PARTIAL - unimplemented 'singlestep'...\n", __FILE__, __LINE__);
+#else
+        if (dc->singlestep_enabled ||
+            (flags & HF_INHIBIT_IRQ_MASK)) {
+            gen_jmp_im(pc_ptr - dc->cs_base);
+            gen_eob(dc);
+            break;
+        }
 #endif
-//        if (dc->singlestep_enabled ||
-//            (flags & HF_INHIBIT_IRQ_MASK)) {
-//            gen_jmp_im(pc_ptr - dc->cs_base);
-//            gen_eob(dc);
-//            break;
-//        }
-//        /* if too long translation, stop generation too */
-//        if (gen_opc_ptr >= gen_opc_end ||
-//            (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
-//            num_insns >= max_insns) {
-//            gen_jmp_im(pc_ptr - dc->cs_base);
-//            gen_eob(dc);
-//            break;
-//        }
-//        if (singlestep) {
-//            gen_jmp_im(pc_ptr - dc->cs_base);
-//            gen_eob(dc);
-//            break;
-//        }
+        /* if too long translation, stop generation too */
+        if (gen_opc_ptr >= gen_opc_end ||
+            (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
+            num_insns >= max_insns) {
+            gen_jmp_im(pc_ptr - dc->cs_base);
+            gen_eob(dc);
+            break;
+        }
+        if (singlestep) {
+            gen_jmp_im(pc_ptr - dc->cs_base);
+            gen_eob(dc);
+            break;
+        }
     }
     if (tb->cflags & CF_LAST_IO) {
         gen_io_end();
     }
     gen_tb_end(tb, num_insns);
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): INCOMPLETE - more 'last values' tests here...\n", __func__);
-#endif
-//    *gen_opc_ptr = INDEX_op_end;
-//    /* we don't forget to fill the last values */
-//    if (search_pc) {
-//        j = gen_opc_ptr - gen_opc_buf;
-//        lj++;
-//        while (lj <= j) {
-//            gen_opc_instr_start[lj++] = 0;
-//        }
-//    }
-//
-//#ifdef DEBUG_DISAS
+    *gen_opc_ptr = INDEX_op_end;
+    /* we don't forget to fill the last values */
+    if (search_pc) {
+        j = gen_opc_ptr - gen_opc_buf;
+        lj++;
+        while (lj <= j) {
+            gen_opc_instr_start[lj++] = 0;
+        }
+    }
+
+#ifdef DEBUG_DISAS
+;DPRINTF("** %s(): PARTIAL - handle DEBUG_DISAS via log_target_disas() **\n", __func__);
 //    log_cpu_state_mask(CPU_LOG_TB_CPU, env, 0);
 //    if (qemu_loglevel_mask(CPU_LOG_TB_IN_ASM)) {
 //        qemu_log("----------------\n");
@@ -1253,21 +1256,16 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 //        log_target_disas(pc_start, pc_ptr - pc_start, 0);
 //        qemu_log("\n");
 //    }
-//#endif
-//
-//    if (!search_pc) {
-//        tb->size = pc_ptr - pc_start;
-//        tb->icount = num_insns;
-//    }
-//    return 0;
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "** BAILING - %s() PARTIAL IMPLEMENTATION ONLY **\n", __func__);
-;exit(1);
 #endif
-#endif
+
+    if (!search_pc) {
+        tb->size = pc_ptr - pc_start;
+        tb->icount = num_insns;
+    }
 #if 1	/* WmT - TRACE */
 ;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
 #endif
+    return 0;
 }
 
 void gen_intermediate_code(CPUZ80State *env, TranslationBlock *tb)
