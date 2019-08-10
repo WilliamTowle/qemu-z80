@@ -1098,18 +1098,18 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //        }
     }
 
-//    prefixes = 0;
-//
+    prefixes = 0;
+
 //    /* now check op code */
-//#if 1	/* WmT - INFO */
-//;fprintf(stderr, "** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
-//#endif
-////    switch (b) {
-////    default:
-////        goto illegal_op;
-////    }
-//    /* lock generation */
-#if 1  /* WmT - TRACE */
+#if 1	/* WmT - INFO */
+;DPRINTF("** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
+#endif
+//    switch (b) {
+//    default:
+//        goto illegal_op;
+//    }
+    /* lock generation */
+#if 0  /* WmT - TRACE */
 ;DPRINTF("[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
 goto illegal_op;
 #else
@@ -1138,7 +1138,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
     uint16_t *gen_opc_end;
-//    CPUBreakpoint *bp;
+    CPUBreakpoint *bp;
     int flags, j, lj /* , cflags - set but unused */ ;
     target_ulong pc_start;
     target_ulong cs_base;
@@ -1168,9 +1168,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 #endif
                     );
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set gen_opc_ptr: to gen_opc_buf value %p\n", __func__, tcg_ctx.gen_opc_ptr);
-#endif
     gen_opc_end = tcg_ctx.gen_opc_buf + OPC_MAX_SIZE;
 
     dc->is_jmp = DISAS_NEXT;
@@ -1230,9 +1227,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         }
 #endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
-#else
         if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
             QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
                 if (bp->pc == pc_ptr) {
@@ -1241,7 +1235,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
                 }
             }
         }
-#endif
         if (search_pc) {
             j = tcg_ctx.gen_opc_ptr - tcg_ctx.gen_opc_buf;
             if (lj < j) {
@@ -1280,7 +1273,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
             gen_eob(dc);
             break;
         }
-
         /* if too long translation, stop generation too */
         if (tcg_ctx.gen_opc_ptr >= gen_opc_end ||
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
