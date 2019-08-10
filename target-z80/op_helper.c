@@ -73,6 +73,16 @@ void HELPER(raise_exception)(uint32_t exception_index)
     raise_exception(exception_index);
 }
 
+void HELPER(debug)(void)
+{
+    env->exception_index = EXCP_DEBUG;
+#if 0	/* obsolete */
+    cpu_loop_exit();
+#else	/* v0.15.0+ */
+    cpu_loop_exit(env);
+#endif
+}
+
 //void HELPER(set_inhibit_irq)(void)
 //{
 //    env->hflags |= HF_INHIBIT_IRQ_MASK;
