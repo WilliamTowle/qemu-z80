@@ -25,6 +25,10 @@
 #include "cpu.h"
 #include "tcg-op.h"
 
+#include "helper.h"
+#define GEN_HELPER 1
+#include "helper.h"
+
 
 #if 1	/* debug */
 	/* TODO: version with error_printf() needs CPU headers */
@@ -35,6 +39,8 @@
 	do { } while (0)
 #endif
 
+/* global register indexes */
+static TCGv_ptr cpu_env;
 
 #if 0
 #define PREFIX_CB  0x01
@@ -62,6 +68,11 @@ typedef struct DisasContext {
 //    int flags; /* all execution flags */
 //    struct TranslationBlock *tb;
 } DisasContext;
+
+static inline void gen_jmp_im(target_ulong pc)
+{
+    gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
+}
 
 
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
