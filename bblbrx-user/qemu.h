@@ -3,8 +3,7 @@
 #ifndef QEMU_H
 #define QEMU_H
 
-/* normally via cpu.h: */
-#include "config.h"
+#include "cpu.h"
 
 #include "qemu-types.h"
 
