@@ -3,7 +3,7 @@
 #ifndef QEMU_H
 #define QEMU_H
 
-#include "config.h"    /* for arch config - normally via cpu.h */
+#include "cpu.h"
 
 #include "qemu-types.h"
 
