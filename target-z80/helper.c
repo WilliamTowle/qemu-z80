@@ -39,23 +39,26 @@ CPUZ80State *cpu_z80_init(const char *model)
     }
 
     env= calloc(1, sizeof *env);
+    cpu_exec_init(env);
 
 #if defined(TARGET_Z80)
 ;printf("%s(): PARTIAL - model/flags init missing...\n", __func__);
 #endif
     /* PARTIAL: cpu_z80_init() continues (requiring enhanced
      * CPUZ80State?) with:
-     * 1. cpu_exec_init() for the 'env'
-     * 2. z80_translate_init() call, if not already done
-     * 3. store id in env->model
+     * 1. z80_translate_init() call, if not already done
+     * 2. store id in env->model
+     *
+     * ...target-i386 has:
+     *	1. initialising env->cpu_model_str
+     *	2. one-shot flags optimisation
+     *	3. breakpoint handler management
+     *	4. registering CPU[s] (with cpu_x86_close() on failure)
      */
 
     cpu_reset(env);		/* target-i386: in wrapper functions */
 
-    /* PARTIAL: continue with:
-    	qemu_init_vcpu()
-     * ...which is a NOP if CONFIG_USER_ONLY defined
-     */
+    qemu_init_vcpu(env);
 
     return env;
 }
