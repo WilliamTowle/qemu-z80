@@ -58,6 +58,7 @@
 #define zprintf(...)
 #endif
 
+static TCGv /* cpu_env, */ cpu_T[3], cpu_A0;
 /* global register indexes and instruction counting routines */
 static TCGv_ptr cpu_env;
 #include "exec/gen-icount.h"
@@ -1325,13 +1326,25 @@ void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb, int pc_pos)
 
 void z80_translate_init(void)
 {
-#if 1	/* WmT - PARTIAL */
+#if 0	/* WmT - PARTIAL */
 ;DPRINTF("[%s:%d] *** ENTERED %s() - PARTIAL ONLY ***\n", __FILE__, __LINE__, __func__);
-#endif
-	/* PARTIAL. Missing steps:
-	 * 1. assignment of tcg_global_reg_new_ptr() result to 'cpu_env'
-	 * 2. cpu_T[n] (n=0..1) and cpu_A0 init
-	 * 3. import helper.h "register helpers"
+#else
+	cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
+
+;DPRINTF("%s() skeleton ... compare %d, %d\n", __func__, TARGET_LONG_BITS, HOST_LONG_BITS);
+#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
+	 * but TCG_AREG{1|2} no longer available for else case
 	 */
-    cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
+	cpu_T[0] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t0), "T0");
+	cpu_T[1] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t1), "T1");
+#else
+	cpu_T[0] = tcg_global_reg_new_i32(TCG_AREG1, "T0");
+	cpu_T[1] = tcg_global_reg_new_i32(TCG_AREG2, "T1");
+#endif
+	cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, a0), "A0");
+
+    /* register helpers */
+#define GEN_HELPER 2
+#include "helper.h"
+#endif
 }
