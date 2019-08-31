@@ -104,6 +104,14 @@
 #include "cpu-defs.h"
 
 typedef struct CPUZ80State {
+#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
+	 * but can't compile else cases
+	 */
+    /* temporaries if we cannot store them in host registers */
+    target_ulong t0, t1;
+#endif
+    target_ulong a0;
+
     CPU_COMMON
 
     /* Z80 registers */
