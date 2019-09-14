@@ -30,6 +30,7 @@ const char *cpu_model= NULL;
 unsigned long guest_base;
 #endif
 
+int singlestep;
 
 static void usage(int exitcode)
 {
@@ -52,6 +53,11 @@ static void handle_arg_cpu(char *arg)
 #endif
         exit(EXIT_FAILURE);
     }
+}
+
+static void handle_arg_singlestep(void)
+{
+    singlestep = 1;
 }
 
 static int parse_args(int argc, char **argv)
@@ -80,7 +86,10 @@ static int parse_args(int argc, char **argv)
         {
             handle_arg_cpu(argv[optind++]);
         }
-        /* TODO: support "singlestep" option */
+        else if (strcmp(r, "-singlestep") == 0)
+        {
+            handle_arg_singlestep();
+        }
         else
         {
             fprintf(stderr, "Unexpected option '%s'\n", &r[1]);
