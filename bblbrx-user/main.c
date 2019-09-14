@@ -187,6 +187,12 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /* Now GUEST_BASE is known, generate the prologue so its value
+     * can be taken into account
+     */
+    tcg_prologue_init(tcg_ctx);
+    tcg_region_init();
+
     /* PARTIAL. May now want/need to:
      * free memory for any redundant data structures
      * log information about the program
