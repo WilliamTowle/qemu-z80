@@ -13,13 +13,20 @@
 unsigned long guest_base;
 #endif
 
+int singlestep;
+
 static void usage(int exitcode)
 {
     /* PARTIAL: not yet accepting arguments to the program */
     printf(//"usage: qemu-" TARGET_ARCH " [options] program [arguments...]\n"
-            "usage: qemu-" TARGET_ARCH " program\n"
+            "usage: qemu-" TARGET_ARCH " [options] program\n"
             );
     exit(exitcode);
+}
+
+static void handle_arg_singlestep(void)
+{
+    singlestep = 1;
 }
 
 static int parse_args(int argc, char **argv)
@@ -39,12 +46,20 @@ static int parse_args(int argc, char **argv)
         }
         optind++;
 
-        /* TODO: give help. process options properly here */
-        /* '--help' should pass EXIT_SUCCESS; all other calls should:
-         * 1. do `(void) fprintf(stderr, ...)`
-         * 2. call usage() or exit() with EXIT_FAILURE
-         */
-        usage(EXIT_SUCCESS);
+        if (r[1] == '-') r++;	/* make '-X' and '--X' equivalent */
+        if (strcmp(r, "-help") == 0)
+        {
+            usage(EXIT_SUCCESS);
+        }
+        if (strcmp(r, "-singlestep") == 0)
+        {
+            handle_arg_singlestep();
+        }
+        else
+        {
+            fprintf(stderr, "Unexpected option '%s'\n", &r[1]);
+            usage(EXIT_FAILURE);
+        }
     }
 
     return optind;
