@@ -12,6 +12,7 @@
 
 #include "qemu.h"
 #include "cpu.h"
+#include "tcg.h"
 
 #if defined(CONFIG_USE_GUEST_BASE)
 unsigned long guest_base;
@@ -233,6 +234,16 @@ int main(int argc, char **argv)
         printf("Error while loading %s: %s\n", filename, strerror(-ret));
         exit(1);
     }
+
+#if defined(CONFIG_USE_GUEST_BASE)
+	/* loading the executable above allows us to assume GUEST_BASE
+	 * has a fixed value at this point...
+	 */
+	/* tcg_ctx is an extern in tcg/tcg.h, from translate-all.c.
+	 * cpu_gen_init() calls an init function for it
+	 */
+    tcg_prologue_init(&tcg_ctx);
+#endif
 
     /* PARTIAL. May now want/need to:
      * free memory for any redundant data structures
