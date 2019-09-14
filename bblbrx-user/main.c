@@ -18,11 +18,17 @@
 unsigned long guest_base;
 #endif
 
+int singlestep;
+
 static void usage(int exitcode)
 {
-    printf("Usage: qemu-" TARGET_ARCH " [options] program [arguments...]\n");
-
+    printf("Usage: qemu-" TARGET_ARCH " [options] program\n");
     exit(exitcode);
+}
+
+static void handle_arg_singlestep(void)
+{
+    singlestep = 1;
 }
 
 static int parse_args(int argc, char **argv)
@@ -47,9 +53,13 @@ static int parse_args(int argc, char **argv)
         {
             usage(EXIT_SUCCESS);
         }
+        else if (strcmp(r, "-singlestep") == 0)
+        {
+            handle_arg_singlestep();
+        }
         else
         {
-            fprintf(stderr, "Unexpected option '%s'\n\n", &r[1]);
+            fprintf(stderr, "Unexpected option '%s'\n", &r[1]);
             usage(EXIT_FAILURE);
         }
     }
