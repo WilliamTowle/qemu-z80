@@ -14,6 +14,7 @@
 #include "qapi/error.h"
 #include "qemu/error-report.h"
 #include "qemu/help_option.h"
+#include "tcg/tcg.h"
 
 
 #define EMIT_DEBUG 1
@@ -224,6 +225,12 @@ int main(int argc, char **argv)
             printf("Error while loading %s: %s\n", filename, strerror(-ret));
         exit(EXIT_FAILURE);
     }
+
+    /* Now GUEST_BASE is known, generate the prologue so its value
+     * can be taken into account
+     */
+    tcg_prologue_init(tcg_ctx);
+    tcg_region_init();
 
     /* PARTIAL - in v2.12.1 here:
      * 1. before loader_exec(),
