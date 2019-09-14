@@ -29,6 +29,7 @@ const char *cpu_model= NULL;
 unsigned long guest_base;
 #endif
 
+int singlestep;
 
 static void usage(int exitcode)
 {
@@ -38,6 +39,11 @@ static void usage(int exitcode)
             "Usage: qemu-" TARGET_NAME " program\n"
             );
     exit(exitcode);
+}
+
+static void handle_arg_singlestep(void)
+{
+    singlestep = 1;
 }
 
 static int parse_args(int argc, char **argv)
@@ -61,6 +67,10 @@ static int parse_args(int argc, char **argv)
         if (strcmp(r, "-help") == 0)
         {
             usage(EXIT_SUCCESS);
+        }
+        else if (strcmp(r, "-singlestep") == 0)
+        {
+            handle_arg_singlestep();
         }
         /* TODO: support "cpu" option */
         /* TODO: support "singlestep" option */
