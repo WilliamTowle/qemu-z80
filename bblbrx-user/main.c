@@ -149,6 +149,7 @@ int main(int argc, char **argv)
     CPUState *cpu;
     char *filename;
     void  *target_ram;
+    struct bblbrx_binprm bprm;
     int optind;
     int ret;
 
@@ -221,7 +222,7 @@ int main(int argc, char **argv)
 #endif
 
 
-    ret= bblbrx_exec(filename);
+    ret= bblbrx_exec(filename, &bprm);
     if (ret != 0) {
         if (ret > 0)
             printf("%s(): BAILING - unexpected bblbrx_exec() retval %d while loading %s\n", __func__, ret, filename);
@@ -235,6 +236,24 @@ int main(int argc, char **argv)
      */
     tcg_prologue_init(tcg_ctx);
     tcg_region_init();
+
+#ifdef TARGET_Z80
+    /* In order to execute raw binaries without ROMs present, we
+     * designate an address as a "magic ramtop" location and write
+     * a relevant sentinel-type value on the stack.
+     * Regular programs with a final 'ret' will pop this value, and
+     * the jump there can then be intercepted. Similarly, CP/M command
+     * binaries using this value for the zero page's "exit program"
+     * target will have the same result.
+     */
+    if (bprm.magic_ramloc)
+    {
+        env->regs[R_SP]= bprm.magic_ramloc;
+        stw_raw(env->regs[R_SP], bprm.magic_ramloc);
+    }
+#else
+#error unsupported target CPU
+#endif
 
     /* PARTIAL - in v2.12.1 here:
      * 1. before loader_exec(),
