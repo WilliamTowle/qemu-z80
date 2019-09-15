@@ -1176,8 +1176,14 @@ static inline int gen_intermediate_code_internal(CPUState *env,
             gen_io_start();
         }
 
+#if defined(TARGET_Z80)
+;DPRINTF("[%s:%d] About to disas_insn() at pc_ptr=%04x...\n", __FILE__, __LINE__, pc_ptr);
+#endif
         pc_ptr = disas_insn(dc, pc_ptr);
         num_insns++;
+#if defined(TARGET_Z80)
+;DPRINTF("[%s:%d] next PC 0x%04x, after %d insns; +ve is_jmp (%d) will stop translation\n", __FILE__, __LINE__, pc_ptr, num_insns, dc->is_jmp);
+#endif
         /* stop translation if indicated */
         if (dc->is_jmp) {
 #if 1	/* WmT - TRACE */
