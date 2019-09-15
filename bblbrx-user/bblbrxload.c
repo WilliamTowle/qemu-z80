@@ -19,6 +19,7 @@ static int prepare_binprm(struct bblbrx_binprm *bprm)
 
     /* values in case of error */
     bprm->filesize= 0;
+    bprm->magic_ramloc= 0;
 
     /* Check the file exists and is valid (only requires a regular
      * file; our binaries do not need to be executable as far as
@@ -36,14 +37,14 @@ static int prepare_binprm(struct bblbrx_binprm *bprm)
     }
 
     bprm->filesize= st.st_size;
+    bprm->magic_ramloc= 0xfffe;
 
     return 0;
 }
 
 /* handle raw binary loading */
-int bblbrx_exec(const char *filename)
+int bblbrx_exec(const char *filename, struct bblbrx_binprm *bprm)
 {
-    struct bblbrx_binprm	bprm;
     int				ret;
 
     ret= open(filename, O_RDONLY);
@@ -53,12 +54,12 @@ int bblbrx_exec(const char *filename)
         return -errno;
     }
 
-    bprm.filename= filename;
-    bprm.fd= ret;		/* for subsequent fstat() */
+    bprm->filename= filename;
+    bprm->fd= ret;		/* for subsequent fstat() */
 
-    ret= prepare_binprm(&bprm);
+    ret= prepare_binprm(bprm);
     if (ret >= 0)
-        ret= load_raw_binary(&bprm);
+        ret= load_raw_binary(bprm);
 
     /* If loading something failed, close the file descriptor;
      * otherwise, a future platform could swap/write to and from it
@@ -66,7 +67,7 @@ int bblbrx_exec(const char *filename)
     if (ret <= 0)
     {
         close(ret);
-        bprm.fd= -1;
+        bprm->fd= -1;
     }
     return ret;
 }
