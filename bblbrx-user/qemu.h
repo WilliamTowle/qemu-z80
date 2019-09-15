@@ -11,6 +11,7 @@ struct bblbrx_binprm {
     const char		*filename;
     int			fd;
     long		filesize;
+    target_ulong	magic_ramloc;
 };
 
 #define VERIFY_READ 0
@@ -20,7 +21,7 @@ struct bblbrx_binprm {
 #define lock_user(x,a,b,c)	(void*)(x)
 #define unlock_user(x,y,z)
 
-int bblbrx_exec(const char *filename);
+int bblbrx_exec(const char *filename, struct bblbrx_binprm *bprm);
 
 int load_raw_binary(struct bblbrx_binprm *bprm);
 
