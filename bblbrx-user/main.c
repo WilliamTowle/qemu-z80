@@ -178,6 +178,7 @@ int main(int argc, char **argv)
     char *filename;
     CPUArchState *env;
     void  *target_ram;
+  struct bblbrx_binprm bprm;
     int optind;
     int ret;
 
@@ -290,7 +291,7 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-    ret= bblbrx_exec(filename);
+    ret= bblbrx_exec(filename, &bprm);
     if (ret != 0) {
         if (ret > 0)
             printf("%s(): BAILING - unexpected bblbrx_exec() retval %d while loading %s\n", __func__, ret, filename);
@@ -307,6 +308,24 @@ int main(int argc, char **argv)
 	 * cpu_gen_init() calls an init function for it
 	 */
     tcg_prologue_init(&tcg_ctx);
+#endif
+
+#ifdef TARGET_Z80
+	/* PARTIAL.
+	 * In order to execute raw binaries with no ROMs present, we
+	 * designate an address as a "magic ramtop" location and write
+	 * a relevant sentinel-type value on the stack.
+	 * Regular programs ending in 'ret' will pop this value and
+	 * jump there; similarly, Z80 CP/M programs can use this address
+	 * for the zero page's "exit program" jump.
+	 */
+	if (bprm.magic_ramloc)
+	{
+            env->regs[R_SP]= bprm.magic_ramloc;
+            stw_raw(env->regs[R_SP], bprm.magic_ramloc);
+	}
+#else
+#error unsupported target CPU
 #endif
 
     /* PARTIAL - v1.7.5 has:
