@@ -14,6 +14,12 @@
 #include "exec/cpu_ldst.h"
 
 
+typedef struct TaskState {
+    int used;
+    struct bblbrx_binprm *bprm;
+} TaskState;    /* alignment is useful here, for the linux-user case */
+
+
 /* QEmu user access */
 
 #define VERIFY_READ 0
