@@ -151,6 +151,7 @@ int main(int argc, char **argv)
     char *filename;
     void  *target_ram;
     struct bblbrx_binprm bprm;
+    TaskState ts;
     int optind;
     int ret;
 
@@ -220,6 +221,12 @@ int main(int argc, char **argv)
     }
 
     guest_base= (unsigned long)target_ram;
+
+    memset(&ts, 0, sizeof ts);
+    ts.used = 1;
+    ts.bprm = &bprm;
+    //env->opaque = ts;
+    cpu->opaque = &ts;
 
     ret= bblbrx_exec(filename, &bprm);
     if (ret != 0) {
