@@ -150,6 +150,7 @@ int main(int argc, char **argv)
     char *filename;
     void  *target_ram;
     struct bblbrx_binprm bprm;
+    TaskState ts;
     int optind;
     int ret;
 
@@ -222,6 +223,12 @@ int main(int argc, char **argv)
 ;DPRINTF("%s(): INFO: guest_base set - using %p\n", __func__, (void *)guest_base);
 #endif
 
+
+    memset(&ts, 0, sizeof ts);
+    ts.used = 1;
+    ts.bprm = &bprm;
+    //env->opaque = ts;
+    cpu->opaque = &ts;
 
     ret= bblbrx_exec(filename, &bprm);
     if (ret != 0) {
