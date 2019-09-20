@@ -132,6 +132,7 @@ int main(int argc, char **argv)
   CPUState *env;
   void  *target_ram;
   struct bblbrx_binprm bprm;
+  TaskState *ts;
     int optind;
     int ret;
 
@@ -237,10 +238,13 @@ int main(int argc, char **argv)
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "%s(): PARTIAL - missing initialisation 3/3...\n", __func__);
 #endif
-        /* PARTIAL: next...
-         *	1. manage passing arg{c|v} to target, if required
-         *	2. allocate/initialise any TaskState
+        /* PARTIAL. Depending on target system, manage passing arg{c|v} to program
          */
+
+	ts= qemu_mallocz(sizeof *ts);
+	ts->used = 1;
+	ts->bprm = &bprm;
+	env->opaque = ts;
 
 	ret= bblbrx_exec(filename, &bprm);
 	if (ret != 0) {

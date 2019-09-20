@@ -7,6 +7,11 @@
 
 #include "qemu-types.h"
 
+typedef struct TaskState {
+	int used;
+	struct bblbrx_binprm *bprm;
+} TaskState;	/* aligmnent is useful here, for the linux-user case */
+
 struct bblbrx_binprm {
 	const char	*filename;
 	int		fd;
