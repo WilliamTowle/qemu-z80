@@ -109,6 +109,7 @@
 //#define EXCP10_COPR	16
 //#define EXCP11_ALGN	17
 //#define EXCP12_MCHK	18
+#define EXCP_KERNEL_TRAP	19
 
 #define CPUState struct CPUZ80State
 
