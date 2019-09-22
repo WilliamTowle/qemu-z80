@@ -1222,10 +1222,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 
             if (magic && pc_ptr == magic)
             {
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "[%s:%d] PARTIAL - HANDLE TRAP HERE\n", __FILE__, __LINE__);
-;exit(1);
-#endif
                 env->exception_index = EXCP_KERNEL_TRAP;
                 cpu_loop_exit(env);
                 break;
