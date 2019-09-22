@@ -43,7 +43,16 @@ enum {
     R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
 };
 
-/* TODO: hidden flags, exception/interrupt defines */
+/* TODO: hidden flags */
+
+/* Exception defines */
+
+#define EXCP_ILLOP          0       /* i386: EXCP06_ILLOP (n=6) */
+#define EXCP_KERNEL_TRAP    1
+/* TODO: need conventional exception for handling NMI? */
+
+
+/* TODO: interrupt defines */
 
 #define CPU_NB_REGS 1
 
