@@ -1761,9 +1761,13 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 
             if (magic && pc_ptr == magic)
             {
-#if 1	/* WmT - TRACE */
+#if 0
 ;fprintf(stderr, "[%s:%d] PARTIAL - HANDLE TRAP HERE\n", __FILE__, __LINE__);
 ;exit(1);
+#else
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "%s(): set exception_index to EXCP_KERNEL_TRAP (%d)...\n", __func__, EXCP_KERNEL_TRAP);
+#endif
                 /* Equivalent ARM code calls its gen_exception() with
                  * EXCP_KERNEL_TRAP, and ends up calling a handler in
                  * linux-user/main.c
@@ -1771,9 +1775,22 @@ static inline int gen_intermediate_code_internal(CPUState *env,
                  * arguments], used to bail from disas_insn() in the
                  * failure case
                  */
+// [copy ARM?]
+//	/* gen_jmp_im() and gen_eob() mirrors 'singlestep' exit:
+//	 *	gen_jmp_im(pc_ptr - dc->cs_base);
+//	 *	gen_eob(dc);
+//	 */
+//	/* in equivalent code, ARM emulation does:
+//	 * | gen_exception(EXCP_KERNEL_TRAP);
+//	 * | dc->is_jmp = DISAS_UPDATE;
+//	 * | break;
+//	 */
+                env->exception_index = EXCP_KERNEL_TRAP;
+                cpu_loop_exit(env);
+                break;
 #endif
             }
-	}
+        }
 #endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
 
         if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
