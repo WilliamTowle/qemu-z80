@@ -1178,9 +1178,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     gen_icount_start();
     for (;;) {
 #if defined(CONFIG_USER_ONLY) && defined(TARGET_Z80)
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "[%s:%d] PARTIAL - check magic_ram value (current PC 0x%04x, opaque %p) here?\n", __FILE__, __LINE__, pc_ptr, env->opaque);
-#endif
         /* PARTIAL:
          * If the magic RAM location has been hit (either direct jump
          * or popping the relevant value off the stack with a 'ret'), we
@@ -1196,9 +1193,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 
             if (magic && pc_ptr == magic)
             {
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "[%s:%d] PARTIAL - HANDLE TRAP HERE\n", __FILE__, __LINE__);
-;exit(1);
                 /* Equivalent ARM code calls its gen_exception() with
                  * EXCP_KERNEL_TRAP, and ends up calling a handler in
                  * linux-user/main.c
@@ -1206,7 +1200,19 @@ static inline int gen_intermediate_code_internal(CPUState *env,
                  * arguments], used to bail from disas_insn() in the
                  * failure case
                  */
-#endif
+// [copy ARM?]
+//	/* gen_jmp_im() and gen_eob() mirrors 'singlestep' exit:
+//	 *	gen_jmp_im(pc_ptr - dc->cs_base);
+//	 *	gen_eob(dc);
+//	 */
+//	/* in equivalent code, ARM emulation does:
+//	 * | gen_exception(EXCP_KERNEL_TRAP);
+//	 * | dc->is_jmp = DISAS_UPDATE;
+//	 * | break;
+//	 */
+                env->exception_index = EXCP_KERNEL_TRAP;
+                cpu_loop_exit(env);
+                break;
             }
         }
 #endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
