@@ -73,8 +73,11 @@ void cpu_loop(CPUZ80State *env)
 	for (;;)
     {
         /* PARTIAL:
-         * Machine exceptions (0 to 18 defined, only EXCP06_ILLOP
-         * generated?) should be handled here.
+         * Machine exceptions (0 to 19 defined, not all generated)
+         * should be handled here. The EXCP_KERNEL_TRAP in particular
+         * (caused by a jump to "magic ramtop" address/es) works like
+         * a ROM system call, resulting in program exit in the
+         * simplest case.
          */
         printf("%s(): Calling cpu_z80_exec() here...\n", __func__);
         //trapnr= cpu_z80_exec(env);
