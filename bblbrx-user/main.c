@@ -84,9 +84,6 @@ void cpu_loop(CPUZ80State *env)
     /* PARTIAL:
      * Temporary indication we're doing something
      */
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - trap in cpu_exec() will exit() below...\n", __func__);
-#endif
 
     for (;;)
     {
@@ -100,15 +97,25 @@ void cpu_loop(CPUZ80State *env)
         printf("%s(): Calling cpu_exec() here...\n", __func__);
         //trapnr= cpu_z80_exec(env);
         trapnr= cpu_exec(env);
-        printf("BAILING - abnormal return %d from cpu_z80_exec() - dump of env at %p follows\n", trapnr, env);
-        cpu_dump_state(env, stderr, fprintf, 0);
-        exit(1);
+        switch(trapnr)
+        {
+        /* TODO: also clarify EXCP_KERNEL_TRAP ("clean exit") case.
+         * Presenting a register dump is informative here; for now,
+         * fall through to the "abnormal return" case
+         */
+        case EXCP06_ILLOP:
+            printf("cpu_exec() encountered EXCP06_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
+            break;	/* to exit() beyond switch */
+        default:
+            printf("cpu_exec() exited abnormally (with trapnr=%d) - aborting emulation\n", trapnr);
+        }
 
         /* PARTIAL:
          * For a system that can generate interrupts and signals
          * them here, process_pending_signals() is required here,
          * and we should restart the loop. Abormal exit drops here
          */
+	    exit(1);
     }
 }
 #else	/* non-z80 CPUs */
