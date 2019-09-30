@@ -82,7 +82,9 @@ void cpu_loop(CPUZ80State *env)
         /* PARTIAL:
          * Key exception cases are for ILLOP (bad/unsupported
          * instruction) and KERNEL_TRAP ("magic ramtop") cases.
-         * A register dump is informative here
+         * The EXCP_KERNEL_TRAP in particular works like a ROM
+         * system call, resulting in program exit in the
+         * simplest case.
          */
         printf("%s(): Calling cpu_exec() here...\n", __func__);
         //trapnr= cpu_z80_exec(env);
