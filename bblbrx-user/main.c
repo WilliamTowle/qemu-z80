@@ -108,21 +108,26 @@ void cpu_loop(CPUZ80State *env)
         cpu_exec_start(cs);
         trapnr= cpu_exec(cs);
         cpu_exec_end(cs);
-        //process_queued_cpu_work(cs);
+        process_queued_cpu_work(cs);
 
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: %s(): got 'trapnr' %d from cpu_exec() - state dump (env at %p) follows\n", __func__, trapnr, env);
-        /* TODO:
-         * 'trapnr' tells us why translation has stopped. Our key
-         * exception cases are EXCP_ILLOP (bad/unsupported
-         * instruction) and KERNEL_TRAP (end of usermode program).
-         */
+        switch(trapnr)
+        {
+        case EXCP_ILLOP:
+            /* instruction parser is incomplete - bailing is normal */
+            printf("cpu_exec() encountered EXCP_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
+            break;      /* to loop-exit 'break' */
+        case EXCP_KERNEL_TRAP:
+            /* "magic ramtop" reached - exit and show CPU state */
+            printf("Program exit. Register dump follows:\n");
+            break;      /* to loop-exit 'break' */
+        default:
+            printf("cpu_exec() exited abnormally (with unexpected trapnr=%d) - aborting emulation\n", trapnr);
+        }
+
         //cpu_dump_state(env, stderr, fprintf, 0);
         cpu_dump_state(cs, stderr, fprintf, 0);
-;exit(EXIT_FAILURE);
-#else   /* TODO: as per target-i386? */
-        process_pending_signals(env);
-#endif
+        //process_pending_signals(env);
+	break;
     }
 }
 #else   /* non-z80 CPUs */
