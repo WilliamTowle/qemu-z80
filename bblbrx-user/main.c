@@ -97,15 +97,20 @@ void cpu_loop(CPUZ80State *env)
         trapnr= cpu_exec(env);
         switch(trapnr)
         {
-        /* TODO: also clarify EXCP_KERNEL_TRAP ("clean exit") case.
-         * Presenting a register dump is informative here; for now,
-         * fall through to the "abnormal return" case
-         */
+        case EXCP_KERNEL_TRAP:
+            /* Our "magic ramtop" logic was triggered. In the
+             * simple code interpretation code case, we just exit.
+             * For a system with ROMs we might need to emulate or
+             * call relevant routines.
+             */
+            printf("Program exit. Register dump follows\n");
+            cpu_dump_state(env, stderr, fprintf, 0);
+            break;	/* to exit() beyond loop */
         case EXCP06_ILLOP:
             printf("cpu_exec() encountered EXCP06_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
             break;	/* to exit() beyond loop */
         default:
-            printf("cpu_exec() exited abnormally (with trapnr=%d) - aborting emulation\n", trapnr);
+            printf("BAILING - abnormal return %d from cpu_exec()\n", trapnr);
         }
 
         /* PARTIAL:
