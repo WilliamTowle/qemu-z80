@@ -553,7 +553,11 @@ static void gen_eob(DisasContext *s)
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 {
     gen_jmp_im(cur_pc);
+#if 0	/* obsolete by 0.15.0 */
     gen_helper_raise_exception(trapno);
+#else	/* v0.15.0+ */
+    gen_helper_raise_exception(tcg_const_i32(trapno));
+#endif
     s->is_jmp = 3;
 }
 
