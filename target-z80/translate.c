@@ -201,9 +201,8 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //...
 #endif
         switch (x) {
-//        case 0:	/* instr pattern 00yyyzzz */
-//            switch (z) {
-//
+        case 0:	/* instr pattern 00yyyzzz */
+            switch (z) {
 //            case 0:
 //                switch (y) {
 //                case 0:
@@ -240,9 +239,9 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    break;
 //                }
 //                break;
-//
-//            case 1:
-//                switch (q) {
+
+            case 1:
+                switch (q) {
 //                case 0:
 //                    n = lduw_code(s->pc);
 //                    s->pc += 2;
@@ -260,9 +259,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    gen_movw_reg_v(r2, cpu_T[0]);
 //                    zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
 //                    break;
-//                }
-//                break;
-//
+#if 1	/* WmT: HACK */
+		default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled q case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+                }
+                break;
+
 //            case 2:
 //                switch (q) {
 //                case 0:
@@ -454,10 +458,21 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    break;
 //                }
 //                break;
-//            }
-//            break;
-//
-//        case 1:	/* instr pattern 01yyyzzz */
+#if 1	/* WmT: HACK */
+		default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+            }
+            break;
+
+        case 1:	/* instr pattern 01yyyzzz */
+#if 0	/* ifdef TARGET_Z80 */
+;fprintf(stderr, "[%s():%d] INFO - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+#else
+;fprintf(stderr, "[%s():%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> illegal\n", __FILE__, __LINE__, b, x, y, z, p, q);
+goto illegal_op;
+#endif
 //            if (z == 6 && y == 6) {
 //                gen_jmp_im(s->pc);
 //                gen_helper_halt();
@@ -495,7 +510,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
 //                }
 //            }
-//            break;
+            break;
 //
 //        case 2:	/* instr pattern 10yyyzzz */
 //            r1 = regmap(reg[z], m);
