@@ -648,9 +648,6 @@ static inline void gen_retcc(DisasContext *s, int cc,
     TranslationBlock *tb;
     int l1;
 
-    tb = s->tb;
-
-    l1 = gen_new_label();
 
     gen_cond_jump(cc, l1);
 
@@ -1127,34 +1124,34 @@ next_byte:
                     prefixes |= PREFIX_CB;
                     goto next_byte;
                     break;
-//                case 2:
-//                    n = ldub_code(s->pc);
-//                    s->pc++;
-//                    gen_movb_v_A(cpu_T[0]);
-//                    if (use_icount) {
-//                        gen_io_start();
-//                    }
-//                    gen_helper_out_T0_im(tcg_const_tl(n));
-//                    if (use_icount) {
-//                        gen_io_end();
-//                        gen_jmp_im(s->pc);
-//                    }
-//                    zprintf("out ($%02x),a\n", n);
-//                    break;
-//                case 3:
-//                    n = ldub_code(s->pc);
-//                    s->pc++;
-//                    if (use_icount) {
-//                        gen_io_start();
-//                    }
-//                    gen_helper_in_T0_im(tcg_const_tl(n));
-//                    gen_movb_A_v(cpu_T[0]);
-//                    if (use_icount) {
-//                        gen_io_end();
-//                        gen_jmp_im(s->pc);
-//                    }
-//                    zprintf("in a,($%02x)\n", n);
-//                    break;
+                case 2:
+                    n = ldub_code(s->pc);
+                    s->pc++;
+                    gen_movb_v_A(cpu_T[0]);
+                    if (use_icount) {
+                        gen_io_start();
+                    }
+                    gen_helper_out_T0_im(tcg_const_tl(n));
+                    if (use_icount) {
+                        gen_io_end();
+                        gen_jmp_im(s->pc);
+                    }
+                    zprintf("out ($%02x),a\n", n);
+                    break;
+                case 3:
+                    n = ldub_code(s->pc);
+                    s->pc++;
+                    if (use_icount) {
+                        gen_io_start();
+                    }
+                    gen_helper_in_T0_im(tcg_const_tl(n));
+                    gen_movb_A_v(cpu_T[0]);
+                    if (use_icount) {
+                        gen_io_end();
+                        gen_jmp_im(s->pc);
+                    }
+                    zprintf("in a,($%02x)\n", n);
+                    break;
                 case 4:
                     r1 = regpairmap(OR2_HL, m);
                     gen_popw(cpu_T[1]);
@@ -1177,11 +1174,6 @@ next_byte:
 //                  gen_eob(s);
 //                  s->is_ei = 1;
                     break;
-#if 1	/* WmT: HACK */
-		default:	/* for switch(z) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
                 }
                 break;
 
@@ -1248,18 +1240,8 @@ next_byte:
                 gen_eob(s);
                 s->is_jmp = 3;
                 break;
-#if 1	/* WmT - HACK */
-            default:
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#endif
             }
             break;
-#if 1	/* WmT - HACK */
-          default:
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled x case\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#endif
         }
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
@@ -1395,41 +1377,41 @@ next_byte:
 
         case 1:
             switch (z) {
-//            case 0:
-//                if (use_icount) {
-//                    gen_io_start();
-//                }
-//                gen_helper_in_T0_bc_cc();
-//                if (y != 6) {
-//                    r1 = regmap(reg[y], m);
-//                    gen_movb_reg_v(r1, cpu_T[0]);
-//                    zprintf("in %s,(c)\n", regnames[r1]);
-//                } else {
-//                    zprintf("in (c)\n");
-//                }
-//                if (use_icount) {
-//                    gen_io_end();
-//                    gen_jmp_im(s->pc);
-//                }
-//                break;
-//            case 1:
-//                if (y != 6) {
-//                    r1 = regmap(reg[y], m);
-//                    gen_movb_v_reg(cpu_T[0], r1);
-//                    zprintf("out (c),%s\n", regnames[r1]);
-//                } else {
-//                    tcg_gen_movi_tl(cpu_T[0], 0);
-//                    zprintf("out (c),0\n");
-//                }
-//                if (use_icount) {
-//                    gen_io_start();
-//                }
-//                gen_helper_out_T0_bc();
-//                if (use_icount) {
-//                    gen_io_end();
-//                    gen_jmp_im(s->pc);
-//                }
-//                break;
+            case 0:
+                if (use_icount) {
+                    gen_io_start();
+                }
+                gen_helper_in_T0_bc_cc();
+                if (y != 6) {
+                    r1 = regmap(reg[y], m);
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                    zprintf("in %s,(c)\n", regnames[r1]);
+                } else {
+                    zprintf("in (c)\n");
+                }
+                if (use_icount) {
+                    gen_io_end();
+                    gen_jmp_im(s->pc);
+                }
+                break;
+            case 1:
+                if (y != 6) {
+                    r1 = regmap(reg[y], m);
+                    gen_movb_v_reg(cpu_T[0], r1);
+                    zprintf("out (c),%s\n", regnames[r1]);
+                } else {
+                    tcg_gen_movi_tl(cpu_T[0], 0);
+                    zprintf("out (c),0\n");
+                }
+                if (use_icount) {
+                    gen_io_start();
+                }
+                gen_helper_out_T0_bc();
+                if (use_icount) {
+                    gen_io_end();
+                    gen_jmp_im(s->pc);
+                }
+                break;
             case 2:
                 r1 = regpairmap(OR2_HL, m);
                 r2 = regpairmap(regpair[p], m);
@@ -1521,11 +1503,6 @@ next_byte:
                     break;
                 }
                 break;
-#if 1	/* WmT: HACK */
-		default:	/* for switch(z) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
             }
             break;
 
@@ -1568,68 +1545,58 @@ next_byte:
                     }
                     break;
 
-//                case 2: /* ini/ind/inir/indr */
-//                    if (use_icount) {
-//                        gen_io_start();
-//                    }
-//                    gen_helper_in_T0_bc_cc();
-//                    if (use_icount) {
-//                        gen_io_end();
-//                    }
-//                    gen_movw_v_HL(cpu_A0);
-//                    tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    if (!(y & 1)) {
-//                        gen_helper_bli_io_T0_inc(0);
-//                    } else {
-//                        gen_helper_bli_io_T0_dec(0);
-//                    }
-//                    if ((y & 2)) {
-//                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                    } else if (use_icount) {
-//                        gen_jmp_im(s->pc);
-//                    }
-//                    break;
-//
-//                case 3: /* outi/outd/otir/otdr */
-//                    gen_movw_v_HL(cpu_A0);
-//                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    if (use_icount) {
-//                        gen_io_start();
-//                    }
-//                    gen_helper_out_T0_bc();
-//                    if (use_icount) {
-//                        gen_io_end();
-//                    }
-//                    if (!(y & 1)) {
-//                        gen_helper_bli_io_T0_inc(1);
-//                    } else {
-//                        gen_helper_bli_io_T0_dec(1);
-//                    }
-//                    if ((y & 2)) {
-//                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                    } else if (use_icount) {
-//                        gen_jmp_im(s->pc);
-//                    }
-//                    break;	/* case z=3 ends */
-#if 1	/* WmT: HACK */
-		    default:	/* for switch(z) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
+                case 2: /* ini/ind/inir/indr */
+                    if (use_icount) {
+                        gen_io_start();
+                    }
+                    gen_helper_in_T0_bc_cc();
+                    if (use_icount) {
+                        gen_io_end();
+                    }
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                    if (!(y & 1)) {
+                        gen_helper_bli_io_T0_inc(0);
+                    } else {
+                        gen_helper_bli_io_T0_dec(0);
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                    } else if (use_icount) {
+                        gen_jmp_im(s->pc);
+                    }
+                    break;
+
+                case 3: /* outi/outd/otir/otdr */
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    if (use_icount) {
+                        gen_io_start();
+                    }
+                    gen_helper_out_T0_bc();
+                    if (use_icount) {
+                        gen_io_end();
+                    }
+                    if (!(y & 1)) {
+                        gen_helper_bli_io_T0_inc(1);
+                    } else {
+                        gen_helper_bli_io_T0_dec(1);
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                    } else if (use_icount) {
+                        gen_jmp_im(s->pc);
+                    }
+                    break;	/* case z=3 ends */
                 }
 
                 zprintf("%s\n", bli[y-4][z]);
                 break;
             }	/* case 2 end - falls through for y=0..3 */
-#if 1	/* WmT: HACK */
-		default:	/* for switch(x) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
         }
     }
 
