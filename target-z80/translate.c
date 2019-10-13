@@ -1215,16 +1215,16 @@ goto illegal_op;
                     gen_ex(OR2_DE, OR2_HL);
                     zprintf("ex de,hl\n");
                     break;
-//                case 6:
-//                    gen_helper_di();
-//                    zprintf("di\n");
-//                    break;
-//                case 7:
-//                    gen_helper_ei();
-//                    zprintf("ei\n");
-////                  gen_eob(s);
-////                  s->is_ei = 1;
-//                    break;
+                case 6:
+                    gen_helper_di();
+                    zprintf("di\n");
+                    break;
+                case 7:
+                    gen_helper_ei();
+                    zprintf("ei\n");
+//                  gen_eob(s);
+//                  s->is_ei = 1;
+                    break;
 #if 1	/* WmT: HACK */
 		default:	/* for switch(z) */
 ;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
@@ -1298,14 +1298,14 @@ goto illegal_op;
                 zprintf("%s$%02x\n", alu[y], n);
                 break;
 
-//            case 7:
-//                tcg_gen_movi_tl(cpu_T[0], s->pc);
-//                gen_pushw(cpu_T[0]);
-//                gen_jmp_im(y*8);
-//                zprintf("rst $%02x\n", y*8);
-//                gen_eob(s);
-//                s->is_jmp = 3;
-//                break;
+            case 7:
+                tcg_gen_movi_tl(cpu_T[0], s->pc);
+                gen_pushw(cpu_T[0]);
+                gen_jmp_im(y*8);
+                zprintf("rst $%02x\n", y*8);
+                gen_eob(s);
+                s->is_jmp = 3;
+                break;
 #if 1	/* WmT - HACK */
             default:
 ;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
