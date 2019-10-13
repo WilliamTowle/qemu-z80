@@ -523,13 +523,6 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 
 /* [WmT] 'ret' has p=0 */
                     case 0:
-#if 0	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] HACK - 'ret' causes forced EXCP_KERNEL_TRAP (n=%d) exception (insn at s->pc 0x%04x follows)\n", __FILE__, __LINE__, EXCP_KERNEL_TRAP, s->pc);
-;gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
-;return s->pc;
-#else
-;fprintf(stderr, "[%s:%d] INFO - process 'ret' opcode...\n", __FILE__, __LINE__);
-#endif
                         gen_popw(cpu_T[0]);
                         gen_helper_jmp_T0();
                         zprintf("ret\n");
