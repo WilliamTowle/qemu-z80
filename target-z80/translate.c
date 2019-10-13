@@ -783,9 +783,9 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             switch (z) {
             case 0:
                 switch (y) {
-//                case 0:
-//                    zprintf("nop\n");
-//                    break;
+                case 0:
+                    zprintf("nop\n");
+                    break;
                 case 1:
                     gen_ex(OR2_AF, OR2_AFX);
                     zprintf("ex af,af'\n");
