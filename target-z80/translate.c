@@ -398,6 +398,27 @@ enum {
     OR2_HLX,
 };
 
+static gen_mov_func *const gen_movw_v_reg_tbl[] = {
+    [OR2_AF]  = gen_movw_v_AF,
+    [OR2_BC]  = gen_movw_v_BC,
+    [OR2_DE]  = gen_movw_v_DE,
+    [OR2_HL]  = gen_movw_v_HL,
+
+    [OR2_IX]  = gen_movw_v_IX,
+    [OR2_IY]  = gen_movw_v_IY,
+    [OR2_SP]  = gen_movw_v_SP,
+
+    [OR2_AFX] = gen_movw_v_AFX,
+    [OR2_BCX] = gen_movw_v_BCX,
+    [OR2_DEX] = gen_movw_v_DEX,
+    [OR2_HLX] = gen_movw_v_HLX,
+};
+
+static inline void gen_movw_v_reg(TCGv v, int regpair)
+{
+    gen_movw_v_reg_tbl[regpair](v);
+}
+
 static gen_mov_func *const gen_movw_reg_v_tbl[] = {
     [OR2_AF]  = gen_movw_AF_v,
     [OR2_BC]  = gen_movw_BC_v,
@@ -484,6 +505,36 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 #endif
     s->is_jmp = 3;
 }
+
+///* Conditions */
+
+/* Arithmetic/logic operations */
+
+static const char *const alu[8] = {
+    "add a,",
+    "adc a,",
+    "sub ",
+    "sbc a,",
+    "and ",
+    "xor ",
+    "or ",
+    "cp ",
+};
+
+typedef void (alu_helper_func)(void);
+
+static alu_helper_func *const gen_alu[8] = {
+    gen_helper_add_cc,
+    gen_helper_adc_cc,
+    gen_helper_sub_cc,
+    gen_helper_sbc_cc,
+    gen_helper_and_cc,
+    gen_helper_xor_cc,
+    gen_helper_or_cc,
+    gen_helper_cp_cc,
+};
+
+///* Rotation/shift operations */
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
@@ -588,20 +639,15 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                     gen_movw_reg_v(r1, cpu_T[0]);
                     zprintf("ld %s,$%04x\n", regpairnames[r1], n);
                     break;
-//                case 1:
-//                    r1 = regpairmap(regpair[p], m);
-//                    r2 = regpairmap(OR2_HL, m);
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    gen_movw_v_reg(cpu_T[1], r2);
-//                    gen_helper_addw_T0_T1_cc();
-//                    gen_movw_reg_v(r2, cpu_T[0]);
-//                    zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
-//                    break;
-#if 1	/* WmT: HACK */
-                default:	/* switch (q) incomplete */
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-                goto illegal_op;
-#endif
+                case 1:
+                    r1 = regpairmap(regpair[p], m);
+                    r2 = regpairmap(OR2_HL, m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_movw_v_reg(cpu_T[1], r2);
+                    gen_helper_addw_T0_T1_cc();
+                    gen_movw_reg_v(r2, cpu_T[0]);
+                    zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
+                    break;
                 }
                 break;
 
@@ -849,26 +895,20 @@ goto illegal_op;
             break;
 
         case 2:	/* instr pattern 10yyyzzz */
-#if 0	/* ifdef TARGET_Z80 */
-;fprintf(stderr, "[%s():%d] INFO - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, b, x, y,p,q, z);
-#else
-;DPRINTF("[%s():%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) -> illegal\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-goto illegal_op;
-#endif
-//            r1 = regmap(reg[z], m);
-//            if (is_indexed(r1)) {
-//                d = ldsb_code(s->pc);
-//                s->pc++;
-//                gen_movb_v_idx(cpu_T[0], r1, d);
-//            } else {
-//                gen_movb_v_reg(cpu_T[0], r1);
-//            }
-//            gen_alu[y](); /* places output in A */
-//            if (is_indexed(r1)) {
-//                zprintf("%s(%s%c$%02x)\n", alu[y], idxnames[r1], shexb(d));
-//            } else {
-//                zprintf("%s%s\n", alu[y], regnames[r1]);
-//            }
+            r1 = regmap(reg[z], m);
+            if (is_indexed(r1)) {
+                d = ldsb_code(s->pc);
+                s->pc++;
+                gen_movb_v_idx(cpu_T[0], r1, d);
+            } else {
+                gen_movb_v_reg(cpu_T[0], r1);
+            }
+            gen_alu[y](); /* places output in A */
+            if (is_indexed(r1)) {
+                zprintf("%s(%s%c$%02x)\n", alu[y], idxnames[r1], shexb(d));
+            } else {
+                zprintf("%s%s\n", alu[y], regnames[r1]);
+            }
             break;
 
 /* [WmT] 'ret' has x=3 */
@@ -1059,15 +1099,15 @@ goto illegal_op;
 //                    break;
 //                }
 //                break;
-//
-//            case 6:
-//                n = ldub_code(s->pc);
-//                s->pc++;
-//                tcg_gen_movi_tl(cpu_T[0], n);
-//                gen_alu[y](); /* places output in A */
-//                zprintf("%s$%02x\n", alu[y], n);
-//                break;
-//
+
+            case 6:
+                n = ldub_code(s->pc);
+                s->pc++;
+                tcg_gen_movi_tl(cpu_T[0], n);
+                gen_alu[y](); /* places output in A */
+                zprintf("%s$%02x\n", alu[y], n);
+                break;
+
 //            case 7:
 //                tcg_gen_movi_tl(cpu_T[0], s->pc);
 //                gen_pushw(cpu_T[0]);
