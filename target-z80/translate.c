@@ -994,47 +994,42 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
                 }
                 break;
 
-//            case 7:
-//                switch (y) {
-//                case 0:
-//                    gen_helper_rlca_cc();
-//                    zprintf("rlca\n");
-//                    break;
-//                case 1:
-//                    gen_helper_rrca_cc();
-//                    zprintf("rrca\n");
-//                    break;
-//                case 2:
-//                    gen_helper_rla_cc();
-//                    zprintf("rla\n");
-//                    break;
-//                case 3:
-//                    gen_helper_rra_cc();
-//                    zprintf("rra\n");
-//                    break;
-//                case 4:
-//                    gen_helper_daa_cc();
-//                    zprintf("daa\n");
-//                    break;
-//                case 5:
-//                    gen_helper_cpl_cc();
-//                    zprintf("cpl\n");
-//                    break;
-//                case 6:
-//                    gen_helper_scf_cc();
-//                    zprintf("scf\n");
-//                    break;
-//                case 7:
-//                    gen_helper_ccf_cc();
-//                    zprintf("ccf\n");
-//                    break;
-//                }
-//                break;
-#if 1	/* WmT: HACK */
-		default:
-;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
+            case 7:
+                switch (y) {
+                case 0:
+                    gen_helper_rlca_cc();
+                    zprintf("rlca\n");
+                    break;
+                case 1:
+                    gen_helper_rrca_cc();
+                    zprintf("rrca\n");
+                    break;
+                case 2:
+                    gen_helper_rla_cc();
+                    zprintf("rla\n");
+                    break;
+                case 3:
+                    gen_helper_rra_cc();
+                    zprintf("rra\n");
+                    break;
+                case 4:
+                    gen_helper_daa_cc();
+                    zprintf("daa\n");
+                    break;
+                case 5:
+                    gen_helper_cpl_cc();
+                    zprintf("cpl\n");
+                    break;
+                case 6:
+                    gen_helper_scf_cc();
+                    zprintf("scf\n");
+                    break;
+                case 7:
+                    gen_helper_ccf_cc();
+                    zprintf("ccf\n");
+                    break;
+                }
+                break;
             }
             break;
 

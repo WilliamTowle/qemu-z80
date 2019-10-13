@@ -30,7 +30,17 @@ DEF_HELPER_0(cp_cc, void)
 
 ///* Block instructions */
 
-///* Misc */
+/* Misc */
+
+DEF_HELPER_0(rlca_cc, void)
+DEF_HELPER_0(rrca_cc, void)
+DEF_HELPER_0(rla_cc, void)
+DEF_HELPER_0(rra_cc, void)
+DEF_HELPER_0(daa_cc, void)
+DEF_HELPER_0(cpl_cc, void)
+DEF_HELPER_0(scf_cc, void)
+DEF_HELPER_0(ccf_cc, void)
+//DEF_HELPER_0(neg_cc, void)
 
 /* 16-bit arithmetic */
 DEF_HELPER_0(sbcw_T0_T1_cc, void)
