@@ -518,7 +518,121 @@ void HELPER(rrd_cc)(void)
     F = (F & CC_C) | sf | zf | pf;
 }
 
-///* Block instructions */
+/* Block instructions */
+
+void HELPER(bli_ld_inc_cc)(void)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    DE = (uint16_t)(DE + 1);
+    HL = (uint16_t)(HL + 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & (CC_S | CC_Z | CC_C)) | pf;
+}
+
+void HELPER(bli_ld_dec_cc)(void)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    DE = (uint16_t)(DE - 1);
+    HL = (uint16_t)(HL - 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & (CC_S | CC_Z | CC_C)) | pf;
+}
+
+void HELPER(bli_ld_rep)(uint32_t next_pc)
+{
+    if (BC) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
+
+void HELPER(bli_cp_cc)(void)
+{
+    int sf, zf, hf, pf;
+    int res, carry;
+
+    res = (uint8_t)(A - T0);
+    sf = (res & 0x80) ? CC_S : 0;
+    zf = res ? 0 : CC_Z;
+    carry = (~A & T0) | (~(A ^ T0) & res);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = BC ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | hf | pf | CC_N;
+}
+
+void HELPER(bli_cp_inc_cc)(void)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    HL = (uint16_t)(HL + 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & ~CC_P) | pf;
+}
+
+void HELPER(bli_cp_dec_cc)(void)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    HL = (uint16_t)(HL - 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & ~CC_P) | pf;
+}
+
+void HELPER(bli_cp_rep)(uint32_t next_pc)
+{
+    if (BC && T0 != A) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
+
+void HELPER(bli_io_T0_inc)(uint32_t out)
+{
+    HL = (uint16_t)(HL + 1);
+    BC = (uint16_t)(BC - 0x0100);
+    /* TODO: update X & Y flags */
+    uint32_t ff = out ? (HL & 0xff) : (((F & CC_C) + 1) & 0xff);
+    F = ((BC & 0x8000) ? CC_S : 0) |
+        ((BC & 0xff00) ? 0 : CC_Z) |
+        ((T0 + ff) > 0xff ? (CC_C | CC_H) : 0) |
+        parity_table[(((T0 + ff) & 0x07) ^ (BC >> 8)) & 0xff] |
+        ((T0 & 0x80) ? CC_N : 0);
+}
+
+void HELPER(bli_io_T0_dec)(uint32_t out)
+{
+    HL = (uint16_t)(HL - 1);
+    BC = (uint16_t)(BC - 0x0100);
+    /* TODO: update X & Y flags */
+    uint32_t ff = out ? (HL & 0xff) : (((F & CC_C) - 1) & 0xff);
+    F = ((BC & 0x8000) ? CC_S : 0) |
+        ((BC & 0xff00) ? 0 : CC_Z) |
+        ((T0 + ff) > 0xff ? (CC_C | CC_H) : 0) |
+        parity_table[(((T0 + ff) & 0x07) ^ (BC >> 8)) & 0xff] |
+        ((T0 & 0x80) ? CC_N : 0);
+}
+
+void HELPER(bli_io_rep)(uint32_t next_pc)
+{
+    if (F & CC_Z) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
 
 /* misc */
 
@@ -618,6 +732,24 @@ void HELPER(ccf_cc)(CPUZ80State *env)
     F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
 }
 
+/* misc */
+
+void HELPER(neg_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)-A;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
 
 /* word operations -- HL only? */
 
@@ -708,6 +840,18 @@ void HELPER(decb_T0_cc)(CPUZ80State *env)
     /* TODO: check CC_N is set */
 }
 
+/* value on data bus is 0xff for speccy */
+/* IM0 = execute data on bus (rst $38 on speccy) */
+/* IM1 = execute rst $38 (ROM uses this)*/
+/* IM2 = indirect jump -- address is held at (I << 8) | DATA */
+
+/* when an interrupt occurs, iff1 and iff2 are reset, disabling interrupts */
+/* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
+
+void HELPER(imode)(uint32_t imode)
+{
+    env->imode = imode;
+}
 
 /* enable interrupts */
 void HELPER(ei)(CPUZ80State *env)
@@ -721,6 +865,46 @@ void HELPER(di)(CPUZ80State *env)
 {
     env->iff1 = 0;
     env->iff2 = 0;
+}
+
+/* reenable interrupts if enabled */
+void HELPER(ri)(void)
+{
+    env->iff1 = env->iff2;
+}
+
+void HELPER(ld_R_A)(void)
+{
+    R = A;
+}
+
+void HELPER(ld_I_A)(void)
+{
+    I = A;
+}
+
+void HELPER(ld_A_R)(void)
+{
+    int sf, zf, pf;
+
+    A = R;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = env->iff2 ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | pf;
+}
+
+void HELPER(ld_A_I)(void)
+{
+    int sf, zf, pf;
+
+    A = I;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = env->iff2 ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | pf;
 }
 
 
