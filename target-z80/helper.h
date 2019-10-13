@@ -52,4 +52,14 @@ DEF_HELPER_1(adcw_T0_T1_cc, void, env)
 DEF_HELPER_1(incb_T0_cc, void, env)
 DEF_HELPER_1(decb_T0_cc, void, env)
 
+/* Interrupt handling / IR registers */
+//DEF_HELPER_1(imode, void, i32)
+DEF_HELPER_0(ei, void)
+DEF_HELPER_0(di, void)
+//DEF_HELPER_0(ri, void)
+//DEF_HELPER_0(ld_R_A, void)
+//DEF_HELPER_0(ld_I_A, void)
+//DEF_HELPER_0(ld_A_R, void)
+//DEF_HELPER_0(ld_A_I, void)
+
 #include "exec/def-helper.h"
