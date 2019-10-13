@@ -827,76 +827,76 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
                 }
                 break;
 
-//            case 2:
-//                switch (q) {
-//                case 0:
-//                    switch (p) {
-//                    case 0:
-//                        gen_movb_v_A(cpu_T[0]);
-//                        gen_movw_v_BC(cpu_A0);
-//                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        zprintf("ld (bc),a\n");
-//                        break;
-//                    case 1:
-//                        gen_movb_v_A(cpu_T[0]);
-//                        gen_movw_v_DE(cpu_A0);
-//                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        zprintf("ld (de),a\n");
-//                        break;
-//                    case 2:
-//                        n = lduw_code(s->pc);
-//                        s->pc += 2;
-//                        r1 = regpairmap(OR2_HL, m);
-//                        gen_movw_v_reg(cpu_T[0], r1);
-//                        tcg_gen_movi_i32(cpu_A0, n);
-//                        tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        zprintf("ld ($%04x),%s\n", n, regpairnames[r1]);
-//                        break;
-//                    case 3:
-//                        n = lduw_code(s->pc);
-//                        s->pc += 2;
-//                        gen_movb_v_A(cpu_T[0]);
-//                        tcg_gen_movi_i32(cpu_A0, n);
-//                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        zprintf("ld ($%04x),a\n", n);
-//                        break;
-//                    }
-//                    break;
-//                case 1:
-//                    switch (p) {
-//                    case 0:
-//                        gen_movw_v_BC(cpu_A0);
-//                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        gen_movb_A_v(cpu_T[0]);
-//                        zprintf("ld a,(bc)\n");
-//                        break;
-//                    case 1:
-//                        gen_movw_v_DE(cpu_A0);
-//                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        gen_movb_A_v(cpu_T[0]);
-//                        zprintf("ld a,(de)\n");
-//                        break;
-//                    case 2:
-//                        n = lduw_code(s->pc);
-//                        s->pc += 2;
-//                        r1 = regpairmap(OR2_HL, m);
-//                        tcg_gen_movi_i32(cpu_A0, n);
-//                        tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        gen_movw_reg_v(r1, cpu_T[0]);
-//                        zprintf("ld %s,($%04x)\n", regpairnames[r1], n);
-//                        break;
-//                    case 3:
-//                        n = lduw_code(s->pc);
-//                        s->pc += 2;
-//                        tcg_gen_movi_i32(cpu_A0, n);
-//                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                        gen_movb_A_v(cpu_T[0]);
-//                        zprintf("ld a,($%04x)\n", n);
-//                        break;
-//                    }
-//                    break;
-//                }
-//                break;
+            case 2:
+                switch (q) {
+                case 0:
+                    switch (p) {
+                    case 0:
+                        gen_movb_v_A(cpu_T[0]);
+                        gen_movw_v_BC(cpu_A0);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld (bc),a\n");
+                        break;
+                    case 1:
+                        gen_movb_v_A(cpu_T[0]);
+                        gen_movw_v_DE(cpu_A0);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld (de),a\n");
+                        break;
+                    case 2:
+                        n = lduw_code(s->pc);
+                        s->pc += 2;
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld ($%04x),%s\n", n, regpairnames[r1]);
+                        break;
+                    case 3:
+                        n = lduw_code(s->pc);
+                        s->pc += 2;
+                        gen_movb_v_A(cpu_T[0]);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld ($%04x),a\n", n);
+                        break;
+                    }
+                    break;
+                case 1:
+                    switch (p) {
+                    case 0:
+                        gen_movw_v_BC(cpu_A0);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,(bc)\n");
+                        break;
+                    case 1:
+                        gen_movw_v_DE(cpu_A0);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,(de)\n");
+                        break;
+                    case 2:
+                        n = lduw_code(s->pc);
+                        s->pc += 2;
+                        r1 = regpairmap(OR2_HL, m);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movw_reg_v(r1, cpu_T[0]);
+                        zprintf("ld %s,($%04x)\n", regpairnames[r1], n);
+                        break;
+                    case 3:
+                        n = lduw_code(s->pc);
+                        s->pc += 2;
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,($%04x)\n", n);
+                        break;
+                    }
+                    break;
+                }
+                break;
 
             case 3:
                 switch (q) {
