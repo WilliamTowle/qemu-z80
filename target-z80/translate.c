@@ -1036,15 +1036,9 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 
         case 1:	/* instr pattern 01yyyzzz */
             if (z == 6 && y == 6) {
-#if 0	/* ifdef TARGET_Z80 */
-;fprintf(stderr, "[%s():%d] INFO - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
-#else
-;fprintf(stderr, "[%s():%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> illegal\n", __FILE__, __LINE__, b, x, y, z, p, q);
-goto illegal_op;
-#endif
-//                gen_jmp_im(s->pc);
-//                gen_helper_halt();
-//                zprintf("halt\n");
+                gen_jmp_im(s->pc);
+                gen_helper_halt();
+                zprintf("halt\n");
             } else {
                 if (z == 6) {
                     r1 = regmap(reg[z], m);
