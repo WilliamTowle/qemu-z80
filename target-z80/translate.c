@@ -686,6 +686,20 @@ static inline void gen_retcc(DisasContext *s, int cc,
     s->is_jmp = 3;
 }
 
+static inline void gen_ex(int regpair1, int regpair2)
+{
+    TCGv tmp1 = tcg_temp_new();
+    TCGv tmp2 = tcg_temp_new();
+    gen_movw_v_reg(tmp1, regpair1);
+    gen_movw_v_reg(tmp2, regpair2);
+    gen_movw_reg_v(regpair2, tmp1);
+    gen_movw_reg_v(regpair1, tmp2);
+    tcg_temp_free(tmp1);
+    tcg_temp_free(tmp2);
+}
+
+///* TODO: condition code optimisation */
+
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
 static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong pc_start)
@@ -747,10 +761,10 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                case 0:
 //                    zprintf("nop\n");
 //                    break;
-//                case 1:
-//                    gen_ex(OR2_AF, OR2_AFX);
-//                    zprintf("ex af,af'\n");
-//                    break;
+                case 1:
+                    gen_ex(OR2_AF, OR2_AFX);
+                    zprintf("ex af,af'\n");
+                    break;
                 case 2:
                     n = cpu_ldsb_code(env, s->pc);
                     s->pc++;
@@ -1098,12 +1112,12 @@ goto illegal_op;
 //                      s->is_ei = 1;
                         break;
 
-//                    case 1:
-//                        gen_ex(OR2_BC, OR2_BCX);
-//                        gen_ex(OR2_DE, OR2_DEX);
-//                        gen_ex(OR2_HL, OR2_HLX);
-//                        zprintf("exx\n");
-//                        break;
+                    case 1:
+                        gen_ex(OR2_BC, OR2_BCX);
+                        gen_ex(OR2_DE, OR2_DEX);
+                        gen_ex(OR2_HL, OR2_HLX);
+                        zprintf("exx\n");
+                        break;
                     case 2:
                         r1 = regpairmap(OR2_HL, m);
                         gen_movw_v_reg(cpu_T[0], r1);
@@ -1118,11 +1132,6 @@ goto illegal_op;
                         gen_movw_SP_v(cpu_T[0]);
                         zprintf("ld sp,%s\n", regpairnames[r1]);
                         break;
-#if 1	/* WmT - HACK */
-                      default:	/* switch (p) incomplete */
-;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-;goto illegal_op;
-#endif
                     }
                     break;
 #if 1	/* WmT - HACK */
@@ -1191,10 +1200,10 @@ goto illegal_op;
 //                    gen_movw_reg_v(r1, cpu_T[1]);
 //                    zprintf("ex (sp),%s\n", regpairnames[r1]);
 //                    break;
-//                case 5:
-//                    gen_ex(OR2_DE, OR2_HL);
-//                    zprintf("ex de,hl\n");
-//                    break;
+                case 5:
+                    gen_ex(OR2_DE, OR2_HL);
+                    zprintf("ex de,hl\n");
+                    break;
 //                case 6:
 //                    gen_helper_di();
 //                    zprintf("di\n");
