@@ -1155,11 +1155,6 @@ goto illegal_op;
                         gen_movw_SP_v(cpu_T[0]);
                         zprintf("ld sp,%s\n", regpairnames[r1]);
                         break;
-#if 1	/* WmT - HACK */
-                      default:
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled p case\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#endif
                     }
                     break;
 #if 1	/* WmT - HACK */
