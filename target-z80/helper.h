@@ -14,7 +14,7 @@ DEF_HELPER_1(movl_pc_im, void, i32)
 
 //DEF_HELPER_1(bit_T0, void, i32)
 DEF_HELPER_0(jmp_T0, void)
-//DEF_HELPER_2(djnz, void, i32, i32)
+DEF_HELPER_2(djnz, void, i32, i32)
 
 /* 8-bit arithmetic */
 DEF_HELPER_0(add_cc, void)
