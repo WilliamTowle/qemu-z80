@@ -545,19 +545,12 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 
 /* [WmT] 'ret' has p=0 */
                     case 0:
-#if 1	/* WmT - TRACE */
-;DPRINTF("[%s:%d] INFO - process 'ret' opcode...\n", __FILE__, __LINE__);
-#endif
                         gen_popw(cpu_T[0]);
                         gen_helper_jmp_T0(cpu_env);
                         zprintf("ret\n");
                         gen_eob(s);
                         s->is_jmp = 3;
 //                      s->is_ei = 1;
-#if 1
-;DPRINTF("[%s:%d] PARTIAL: bailing - need 'magic ramtop' handler elsewhere...\n", __FILE__, __LINE__);
-;exit(1);
-#endif
                         break;
 
 //                    case 1:
