@@ -328,6 +328,9 @@ void HELPER(cp_cc)(CPUZ80State *env)
 
 ///* Rotation/shift operations */
 
+
+///* Z80-specific: R800 has tst instruction */
+
 ///* Block instructions */
 
 /* misc */
@@ -428,6 +431,7 @@ void HELPER(ccf_cc)(CPUZ80State *env)
     F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
 }
 
+
 /* word operations -- HL only? */
 
 void HELPER(sbcw_T0_T1_cc)(CPUZ80State *env)
@@ -515,4 +519,17 @@ void HELPER(decb_T0_cc)(CPUZ80State *env)
 
     F = (F & CC_C) | sf | zf | hf | CC_N | pf;
     /* TODO: check CC_N is set */
+}
+/* enable interrupts */
+void HELPER(ei)(void)
+{
+    env->iff1 = 1;
+    env->iff2 = 1;
+}
+
+/* disable interrupts */
+void HELPER(di)(void)
+{
+    env->iff1 = 0;
+    env->iff2 = 0;
 }
