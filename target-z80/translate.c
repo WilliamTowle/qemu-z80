@@ -200,17 +200,12 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         p = y >> 1;
         q = y & 0x01;
 
-#if 0	/* WmT - HACK */
-;DPRINTF("[%s:%d] HACK - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-;goto illegal_op;
-#else
+#if 1	/* WmT - PARTIAL */
 ;DPRINTF("[%s:%d] PARTIAL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-//...
 #endif
         switch (x) {
-//        case 0:	/* instr pattern 00yyyzzz */
-//            switch (z) {
-//
+        case 0:	/* instr pattern 00yyyzzz */
+            switch (z) {
 //            case 0:
 //                switch (y) {
 //                case 0:
@@ -247,9 +242,9 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    break;
 //                }
 //                break;
-//
-//            case 1:
-//                switch (q) {
+
+            case 1:
+                switch (q) {
 //                case 0:
 //                    n = lduw_code(s->pc);
 //                    s->pc += 2;
@@ -267,9 +262,14 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    gen_movw_reg_v(r2, cpu_T[0]);
 //                    zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
 //                    break;
-//                }
-//                break;
-//
+#if 1	/* WmT: HACK */
+                default:	/* switch (q) incomplete */
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                goto illegal_op;
+#endif
+                }
+                break;
+
 //            case 2:
 //                switch (q) {
 //                case 0:
@@ -461,10 +461,19 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    break;
 //                }
 //                break;
-//            }
-//            break;
-//
-//        case 1:	/* instr pattern 01yyyzzz */
+#if 1	/* WmT: HACK */
+		default:	/* switch (z) incomplete */
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) - unhandled z case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                goto illegal_op;
+#endif
+            }
+            break;
+
+        case 1:	/* instr pattern 01yyyzzz */
+#if 1	/* PARTIAL */
+;DPRINTF("[%s():%d] INFO - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+goto illegal_op;
+#endif
 //            if (z == 6 && y == 6) {
 //                gen_jmp_im(s->pc);
 //                gen_helper_halt();
@@ -502,7 +511,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
 //                }
 //            }
-//            break;
+            break;
 //
 //        case 2:	/* instr pattern 10yyyzzz */
 //            r1 = regmap(reg[z], m);
