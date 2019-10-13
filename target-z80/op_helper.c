@@ -169,6 +169,19 @@ void HELPER(halt)(void)
     cpu_loop_exit(env);
 #endif
 }
+
+/* Misc */
+
+void HELPER(bit_T0)(uint32_t val)
+{
+    int sf, zf, pf;
+
+    sf = (T0 & val & 0x80) ? CC_S : 0;
+    zf = (T0 & val) ? 0 : CC_Z;
+    pf = (T0 & val) ? 0 : CC_P;
+    F = (F & CC_C) | sf | zf | CC_H | pf;
+}
+
 void HELPER(jmp_T0)(void)
 {
     PC = T0;
@@ -310,10 +323,148 @@ void HELPER(cp_cc)(void)
 //  CC_DST = (uint8_t)(A - T0);
 }
 
-///* Rotation/shift operations */
+/* Rotation/shift operations */
 
+void HELPER(rlc_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
 
-///* Z80-specific: R800 has tst instruction */
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | !!(T0 & 0x80));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(rrc_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | ((tmp & 0x01) ? 0x80 : 0));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(rl_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | !!(F & CC_C));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(rr_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | ((F & CC_C) ? 0x80 : 0));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(sla_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 << 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(sra_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | (T0 & 0x80));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+/* Z80-specific: R800 has tst instruction */
+void HELPER(sll_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | 1); /* Yes -- bit 0 is *set* */
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(srl_T0_cc)(void)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 >> 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void HELPER(rld_cc)(void)
+{
+    int sf, zf, pf;
+    int tmp = A & 0x0f;
+    A = (A & 0xf0) | ((T0 >> 4) & 0x0f);
+    T0 = ((T0 << 4) & 0xf0) | tmp;
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[A];
+
+    F = (F & CC_C) | sf | zf | pf;
+}
+
+void HELPER(rrd_cc)(void)
+{
+    int sf, zf, pf;
+    int tmp = A & 0x0f;
+    A = (A & 0xf0) | (T0 & 0x0f);
+    T0 = (T0 >> 4) | (tmp << 4);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[A];
+
+    F = (F & CC_C) | sf | zf | pf;
+}
 
 ///* Block instructions */
 

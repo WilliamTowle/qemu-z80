@@ -622,7 +622,33 @@ static alu_helper_func *const gen_alu[8] = {
     gen_helper_cp_cc,
 };
 
-///* Rotation/shift operations */
+/* Rotation/shift operations */
+
+static const char *const rot[8] = {
+    "rlc",
+    "rrc",
+    "rl",
+    "rr",
+    "sla",
+    "sra",
+    "sll",
+    "srl",
+};
+
+typedef void (rot_helper_func)(void);
+
+static rot_helper_func *const gen_rot_T0[8] = {
+    gen_helper_rlc_T0_cc,
+    gen_helper_rrc_T0_cc,
+    gen_helper_rl_T0_cc,
+    gen_helper_rr_T0_cc,
+    gen_helper_sla_T0_cc,
+    gen_helper_sra_T0_cc,
+    gen_helper_sll_T0_cc,
+    gen_helper_srl_T0_cc,
+};
+
+///* Block instructions */
 
 static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong pc)
 {
@@ -738,7 +764,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 ;DPRINTF("%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
 #endif
     zprintf("PC = %04x: ", s->pc);
-//next_byte:
+next_byte:
     s->prefix = prefixes;
 
 /* START */
@@ -811,11 +837,6 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
                     zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
                     gen_jcc(s, y-4, s->pc + n, s->pc);
                     break;
-#if 1	/* WmT: HACK */
-		default:	/* for switch(y) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
                 }
                 break;
 
@@ -1166,11 +1187,11 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
                     gen_eob(s);
                     s->is_jmp = 3;
                     break;
-//                case 1:
-//                    zprintf("cb prefix\n");
-//                    prefixes |= PREFIX_CB;
-//                    goto next_byte;
-//                    break;
+                case 1:
+                    //zprintf("cb prefix\n");
+                    prefixes |= PREFIX_CB;
+                    goto next_byte;
+                    break;
 //                case 2:
 //                    n = ldub_code(s->pc);
 //                    s->pc++;
@@ -1337,67 +1358,60 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - HACK */
-;DPRINTF("[%s:%d] HACK - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#else
-;DPRINTF("[%s:%d] PARTIAL - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
-#endif
-//        if (m != MODE_NORMAL) {
-//            r1 = regmap(OR_HLmem, m);
-//            gen_movb_v_idx(cpu_T[0], r1, d);
-//            if (z != 6) {
-//                r2 = regmap(reg[z], 0);
-//            }
-//        } else {
-//            r1 = regmap(reg[z], m);
-//            gen_movb_v_reg(cpu_T[0], r1);
-//        }
-//
-//        switch (x) {
-//        case 0:
-//            /* TODO: TST instead of SLL for R800 */
-//            gen_rot_T0[y]();
-//            if (m != MODE_NORMAL) {
-//                gen_movb_idx_v(r1, cpu_T[0], d);
-//                if (z != 6) {
-//                    gen_movb_reg_v(r2, cpu_T[0]);
-//                }
-//            } else {
-//                gen_movb_reg_v(r1, cpu_T[0]);
-//            }
-//            zprintf("%s %s\n", rot[y], regnames[r1]);
-//            break;
-//        case 1:
-//            gen_helper_bit_T0(tcg_const_tl(1 << y));
-//            zprintf("bit %i,%s\n", y, regnames[r1]);
-//            break;
-//        case 2:
-//            tcg_gen_andi_tl(cpu_T[0], cpu_T[0], ~(1 << y));
-//            if (m != MODE_NORMAL) {
-//                gen_movb_idx_v(r1, cpu_T[0], d);
-//                if (z != 6) {
-//                    gen_movb_reg_v(r2, cpu_T[0]);
-//                }
-//            } else {
-//                gen_movb_reg_v(r1, cpu_T[0]);
-//            }
-//            zprintf("res %i,%s\n", y, regnames[r1]);
-//            break;
-//        case 3:
-//            tcg_gen_ori_tl(cpu_T[0], cpu_T[0], 1 << y);
-//            if (m != MODE_NORMAL) {
-//                gen_movb_idx_v(r1, cpu_T[0], d);
-//                if (z != 6) {
-//                    gen_movb_reg_v(r2, cpu_T[0]);
-//                }
-//            } else {
-//                gen_movb_reg_v(r1, cpu_T[0]);
-//            }
-//            zprintf("set %i,%s\n", y, regnames[r1]);
-//            break;
-//        }
-//
+        if (m != MODE_NORMAL) {
+            r1 = regmap(OR_HLmem, m);
+            gen_movb_v_idx(cpu_T[0], r1, d);
+            if (z != 6) {
+                r2 = regmap(reg[z], 0);
+            }
+        } else {
+            r1 = regmap(reg[z], m);
+            gen_movb_v_reg(cpu_T[0], r1);
+        }
+
+        switch (x) {
+        case 0:
+            /* TODO: TST instead of SLL for R800 */
+            gen_rot_T0[y]();
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("%s %s\n", rot[y], regnames[r1]);
+            break;
+        case 1:
+            gen_helper_bit_T0(tcg_const_tl(1 << y));
+            zprintf("bit %i,%s\n", y, regnames[r1]);
+            break;
+        case 2:
+            tcg_gen_andi_tl(cpu_T[0], cpu_T[0], ~(1 << y));
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("res %i,%s\n", y, regnames[r1]);
+            break;
+        case 3:
+            tcg_gen_ori_tl(cpu_T[0], cpu_T[0], 1 << y);
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("set %i,%s\n", y, regnames[r1]);
+            break;
+        }
     } else if (prefixes & PREFIX_ED) {
         /* ed mode: */
 
