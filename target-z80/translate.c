@@ -710,9 +710,9 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
             switch (z) {
             case 0:
                 switch (y) {
-//                case 0:
-//                    zprintf("nop\n");
-//                    break;
+                case 0:
+                    zprintf("nop\n");
+                    break;
                 case 1:
                     gen_ex(OR2_AF, OR2_AFX);
                     zprintf("ex af,af'\n");
