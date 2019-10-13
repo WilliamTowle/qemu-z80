@@ -650,6 +650,10 @@ static rot_helper_func *const gen_rot_T0[8] = {
 
 ///* Block instructions */
 
+static const int imode[8] = {
+    0, 0, 1, 2, 0, 0, 1, 2,
+};
+
 static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong pc)
 {
     gen_jmp_im(pc);
@@ -1282,28 +1286,18 @@ next_byte:
                         prefixes |= PREFIX_DD;
                         goto next_byte;
                         break;
-//                    case 2:
-//                        zprintf("ed prefix\n");
-//                        prefixes |= PREFIX_ED;
-//                        goto next_byte;
-//                        break;
+                    case 2:
+                        //zprintf("ed prefix\n");
+                        prefixes |= PREFIX_ED;
+                        goto next_byte;
+                        break;
                     case 3:
                         //zprintf("fd prefix\n");
                         prefixes |= PREFIX_FD;
                         goto next_byte;
                         break;
-#if 1	/* WmT: HACK */
-		    default:	/* for switch(p) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
                     }
                     break;
-#if 1	/* WmT: HACK */
-		default:	/* for switch(q) */
-;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
-			goto illegal_op;
-#endif
                 }
                 break;
 
@@ -1428,18 +1422,14 @@ next_byte:
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - HACK */
-;DPRINTF("[%s:%d] HACK - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#else
-;DPRINTF("[%s:%d] PARTIAL - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
-#endif
-//        switch (x) {
-//        case 0:
-//            zprintf("nop\n");
-//            break;
-//        case 3:
-//            if (s->model == Z80_CPU_R800) {
+        switch (x) {
+        case 0:
+            zprintf("nop\n");
+            break;
+        case 3:
+            if (s->model == Z80_CPU_R800) {
+;DPRINTF("[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, CPU R800)\n", __FILE__, __LINE__, b, x);
+                goto illegal_op;
 //                switch (z) {
 //                case 1:
 //                    /* does mulub work with r1 == h, l, (hl) or a? */
@@ -1464,13 +1454,13 @@ next_byte:
 //                    zprintf("nop\n");
 //                    break;
 //                }
-//            } else {
-//                zprintf("nop\n");
-//            }
-//            break;
-//
-//        case 1:
-//            switch (z) {
+            } else {
+                zprintf("nop\n");
+            }
+            break;
+
+        case 1:
+            switch (z) {
 //            case 0:
 //                if (use_icount) {
 //                    gen_io_start();
@@ -1506,139 +1496,144 @@ next_byte:
 //                    gen_jmp_im(s->pc);
 //                }
 //                break;
-//            case 2:
-//                r1 = regpairmap(OR2_HL, m);
-//                r2 = regpairmap(regpair[p], m);
-//                gen_movw_v_reg(cpu_T[0], r1);
-//                gen_movw_v_reg(cpu_T[1], r2);
-//                if (q == 0) {
-//                    zprintf("sbc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-//                    gen_helper_sbcw_T0_T1_cc();
-//                } else {
-//                    zprintf("adc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-//                    gen_helper_adcw_T0_T1_cc();
-//                }
-//                gen_movw_reg_v(r1, cpu_T[0]);
-//                break;
-//            case 3:
-//                n = lduw_code(s->pc);
-//                s->pc += 2;
-//                r1 = regpairmap(regpair[p], m);
-//                if (q == 0) {
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    tcg_gen_movi_i32(cpu_A0, n);
-//                    tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    zprintf("ld ($%02x),%s\n", n, regpairnames[r1]);
-//                } else {
-//                    tcg_gen_movi_i32(cpu_A0, n);
-//                    tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    gen_movw_reg_v(r1, cpu_T[0]);
-//                    zprintf("ld %s,($%02x)\n", regpairnames[r1], n);
-//                }
-//                break;
-//            case 4:
-//                zprintf("neg\n");
-//                gen_helper_neg_cc();
-//                break;
-//            case 5:
-//                /* FIXME */
-//                gen_popw(cpu_T[0]);
-//                gen_helper_jmp_T0();
-//                gen_helper_ri();
-//                if (q == 0) {
-//                    zprintf("retn\n");
-//                } else {
-//                    zprintf("reti\n");
-//                }
-//                gen_eob(s);
-//                s->is_jmp = 3;
-////              s->is_ei = 1;
-//                break;
-//            case 6:
-//                gen_helper_imode(tcg_const_tl(imode[y]));
-//                zprintf("im im[%i]\n", imode[y]);
-////              gen_eob(s);
-////              s->is_ei = 1;
-//                break;
-//            case 7:
-//                switch (y) {
-//                case 0:
-//                    gen_helper_ld_I_A();
-//                    zprintf("ld i,a\n");
-//                    break;
-//                case 1:
-//                    gen_helper_ld_R_A();
-//                    zprintf("ld r,a\n");
-//                    break;
-//                case 2:
-//                    gen_helper_ld_A_I();
-//                    zprintf("ld a,i\n");
-//                    break;
-//                case 3:
-//                    gen_helper_ld_A_R();
-//                    zprintf("ld a,r\n");
-//                    break;
-//                case 4:
-//                    gen_movb_v_HLmem(cpu_T[0]);
-//                    gen_helper_rrd_cc();
-//                    gen_movb_HLmem_v(cpu_T[0]);
-//                    zprintf("rrd\n");
-//                    break;
-//                case 5:
-//                    gen_movb_v_HLmem(cpu_T[0]);
-//                    gen_helper_rld_cc();
-//                    gen_movb_HLmem_v(cpu_T[0]);
-//                    zprintf("rld\n");
-//                    break;
-//                case 6:
-//                case 7:
-//                    zprintf("nop2\n");
-//                    /* nop */
-//                    break;
-//                }
-//                break;
-//            }
-//            break;
-//
-//        case 2:
-//            /* FIXME */
-//            if (y >= 4) {
-//                switch (z) {
-//                case 0: /* ldi/ldd/ldir/lddr */
-//                    gen_movw_v_HL(cpu_A0);
-//                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    gen_movw_v_DE(cpu_A0);
-//                    tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
-//
-//                    if (!(y & 1)) {
-//                        gen_helper_bli_ld_inc_cc();
-//                    } else {
-//                        gen_helper_bli_ld_dec_cc();
-//                    }
-//                    if ((y & 2)) {
-//                        gen_helper_bli_ld_rep(tcg_const_tl(s->pc));
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                    }
-//                    break;
-//
-//                case 1: /* cpi/cpd/cpir/cpdr */
-//                    gen_movw_v_HL(cpu_A0);
-//                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-//                    gen_helper_bli_cp_cc();
-//
-//                    if (!(y & 1)) {
-//                        gen_helper_bli_cp_inc_cc();
-//                    } else {
-//                        gen_helper_bli_cp_dec_cc();
-//                    }
-//                    if ((y & 2)) {
-//                        gen_helper_bli_cp_rep(tcg_const_tl(s->pc));
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                    }
-//                    break;
-//
+            case 2:
+                r1 = regpairmap(OR2_HL, m);
+                r2 = regpairmap(regpair[p], m);
+                gen_movw_v_reg(cpu_T[0], r1);
+                gen_movw_v_reg(cpu_T[1], r2);
+                if (q == 0) {
+                    zprintf("sbc %s,%s\n", regpairnames[r1], regpairnames[r2]);
+                    gen_helper_sbcw_T0_T1_cc();
+                } else {
+                    zprintf("adc %s,%s\n", regpairnames[r1], regpairnames[r2]);
+                    gen_helper_adcw_T0_T1_cc();
+                }
+                gen_movw_reg_v(r1, cpu_T[0]);
+                break;
+            case 3:
+                n = lduw_code(s->pc);
+                s->pc += 2;
+                r1 = regpairmap(regpair[p], m);
+                if (q == 0) {
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_movi_i32(cpu_A0, n);
+                    tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
+                    zprintf("ld ($%02x),%s\n", n, regpairnames[r1]);
+                } else {
+                    tcg_gen_movi_i32(cpu_A0, n);
+                    tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("ld %s,($%02x)\n", regpairnames[r1], n);
+                }
+                break;
+            case 4:
+                zprintf("neg\n");
+                gen_helper_neg_cc();
+                break;
+            case 5:
+                /* FIXME */
+                gen_popw(cpu_T[0]);
+                gen_helper_jmp_T0();
+                gen_helper_ri();
+                if (q == 0) {
+                    zprintf("retn\n");
+                } else {
+                    zprintf("reti\n");
+                }
+                gen_eob(s);
+                s->is_jmp = 3;
+//              s->is_ei = 1;
+                break;
+            case 6:
+                gen_helper_imode(tcg_const_tl(imode[y]));
+                zprintf("im im[%i]\n", imode[y]);
+//              gen_eob(s);
+//              s->is_ei = 1;
+                break;
+            case 7:
+                switch (y) {
+                case 0:
+                    gen_helper_ld_I_A();
+                    zprintf("ld i,a\n");
+                    break;
+                case 1:
+                    gen_helper_ld_R_A();
+                    zprintf("ld r,a\n");
+                    break;
+                case 2:
+                    gen_helper_ld_A_I();
+                    zprintf("ld a,i\n");
+                    break;
+                case 3:
+                    gen_helper_ld_A_R();
+                    zprintf("ld a,r\n");
+                    break;
+                case 4:
+                    gen_movb_v_HLmem(cpu_T[0]);
+                    gen_helper_rrd_cc();
+                    gen_movb_HLmem_v(cpu_T[0]);
+                    zprintf("rrd\n");
+                    break;
+                case 5:
+                    gen_movb_v_HLmem(cpu_T[0]);
+                    gen_helper_rld_cc();
+                    gen_movb_HLmem_v(cpu_T[0]);
+                    zprintf("rld\n");
+                    break;
+                case 6:
+                case 7:
+                    zprintf("nop2\n");
+                    /* nop */
+                    break;
+                }
+                break;
+#if 1	/* WmT: HACK */
+		default:	/* for switch(z) */
+;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+            }
+            break;
+
+        case 2:
+            /* FIXME */
+            if (y >= 4) {
+                switch (z) {
+                case 0: /* ldi/ldd/ldir/lddr */
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_movw_v_DE(cpu_A0);
+                    tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+
+                    if (!(y & 1)) {
+                        gen_helper_bli_ld_inc_cc();
+                    } else {
+                        gen_helper_bli_ld_dec_cc();
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_ld_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                    }
+                    break;
+
+                case 1: /* cpi/cpd/cpir/cpdr */
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_helper_bli_cp_cc();
+
+                    if (!(y & 1)) {
+                        gen_helper_bli_cp_inc_cc();
+                    } else {
+                        gen_helper_bli_cp_dec_cc();
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_cp_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                    }
+                    break;
+
 //                case 2: /* ini/ind/inir/indr */
 //                    if (use_icount) {
 //                        gen_io_start();
@@ -1685,13 +1680,23 @@ next_byte:
 //                    } else if (use_icount) {
 //                        gen_jmp_im(s->pc);
 //                    }
-//                    break;
-//                }
-//
-//                zprintf("%s\n", bli[y-4][z]);
-//                break;
-//            }
-//        }
+//                    break;	/* case z=3 ends */
+#if 1	/* WmT: HACK */
+		    default:	/* for switch(z) */
+;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+                }
+
+                zprintf("%s\n", bli[y-4][z]);
+                break;
+            }	/* case 2 end - falls through for y=0..3 */
+#if 1	/* WmT: HACK */
+		default:	/* for switch(x) */
+;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+        }
     }
 
     prefixes = 0;
