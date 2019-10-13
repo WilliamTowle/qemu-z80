@@ -850,8 +850,14 @@ goto illegal_op;
                 }
             }
             break;
-//
-//        case 2:	/* instr pattern 10yyyzzz */
+
+        case 2:	/* instr pattern 10yyyzzz */
+#if 0	/* ifdef TARGET_Z80 */
+;fprintf(stderr, "[%s():%d] INFO - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+#else
+;fprintf(stderr, "[%s():%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> illegal\n", __FILE__, __LINE__, b, x, y, z, p, q);
+goto illegal_op;
+#endif
 //            r1 = regmap(reg[z], m);
 //            if (is_indexed(r1)) {
 //                d = ldsb_code(s->pc);
@@ -866,7 +872,7 @@ goto illegal_op;
 //            } else {
 //                zprintf("%s%s\n", alu[y], regnames[r1]);
 //            }
-//            break;
+            break;
 
 /* [WmT] 'ret' has x=3 */
         case 3:	/* instr pattern 11yyyzzz */
