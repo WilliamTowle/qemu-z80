@@ -260,6 +260,106 @@ void HELPER(cp_cc)(CPUZ80State *env)
 
 ///* Rotation/shift operations */
 
+///* Block instructions */
+
+/* misc */
+
+void HELPER(rlca_cc)(void)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (uint8_t)((A << 1) | !!(tmp & 0x80));
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void HELPER(rrca_cc)(void)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (A >> 1) | ((tmp & 0x01) ? 0x80 : 0);
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void HELPER(rla_cc)(void)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (uint8_t)((A << 1) | !!(F & CC_C));
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void HELPER(rra_cc)(void)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (A >> 1) | ((F & CC_C) ? 0x80 : 0);
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+/* TODO */
+void HELPER(daa_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int cor = 0;
+    int tmp = A;
+
+    if (A > 0x99 || (F & CC_C)) {
+        cor |= 0x60;
+        cf = CC_C;
+    } else {
+        cf = 0;
+    }
+
+    if ((A & 0x0f) > 0x09 || (F & CC_H)) {
+        cor |= 0x06;
+    }
+
+    if (!(F & CC_N)) {
+        A = (uint8_t)(A + cor);
+    } else {
+        A = (uint8_t)(A - cor);
+    }
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    hf = ((tmp ^ A) & 0x10) ? CC_H : 0;
+    pf = parity_table[(uint8_t)A];
+
+    F = (F & CC_N) | sf | zf | hf | pf | cf;
+}
+
+void HELPER(cpl_cc)(void)
+{
+    A = (uint8_t)~A;
+    F |= CC_H | CC_N;
+}
+
+void HELPER(scf_cc)(void)
+{
+    F = (F & (CC_S | CC_Z | CC_P)) | CC_C;
+}
+
+void HELPER(ccf_cc)(void)
+{
+    int hf, cf;
+
+    hf = (F & CC_C) ? CC_H : 0;
+    cf = (F & CC_C) ^ CC_C;
+    F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
+}
+
 /* word operations -- HL only? */
 
 void HELPER(sbcw_T0_T1_cc)(CPUZ80State *env)
