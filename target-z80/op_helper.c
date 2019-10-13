@@ -190,6 +190,16 @@ void HELPER(jmp_T0)(CPUZ80State *env)
     PC = T0;
 }
 
+void HELPER(djnz)(uint32_t pc1, uint32_t pc2)
+{
+    BC = (uint16_t)(BC - 0x0100);
+    if (BC & 0xff00) {
+        PC = (uint16_t)pc1;
+    } else {
+        PC = (uint16_t)pc2;
+    }
+}
+
 /* Arithmetic/logic operations */
 
 #define signed_overflow_add(op1, op2, res, size) \
