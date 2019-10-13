@@ -1127,14 +1127,14 @@ goto illegal_op;
 //                    }
 //                    zprintf("in a,($%02x)\n", n);
 //                    break;
-//                case 4:
-//                    r1 = regpairmap(OR2_HL, m);
-//                    gen_popw(cpu_T[1]);
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    gen_pushw(cpu_T[0]);
-//                    gen_movw_reg_v(r1, cpu_T[1]);
-//                    zprintf("ex (sp),%s\n", regpairnames[r1]);
-//                    break;
+                case 4:
+                    r1 = regpairmap(OR2_HL, m);
+                    gen_popw(cpu_T[1]);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_pushw(cpu_T[0]);
+                    gen_movw_reg_v(r1, cpu_T[1]);
+                    zprintf("ex (sp),%s\n", regpairnames[r1]);
+                    break;
                 case 5:
                     gen_ex(OR2_DE, OR2_HL);
                     zprintf("ex de,hl\n");
