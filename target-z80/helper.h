@@ -14,7 +14,7 @@ DEF_HELPER_0(halt, void)
 
 /* Misc */
 
-//DEF_HELPER_1(bit_T0, void, i32)
+DEF_HELPER_1(bit_T0, void, i32)
 DEF_HELPER_0(jmp_T0, void)
 DEF_HELPER_2(djnz, void, i32, i32)
 
@@ -28,7 +28,17 @@ DEF_HELPER_0(xor_cc, void)
 DEF_HELPER_0(or_cc, void)
 DEF_HELPER_0(cp_cc, void)
 
-///* Rotation/shifts */
+/* Rotation/shifts */
+DEF_HELPER_0(rlc_T0_cc, void)
+DEF_HELPER_0(rrc_T0_cc, void)
+DEF_HELPER_0(rl_T0_cc, void)
+DEF_HELPER_0(rr_T0_cc, void)
+DEF_HELPER_0(sla_T0_cc, void)
+DEF_HELPER_0(sra_T0_cc, void)
+DEF_HELPER_0(sll_T0_cc, void)
+DEF_HELPER_0(srl_T0_cc, void)
+DEF_HELPER_0(rld_cc, void)
+DEF_HELPER_0(rrd_cc, void)
 
 ///* Block instructions */
 
