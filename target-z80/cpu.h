@@ -13,6 +13,16 @@
 
 #define TARGET_LONG_BITS 32
 
+/* flags masks */
+#define CC_C   	0x0001
+#define CC_N    0x0002
+#define CC_P 	0x0004
+#define CC_X 	0x0008
+#define CC_H	0x0010
+#define CC_Y 	0x0020
+#define CC_Z	0x0040
+#define CC_S    0x0080
+
 /* hidden flags - used internally by qemu to represent additionnal cpu
    states. Only the CPL and INHIBIT_IRQ are not redundant. We avoid
    using the IOPL_MASK, TF_MASK and VM_MASK bit position to ease oring
