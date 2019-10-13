@@ -1281,21 +1281,21 @@ next_byte:
                         gen_eob(s);
                         s->is_jmp = 3;
                         break;
-//                    case 1:
-//                        zprintf("dd prefix\n");
-//                        prefixes |= PREFIX_DD;
-//                        goto next_byte;
-//                        break;
+                    case 1:
+                        //zprintf("dd prefix\n");
+                        prefixes |= PREFIX_DD;
+                        goto next_byte;
+                        break;
 //                    case 2:
 //                        zprintf("ed prefix\n");
 //                        prefixes |= PREFIX_ED;
 //                        goto next_byte;
 //                        break;
-//                    case 3:
-//                        zprintf("fd prefix\n");
-//                        prefixes |= PREFIX_FD;
-//                        goto next_byte;
-//                        break;
+                    case 3:
+                        //zprintf("fd prefix\n");
+                        prefixes |= PREFIX_FD;
+                        goto next_byte;
+                        break;
 #if 1	/* WmT: HACK */
 		    default:	/* for switch(p) */
 ;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
