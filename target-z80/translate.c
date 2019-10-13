@@ -1104,14 +1104,14 @@ goto illegal_op;
 //                        gen_ex(OR2_HL, OR2_HLX);
 //                        zprintf("exx\n");
 //                        break;
-//                    case 2:
-//                        r1 = regpairmap(OR2_HL, m);
-//                        gen_movw_v_reg(cpu_T[0], r1);
-//                        gen_helper_jmp_T0();
-//                        zprintf("jp %s\n", regpairnames[r1]);
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                        break;
+                    case 2:
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_helper_jmp_T0();
+                        zprintf("jp %s\n", regpairnames[r1]);
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                        break;
 //                    case 3:
 //                        r1 = regpairmap(OR2_HL, m);
 //                        gen_movw_v_reg(cpu_T[0], r1);
@@ -1228,18 +1228,18 @@ goto illegal_op;
                     gen_pushw(cpu_T[0]);
                     zprintf("push %s\n", regpairnames[r1]);
                     break;
-//                case 1:
-//                    switch (p) {
-//                    case 0:
-//                        n = lduw_code(s->pc);
-//                        s->pc += 2;
-//                        tcg_gen_movi_tl(cpu_T[0], s->pc);
-//                        gen_pushw(cpu_T[0]);
-//                        gen_jmp_im(n);
-//                        zprintf("call $%04x\n", n);
-//                        gen_eob(s);
-//                        s->is_jmp = 3;
-//                        break;
+                case 1:
+                    switch (p) {
+                    case 0:
+                        n = lduw_code(s->pc);
+                        s->pc += 2;
+                        tcg_gen_movi_tl(cpu_T[0], s->pc);
+                        gen_pushw(cpu_T[0]);
+                        gen_jmp_im(n);
+                        zprintf("call $%04x\n", n);
+                        gen_eob(s);
+                        s->is_jmp = 3;
+                        break;
 //                    case 1:
 //                        zprintf("dd prefix\n");
 //                        prefixes |= PREFIX_DD;
@@ -1255,8 +1255,13 @@ goto illegal_op;
 //                        prefixes |= PREFIX_FD;
 //                        goto next_byte;
 //                        break;
-//                    }
-//                    break;
+#if 1	/* WmT: HACK */
+		    default:	/* for switch(p) */
+;fprintf(stderr, "[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, y %d, z %d, p %d, q %d)\n", __FILE__, __LINE__, b, x, y, z, p, q);
+			goto illegal_op;
+#endif
+                    }
+                    break;
 #if 1	/* WmT: HACK */
                 default:	/* switch(q) incomplete */
 ;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) - unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
