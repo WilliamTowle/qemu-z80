@@ -854,8 +854,14 @@ goto illegal_op;
                 }
             }
             break;
-//
-//        case 2:     /* insn pattern 10yyyzzz */
+
+        case 2:     /* insn pattern 10yyyzzz */
+#if 0	/* ifdef TARGET_Z80 */
+;DPRINTF("[%s():%d] INFO - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, b, x, y,p,q, z);
+#else
+;DPRINTF("[%s():%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) -> illegal\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+goto illegal_op;
+#endif
 //            r1 = regmap(reg[z], m);
 //            if (is_indexed(r1)) {
 //                d = ldsb_code(s->pc);
@@ -870,7 +876,7 @@ goto illegal_op;
 //            } else {
 //                zprintf("%s%s\n", alu[y], regnames[r1]);
 //            }
-//            break;
+            break;
 
 /* [WmT] 'ret' has x=3 */
         case 3:     /* insn pattern 11yyyzzz */
