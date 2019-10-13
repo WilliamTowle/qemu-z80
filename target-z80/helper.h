@@ -8,6 +8,8 @@ DEF_HELPER_0(reset_inhibit_irq, void)
 
 DEF_HELPER_1(movl_pc_im, void, i32)
 
+DEF_HELPER_0(halt, void)
+
 ///* In / Out */
 
 /* Misc */
