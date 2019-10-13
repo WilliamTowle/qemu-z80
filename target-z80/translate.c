@@ -791,29 +791,29 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    break;
 //                }
 //                break;
-//
-//            case 4:
-//                r1 = regmap(reg[y], m);
-//                if (is_indexed(r1)) {
-//                    d = ldsb_code(s->pc);
-//                    s->pc++;
-//                    gen_movb_v_idx(cpu_T[0], r1, d);
-//                } else {
-//                    gen_movb_v_reg(cpu_T[0], r1);
-//                }
-//                gen_helper_incb_T0_cc();
-//                if (is_indexed(r1)) {
-//                    gen_movb_idx_v(r1, cpu_T[0], d);
-//                } else {
-//                    gen_movb_reg_v(r1, cpu_T[0]);
-//                }
-//                if (is_indexed(r1)) {
-//                    zprintf("inc (%s%c$%02x)\n", idxnames[r1], shexb(d));
-//                } else {
-//                    zprintf("inc %s\n", regnames[r1]);
-//                }
-//                break;
-//
+
+            case 4:
+                r1 = regmap(reg[y], m);
+                if (is_indexed(r1)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                    gen_movb_v_idx(cpu_T[0], r1, d);
+                } else {
+                    gen_movb_v_reg(cpu_T[0], r1);
+                }
+                gen_helper_incb_T0_cc();
+                if (is_indexed(r1)) {
+                    gen_movb_idx_v(r1, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("inc (%s%c$%02x)\n", idxnames[r1], shexb(d));
+                } else {
+                    zprintf("inc %s\n", regnames[r1]);
+                }
+                break;
+
 //            case 5:
 //                r1 = regmap(reg[y], m);
 //                if (is_indexed(r1)) {
