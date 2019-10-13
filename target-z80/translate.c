@@ -1019,13 +1019,9 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 
         case 1:	/* instr pattern 01yyyzzz */
             if (z == 6 && y == 6) {
-#if 1	/* PARTIAL */
-;DPRINTF("[%s():%d] INFO - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-goto illegal_op;
-#endif
-//                gen_jmp_im(s->pc);
-//                gen_helper_halt();
-//                zprintf("halt\n");
+                gen_jmp_im(s->pc);
+                gen_helper_halt();
+                zprintf("halt\n");
             } else {
                 if (z == 6) {
                     r1 = regmap(reg[z], m);
