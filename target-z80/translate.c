@@ -289,6 +289,16 @@ static inline void gen_movb_IYmem_v(TCGv v, uint16_t ofs)
     tcg_temp_free(addr);
 }
 
+static inline void gen_pushw(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_SP(addr);
+    tcg_gen_subi_i32(addr, addr, 2);
+    tcg_gen_ext16u_i32(addr, addr);
+    gen_movw_SP_v(addr);
+    tcg_gen_qemu_st16(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
 
 static inline void gen_popw(TCGv v)
 {
@@ -564,6 +574,14 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 
 ///* Conditions */
 
+
+static const int cc_flags[4] = {
+    CC_Z,
+    CC_C,
+    CC_P,
+    CC_S,
+};
+
 /* Arithmetic/logic operations */
 
 static const char *const alu[8] = {
@@ -593,6 +611,85 @@ static alu_helper_func *const gen_alu[8] = {
 };
 
 ///* Rotation/shift operations */
+
+static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong pc)
+{
+    gen_jmp_im(pc);
+    gen_eob(s);
+}
+
+static inline void gen_cond_jump(int cc, int l1)
+{
+    gen_movb_v_F(cpu_T[0]);
+
+    tcg_gen_andi_tl(cpu_T[0], cpu_T[0], cc_flags[cc >> 1]);
+
+    tcg_gen_brcondi_tl((cc & 1) ? TCG_COND_NE : TCG_COND_EQ, cpu_T[0], 0, l1);
+}
+
+static inline void gen_jcc(DisasContext *s, int cc,
+                           target_ulong val, target_ulong next_pc)
+{
+    TranslationBlock *tb;
+    int l1;
+
+    tb = s->tb;
+
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    gen_goto_tb(s, 1, val);
+
+    s->is_jmp = 3;
+}
+
+static inline void gen_callcc(DisasContext *s, int cc,
+                              target_ulong val, target_ulong next_pc)
+{
+    TranslationBlock *tb;
+    int l1;
+
+    tb = s->tb;
+
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    tcg_gen_movi_tl(cpu_T[0], next_pc);
+    gen_pushw(cpu_T[0]);
+    gen_goto_tb(s, 1, val);
+
+    s->is_jmp = 3;
+}
+
+static inline void gen_retcc(DisasContext *s, int cc,
+                             target_ulong next_pc)
+{
+    TranslationBlock *tb;
+    int l1;
+
+    tb = s->tb;
+
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    gen_popw(cpu_T[0]);
+    gen_helper_jmp_T0();
+    gen_eob(s);
+
+    s->is_jmp = 3;
+}
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
@@ -649,8 +746,8 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         switch (x) {
         case 0:     /* insn pattern 00yyyzzz */
             switch (z) {
-//            case 0:
-//                switch (y) {
+            case 0:
+                switch (y) {
 //                case 0:
 //                    zprintf("nop\n");
 //                    break;
@@ -658,33 +755,38 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    gen_ex(OR2_AF, OR2_AFX);
 //                    zprintf("ex af,af'\n");
 //                    break;
-//                case 2:
-//                    n = ldsb_code(s->pc);
-//                    s->pc++;
-//                    gen_helper_djnz(tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
-//                    gen_eob(s);
-//                    s->is_jmp = 3;
-//                    zprintf("djnz $%02x\n", n);
-//                    break;
-//                case 3:
-//                    n = ldsb_code(s->pc);
-//                    s->pc++;
-//                    gen_jmp_im(s->pc + n);
-//                    gen_eob(s);
-//                    s->is_jmp = 3;
-//                    zprintf("jr $%02x\n", n);
-//                    break;
-//                case 4:
-//                case 5:
-//                case 6:
-//                case 7:
-//                    n = ldsb_code(s->pc);
-//                    s->pc++;
-//                    zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
-//                    gen_jcc(s, y-4, s->pc + n, s->pc);
-//                    break;
-//                }
-//                break;
+                case 2:
+                    n = ldsb_code(s->pc);
+                    s->pc++;
+                    gen_helper_djnz(tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
+                    gen_eob(s);
+                    s->is_jmp = 3;
+                    zprintf("djnz $%02x\n", n);
+                    break;
+                case 3:
+                    n = ldsb_code(s->pc);
+                    s->pc++;
+                    gen_jmp_im(s->pc + n);
+                    gen_eob(s);
+                    s->is_jmp = 3;
+                    zprintf("jr $%02x\n", n);
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    n = ldsb_code(s->pc);
+                    s->pc++;
+                    zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
+                    gen_jcc(s, y-4, s->pc + n, s->pc);
+                    break;
+#if 1	/* WmT: HACK */
+                default:	/* switch(y) incomplete */
+;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                    goto illegal_op;
+#endif
+                }
+                break;
 
             case 1:
                 switch (q) {
@@ -971,10 +1073,10 @@ goto illegal_op;
 /* [WmT] 'ret' has x=3 */
         case 3:     /* insn pattern 11yyyzzz */
             switch (z) {
-//            case 0:
-//                gen_retcc(s, y, s->pc);
-//                zprintf("ret %s\n", cc[y]);
-//                break;
+            case 0:
+                gen_retcc(s, y, s->pc);
+                zprintf("ret %s\n", cc[y]);
+                break;
 
 /* [WmT] 'ret' has z=1 */
             case 1:
@@ -1034,24 +1136,24 @@ goto illegal_op;
 #endif
                 }
                 break;
-//
-//            case 2:
-//                n = lduw_code(s->pc);
-//                s->pc += 2;
-//                gen_jcc(s, y, n, s->pc);
-//                zprintf("jp %s,$%04x\n", cc[y], n);
-//                break;
-//
-//            case 3:
-//                switch (y) {
-//                case 0:
-//                    n = lduw_code(s->pc);
-//                    s->pc += 2;
-//                    gen_jmp_im(n);
-//                    zprintf("jp $%04x\n", n);
-//                    gen_eob(s);
-//                    s->is_jmp = 3;
-//                    break;
+
+            case 2:
+                n = lduw_code(s->pc);
+                s->pc += 2;
+                gen_jcc(s, y, n, s->pc);
+                zprintf("jp %s,$%04x\n", cc[y], n);
+                break;
+
+            case 3:
+                switch (y) {
+                case 0:
+                    n = lduw_code(s->pc);
+                    s->pc += 2;
+                    gen_jmp_im(n);
+                    zprintf("jp $%04x\n", n);
+                    gen_eob(s);
+                    s->is_jmp = 3;
+                    break;
 //                case 1:
 //                    zprintf("cb prefix\n");
 //                    prefixes |= PREFIX_CB;
@@ -1107,16 +1209,21 @@ goto illegal_op;
 ////                  gen_eob(s);
 ////                  s->is_ei = 1;
 //                    break;
-//                }
-//                break;
-//
-//            case 4:
-//                n = lduw_code(s->pc);
-//                s->pc += 2;
-//                gen_callcc(s, y, n, s->pc);
-//                zprintf("call %s,$%04x\n", cc[y], n);
-//                break;
-//
+#if 1	/* WmT: HACK */
+                default:	/* switch(y) incomplete */
+;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                    goto illegal_op;
+#endif
+                }
+                break;
+
+            case 4:
+                n = lduw_code(s->pc);
+                s->pc += 2;
+                gen_callcc(s, y, n, s->pc);
+                zprintf("call %s,$%04x\n", cc[y], n);
+                break;
+
 //            case 5:
 //                switch (q) {
 //                case 0:
