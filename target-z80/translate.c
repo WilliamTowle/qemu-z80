@@ -897,25 +897,25 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                    break;
 //                }
 //                break;
-//
-//            case 3:
-//                switch (q) {
-//                case 0:
-//                    r1 = regpairmap(regpair[p], m);
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    tcg_gen_addi_tl(cpu_T[0], cpu_T[0], 1);
-//                    gen_movw_reg_v(r1, cpu_T[0]);
-//                    zprintf("inc %s\n", regpairnames[r1]);
-//                    break;
-//                case 1:
-//                    r1 = regpairmap(regpair[p], m);
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    tcg_gen_subi_tl(cpu_T[0], cpu_T[0], 1);
-//                    gen_movw_reg_v(r1, cpu_T[0]);
-//                    zprintf("dec %s\n", regpairnames[r1]);
-//                    break;
-//                }
-//                break;
+
+            case 3:
+                switch (q) {
+                case 0:
+                    r1 = regpairmap(regpair[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_addi_tl(cpu_T[0], cpu_T[0], 1);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("inc %s\n", regpairnames[r1]);
+                    break;
+                case 1:
+                    r1 = regpairmap(regpair[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_subi_tl(cpu_T[0], cpu_T[0], 1);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("dec %s\n", regpairnames[r1]);
+                    break;
+                }
+                break;
 
             case 4:
                 r1 = regmap(reg[y], m);
@@ -939,27 +939,27 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
                 }
                 break;
 
-//            case 5:
-//                r1 = regmap(reg[y], m);
-//                if (is_indexed(r1)) {
-//                    d = ldsb_code(s->pc);
-//                    s->pc++;
-//                    gen_movb_v_idx(cpu_T[0], r1, d);
-//                } else {
-//                    gen_movb_v_reg(cpu_T[0], r1);
-//                }
-//                gen_helper_decb_T0_cc();
-//                if (is_indexed(r1)) {
-//                    gen_movb_idx_v(r1, cpu_T[0], d);
-//                } else {
-//                    gen_movb_reg_v(r1, cpu_T[0]);
-//                }
-//                if (is_indexed(r1)) {
-//                    zprintf("dec (%s%c$%02x)\n", idxnames[r1], shexb(d));
-//                } else {
-//                    zprintf("dec %s\n", regnames[r1]);
-//                }
-//                break;
+            case 5:
+                r1 = regmap(reg[y], m);
+                if (is_indexed(r1)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                    gen_movb_v_idx(cpu_T[0], r1, d);
+                } else {
+                    gen_movb_v_reg(cpu_T[0], r1);
+                }
+                gen_helper_decb_T0_cc();
+                if (is_indexed(r1)) {
+                    gen_movb_idx_v(r1, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("dec (%s%c$%02x)\n", idxnames[r1], shexb(d));
+                } else {
+                    zprintf("dec %s\n", regnames[r1]);
+                }
+                break;
 
             case 6:
                 r1 = regmap(reg[y], m);
@@ -1135,12 +1135,12 @@ goto illegal_op;
                         gen_eob(s);
                         s->is_jmp = 3;
                         break;
-//                    case 3:
-//                        r1 = regpairmap(OR2_HL, m);
-//                        gen_movw_v_reg(cpu_T[0], r1);
-//                        gen_movw_SP_v(cpu_T[0]);
-//                        zprintf("ld sp,%s\n", regpairnames[r1]);
-//                        break;
+                    case 3:
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_movw_SP_v(cpu_T[0]);
+                        zprintf("ld sp,%s\n", regpairnames[r1]);
+                        break;
 #if 1	/* WmT - HACK */
                       default:
 ;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled p case\n", __FILE__, __LINE__, b, x, y, z, p, q);
