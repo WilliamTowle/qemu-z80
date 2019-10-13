@@ -155,6 +155,20 @@ void HELPER(movl_pc_im)(uint32_t new_pc)
 
 /* Z80 instruction-specific helpers */
 
+/* Halt */
+
+void HELPER(halt)(void)
+{
+    //printf("halting at PC 0x%x\n",env->pc);
+    env->halted = 1;
+    env->hflags &= ~HF_INHIBIT_IRQ_MASK; /* needed if sti is just before */
+    env->exception_index = EXCP_HLT;
+#if 0	/* obsolete */
+    cpu_loop_exit();
+#else	/* v0.15.0+ */
+    cpu_loop_exit(env);
+#endif
+}
 void HELPER(jmp_T0)(void)
 {
     PC = T0;
