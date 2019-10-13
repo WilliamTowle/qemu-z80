@@ -1134,11 +1134,6 @@ goto illegal_op;
                         break;
                     }
                     break;
-#if 1	/* WmT - HACK */
-                default:	/* switch (q) incomplete */
-;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-;goto illegal_op;
-#endif
                 }
                 break;
 
