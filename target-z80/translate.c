@@ -1103,11 +1103,11 @@ goto illegal_op;
             case 1:
                 switch (q) {
                 case 0:
-//                    r1 = regpairmap(regpair2[p], m);
-//                    gen_popw(cpu_T[0]);
-//                    gen_movw_reg_v(r1, cpu_T[0]);
-//                    zprintf("pop %s\n", regpairnames[r1]);
-//                    break;
+                    r1 = regpairmap(regpair2[p], m);
+                    gen_popw(cpu_T[0]);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("pop %s\n", regpairnames[r1]);
+                    break;
 
 /* [WmT] 'ret' has q=1 */
                 case 1:
@@ -1245,14 +1245,14 @@ goto illegal_op;
                 zprintf("call %s,$%04x\n", cc[y], n);
                 break;
 
-//            case 5:
-//                switch (q) {
-//                case 0:
-//                    r1 = regpairmap(regpair2[p], m);
-//                    gen_movw_v_reg(cpu_T[0], r1);
-//                    gen_pushw(cpu_T[0]);
-//                    zprintf("push %s\n", regpairnames[r1]);
-//                    break;
+            case 5:
+                switch (q) {
+                case 0:
+                    r1 = regpairmap(regpair2[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_pushw(cpu_T[0]);
+                    zprintf("push %s\n", regpairnames[r1]);
+                    break;
 //                case 1:
 //                    switch (p) {
 //                    case 0:
@@ -1282,8 +1282,13 @@ goto illegal_op;
 //                        break;
 //                    }
 //                    break;
-//                }
-//                break;
+#if 1	/* WmT: HACK */
+                default:	/* switch(q) incomplete */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_NORMAL op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) - unhandled q case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+                    goto illegal_op;
+#endif
+                }
+                break;
 
             case 6:
                 n = cpu_ldub_code(env, s->pc);
