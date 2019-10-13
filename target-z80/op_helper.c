@@ -61,6 +61,41 @@ target_ulong T1;
 
 #define PC  (env->pc)
 
+const uint8_t parity_table[256] = {
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    CC_P, 0, 0, CC_P, 0, CC_P, CC_P, 0,
+    0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
+};
+
 /*
  * Signal an interruption. It is executed in the main CPU loop.
  * is_int is TRUE if coming from the int instruction. next_eip is the
@@ -123,4 +158,221 @@ void HELPER(movl_pc_im)(uint32_t new_pc)
 void HELPER(jmp_T0)(void)
 {
     PC = T0;
+}
+
+/* Arithmetic/logic operations */
+
+#define signed_overflow_add(op1, op2, res, size) \
+    (!!((~(op1 ^ op2) & (op1 ^ res)) >> (size - 1)))
+
+#define signed_overflow_sub(op1, op2, res, size) \
+    (!!(((op1 ^ op2) & (op1 ^ res)) >> (size - 1)))
+
+void HELPER(add_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A + T0);
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
+
+void HELPER(adc_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A + T0 + !!(F & CC_C));
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
+
+void HELPER(sub_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A - T0);
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (~tmp & T0) | (~(tmp ^ T0) & A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void HELPER(sbc_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A - T0 - !!(F & CC_C));
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (~tmp & T0) | (~(tmp ^ T0) & A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void HELPER(and_cc)(void)
+{
+    int sf, zf, pf;
+    A = (uint8_t)(A & T0);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)A];
+    F = sf | zf | CC_H | pf;
+}
+
+void HELPER(xor_cc)(void)
+{
+    int sf, zf, pf;
+    A = (uint8_t)(A ^ T0);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)A];
+    F = sf | zf | pf;
+}
+
+void HELPER(or_cc)(void)
+{
+    int sf, zf, pf;
+    A = (uint8_t)(A | T0);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)A];
+    F = sf | zf | pf;
+}
+
+void HELPER(cp_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int res, carry;
+
+    res = (uint8_t)(A - T0);
+    sf = (res & 0x80) ? CC_S : 0;
+    zf = res ? 0 : CC_Z;
+    carry = (~A & T0) | (~(A ^ T0) & res);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(A, T0, res, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+//  CC_DST = (uint8_t)(A - T0);
+}
+
+///* Rotation/shift operations */
+
+/* word operations -- HL only? */
+
+void HELPER(sbcw_T0_T1_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 - T1 - !!(F & CC_C));
+    sf = (T0 & 0x8000) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    carry = (~tmp & T1) | (~(tmp ^ T1) & T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T1, T0, 16) ? CC_P : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void HELPER(addw_T0_T1_cc)(void)
+{
+    int hf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 + T1);
+    carry = (tmp & T1) | ((tmp | T1) & ~T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
+}
+
+void HELPER(adcw_T0_T1_cc)(void)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 + T1 + !!(F & CC_C));
+    sf = (T0 & 0x8000) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    carry = (tmp & T1) | ((tmp | T1) & ~T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T1, T0, 8) ? CC_P : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
+
+/* misc */
+
+void HELPER(incb_T0_cc)(void)
+{
+    int sf, zf, hf, pf;
+    int tmp;
+    int carry;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 + 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+
+    carry = (tmp & 1) | ((tmp | 1) & ~T0);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, 1, T0, 8) ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | hf | pf;
+}
+
+void HELPER(decb_T0_cc)(void)
+{
+    int sf, zf, hf, pf;
+    int tmp;
+    int carry;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 - 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+
+    carry = (~tmp & 1) | (~(tmp ^ 1) & T0);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, 1, T0, 8) ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | hf | CC_N | pf;
+    /* TODO: check CC_N is set */
 }
