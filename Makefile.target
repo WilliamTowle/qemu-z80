@@ -155,6 +155,9 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 obj-y += main.o bblbrxload.o rawload.o mmap.o
 obj-y += user-exec.o $(oslib-obj-y)
 
+# Ensure ioport-user.o for IN/OUT insn support
+obj-z80-y += ioport-user.o
+
 $(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
 
 ## build subset (or none) of cpu emulator library
