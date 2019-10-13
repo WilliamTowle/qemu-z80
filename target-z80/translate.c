@@ -83,6 +83,28 @@ typedef struct DisasContext {
 static void gen_eob(DisasContext *s);
 
 
+enum {
+    /* 8-bit registers */
+    OR_B,
+    OR_C,
+    OR_D,
+    OR_E,
+    OR_H,
+    OR_L,
+    OR_HLmem,
+    OR_A,
+
+    OR_IXh,
+    OR_IXl,
+
+    OR_IYh,
+    OR_IYl,
+
+    OR_IXmem,
+    OR_IYmem,
+};
+
+
 /* Register accessor functions */
 
 #if defined(WORDS_BIGENDIAN)
@@ -94,10 +116,148 @@ static void gen_eob(DisasContext *s);
 #define BYTE_OFFSET(type, num) UNIT_OFFSET(type, 1, num)
 #define WORD_OFFSET(type, num) UNIT_OFFSET(type, 2, num)
 
+#define REGPAIR AF
+#define REGHIGH A
+#define REGLOW  F
+#include "genreg_template_af.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR BC
+#define REGHIGH B
+#define REGLOW  C
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR DE
+#define REGHIGH D
+#define REGLOW  E
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR HL
+#define REGHIGH H
+#define REGLOW  L
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR IX
+#define REGHIGH IXh
+#define REGLOW  IXl
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR IY
+#define REGHIGH IYh
+#define REGLOW  IYl
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR AFX
+#define REGHIGH AX
+#define REGLOW  FX
+#include "genreg_template_af.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR BCX
+#define REGHIGH BX
+#define REGLOW  CX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR DEX
+#define REGHIGH DX
+#define REGLOW  EX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR HLX
+#define REGHIGH HX
+#define REGLOW  LX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
 
 #define REGPAIR SP
 #include "genreg_template.h"
 #undef REGPAIR
+
+typedef void (gen_mov_func)(TCGv v);
+typedef void (gen_mov_func_idx)(TCGv v, uint16_t ofs);
+
+static inline void gen_movb_v_HLmem(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_HL(addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_HLmem_v(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_HL(addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_v_IXmem(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IX(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_v_IYmem(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IY(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_IXmem_v(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IX(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_IYmem_v(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IY(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
 
 
 static inline void gen_popw(TCGv v)
@@ -110,6 +270,187 @@ static inline void gen_popw(TCGv v)
     gen_movw_SP_v(addr);
     tcg_temp_free(addr);
 }
+
+static gen_mov_func *const gen_movb_v_reg_tbl[] = {
+    [OR_B]     = gen_movb_v_B,
+    [OR_C]     = gen_movb_v_C,
+    [OR_D]     = gen_movb_v_D,
+    [OR_E]     = gen_movb_v_E,
+    [OR_H]     = gen_movb_v_H,
+    [OR_L]     = gen_movb_v_L,
+    [OR_HLmem] = gen_movb_v_HLmem,
+    [OR_A]     = gen_movb_v_A,
+
+    [OR_IXh]   = gen_movb_v_IXh,
+    [OR_IXl]   = gen_movb_v_IXl,
+
+    [OR_IYh]   = gen_movb_v_IYh,
+    [OR_IYl]   = gen_movb_v_IYl,
+};
+
+static inline void gen_movb_v_reg(TCGv v, int reg)
+{
+    gen_movb_v_reg_tbl[reg](v);
+}
+
+static gen_mov_func_idx *const gen_movb_v_idx_tbl[] = {
+    [OR_IXmem] = gen_movb_v_IXmem,
+    [OR_IYmem] = gen_movb_v_IYmem,
+};
+
+static inline void gen_movb_v_idx(TCGv v, int idx, int ofs)
+{
+    gen_movb_v_idx_tbl[idx](v, ofs);
+}
+
+static gen_mov_func *const gen_movb_reg_v_tbl[] = {
+    [OR_B]     = gen_movb_B_v,
+    [OR_C]     = gen_movb_C_v,
+    [OR_D]     = gen_movb_D_v,
+    [OR_E]     = gen_movb_E_v,
+    [OR_H]     = gen_movb_H_v,
+    [OR_L]     = gen_movb_L_v,
+    [OR_HLmem] = gen_movb_HLmem_v,
+    [OR_A]     = gen_movb_A_v,
+
+    [OR_IXh]   = gen_movb_IXh_v,
+    [OR_IXl]   = gen_movb_IXl_v,
+
+    [OR_IYh]   = gen_movb_IYh_v,
+    [OR_IYl]   = gen_movb_IYl_v,
+};
+
+static inline void gen_movb_reg_v(int reg, TCGv v)
+{
+    gen_movb_reg_v_tbl[reg](v);
+}
+
+static gen_mov_func_idx *const gen_movb_idx_v_tbl[] = {
+    [OR_IXmem] = gen_movb_IXmem_v,
+    [OR_IYmem] = gen_movb_IYmem_v,
+};
+
+static inline void gen_movb_idx_v(int idx, TCGv v, int ofs)
+{
+    gen_movb_idx_v_tbl[idx](v, ofs);
+}
+
+static inline int regmap(int reg, int m)
+{
+    switch (m) {
+    case MODE_DD:
+        switch (reg) {
+        case OR_H:
+            return OR_IXh;
+        case OR_L:
+            return OR_IXl;
+        case OR_HLmem:
+            return OR_IXmem;
+        default:
+            return reg;
+        }
+    case MODE_FD:
+        switch (reg) {
+        case OR_H:
+            return OR_IYh;
+        case OR_L:
+            return OR_IYl;
+        case OR_HLmem:
+            return OR_IYmem;
+        default:
+            return reg;
+        }
+    case MODE_NORMAL:
+    default:
+        return reg;
+    }
+}
+
+static inline int is_indexed(int reg)
+{
+    if (reg == OR_IXmem || reg == OR_IYmem) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static const int reg[8] = {
+    OR_B,
+    OR_C,
+    OR_D,
+    OR_E,
+    OR_H,
+    OR_L,
+    OR_HLmem,
+    OR_A,
+};
+
+enum {
+    /* 16-bit registers and register pairs */
+    OR2_AF,
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+
+    OR2_IX,
+    OR2_IY,
+    OR2_SP,
+
+    OR2_AFX,
+    OR2_BCX,
+    OR2_DEX,
+    OR2_HLX,
+};
+
+static gen_mov_func *const gen_movw_reg_v_tbl[] = {
+    [OR2_AF]  = gen_movw_AF_v,
+    [OR2_BC]  = gen_movw_BC_v,
+    [OR2_DE]  = gen_movw_DE_v,
+    [OR2_HL]  = gen_movw_HL_v,
+
+    [OR2_IX]  = gen_movw_IX_v,
+    [OR2_IY]  = gen_movw_IY_v,
+    [OR2_SP]  = gen_movw_SP_v,
+
+    [OR2_AFX] = gen_movw_AFX_v,
+    [OR2_BCX] = gen_movw_BCX_v,
+    [OR2_DEX] = gen_movw_DEX_v,
+    [OR2_HLX] = gen_movw_HLX_v,
+};
+
+static inline void gen_movw_reg_v(int regpair, TCGv v)
+{
+    gen_movw_reg_v_tbl[regpair](v);
+}
+
+static inline int regpairmap(int regpair, int m)
+{
+    switch (regpair) {
+    case OR2_HL:
+        switch (m) {
+        case MODE_DD:
+            return OR2_IX;
+        case MODE_FD:
+            return OR2_IY;
+        case MODE_NORMAL:
+        default:
+            return OR2_HL;
+        }
+    default:
+        return regpair;
+    }
+}
+
+static const int regpair[4] = {
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+    OR2_SP,
+};
+
+//static const int regpair2[4] = ...
+
 
 static inline void gen_jmp_im(target_ulong pc)
 {
@@ -245,14 +586,14 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 
             case 1:
                 switch (q) {
-//                case 0:
-//                    n = lduw_code(s->pc);
-//                    s->pc += 2;
-//                    tcg_gen_movi_tl(cpu_T[0], n);
-//                    r1 = regpairmap(regpair[p], m);
-//                    gen_movw_reg_v(r1, cpu_T[0]);
-//                    zprintf("ld %s,$%04x\n", regpairnames[r1], n);
-//                    break;
+                case 0:
+                    n = lduw_code(s->pc);
+                    s->pc += 2;
+                    tcg_gen_movi_tl(cpu_T[0], n);
+                    r1 = regpairmap(regpair[p], m);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("ld %s,$%04x\n", regpairnames[r1], n);
+                    break;
 //                case 1:
 //                    r1 = regpairmap(regpair[p], m);
 //                    r2 = regpairmap(OR2_HL, m);
@@ -403,28 +744,28 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    zprintf("dec %s\n", regnames[r1]);
 //                }
 //                break;
-//
-//            case 6:
-//                r1 = regmap(reg[y], m);
-//                if (is_indexed(r1)) {
-//                    d = ldsb_code(s->pc);
-//                    s->pc++;
-//                }
-//                n = ldub_code(s->pc);
-//                s->pc++;
-//                tcg_gen_movi_tl(cpu_T[0], n);
-//                if (is_indexed(r1)) {
-//                    gen_movb_idx_v(r1, cpu_T[0], d);
-//                } else {
-//                    gen_movb_reg_v(r1, cpu_T[0]);
-//                }
-//                if (is_indexed(r1)) {
-//                    zprintf("ld (%s%c$%02x),$%02x\n", idxnames[r1], shexb(d), n);
-//                } else {
-//                    zprintf("ld %s,$%02x\n", regnames[r1], n);
-//                }
-//                break;
-//
+
+            case 6:
+                r1 = regmap(reg[y], m);
+                if (is_indexed(r1)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                }
+                n = ldub_code(s->pc);
+                s->pc++;
+                tcg_gen_movi_tl(cpu_T[0], n);
+                if (is_indexed(r1)) {
+                    gen_movb_idx_v(r1, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("ld (%s%c$%02x),$%02x\n", idxnames[r1], shexb(d), n);
+                } else {
+                    zprintf("ld %s,$%02x\n", regnames[r1], n);
+                }
+                break;
+
 //            case 7:
 //                switch (y) {
 //                case 0:
@@ -470,47 +811,47 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             break;
 
         case 1:	/* instr pattern 01yyyzzz */
+            if (z == 6 && y == 6) {
 #if 1	/* PARTIAL */
 ;DPRINTF("[%s():%d] INFO - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 goto illegal_op;
 #endif
-//            if (z == 6 && y == 6) {
 //                gen_jmp_im(s->pc);
 //                gen_helper_halt();
 //                zprintf("halt\n");
-//            } else {
-//                if (z == 6) {
-//                    r1 = regmap(reg[z], m);
-//                    r2 = regmap(reg[y], 0);
-//                } else if (y == 6) {
-//                    r1 = regmap(reg[z], 0);
-//                    r2 = regmap(reg[y], m);
-//                } else {
-//                    r1 = regmap(reg[z], m);
-//                    r2 = regmap(reg[y], m);
-//                }
-//                if (is_indexed(r1) || is_indexed(r2)) {
-//                    d = ldsb_code(s->pc);
-//                    s->pc++;
-//                }
-//                if (is_indexed(r1)) {
-//                    gen_movb_v_idx(cpu_T[0], r1, d);
-//                } else {
-//                    gen_movb_v_reg(cpu_T[0], r1);
-//                }
-//                if (is_indexed(r2)) {
-//                    gen_movb_idx_v(r2, cpu_T[0], d);
-//                } else {
-//                    gen_movb_reg_v(r2, cpu_T[0]);
-//                }
-//                if (is_indexed(r1)) {
-//                    zprintf("ld %s,(%s%c$%02x)\n", regnames[r2], idxnames[r1], shexb(d));
-//                } else if (is_indexed(r2)) {
-//                    zprintf("ld (%s%c$%02x),%s\n", idxnames[r2], shexb(d), regnames[r1]);
-//                } else {
-//                    zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
-//                }
-//            }
+            } else {
+                if (z == 6) {
+                    r1 = regmap(reg[z], m);
+                    r2 = regmap(reg[y], 0);
+                } else if (y == 6) {
+                    r1 = regmap(reg[z], 0);
+                    r2 = regmap(reg[y], m);
+                } else {
+                    r1 = regmap(reg[z], m);
+                    r2 = regmap(reg[y], m);
+                }
+                if (is_indexed(r1) || is_indexed(r2)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                }
+                if (is_indexed(r1)) {
+                    gen_movb_v_idx(cpu_T[0], r1, d);
+                } else {
+                    gen_movb_v_reg(cpu_T[0], r1);
+                }
+                if (is_indexed(r2)) {
+                    gen_movb_idx_v(r2, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("ld %s,(%s%c$%02x)\n", regnames[r2], idxnames[r1], shexb(d));
+                } else if (is_indexed(r2)) {
+                    zprintf("ld (%s%c$%02x),%s\n", idxnames[r2], shexb(d), regnames[r1]);
+                } else {
+                    zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
+                }
+            }
             break;
 //
 //        case 2:	/* instr pattern 10yyyzzz */
