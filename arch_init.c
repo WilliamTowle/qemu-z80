@@ -80,6 +80,8 @@ const char arch_config_name[] = CONFIG_QEMU_CONFDIR "/target-" TARGET_ARCH ".con
 #define QEMU_ARCH QEMU_ARCH_SPARC
 #elif defined(TARGET_XTENSA)
 #define QEMU_ARCH QEMU_ARCH_XTENSA
+#elif defined(TARGET_Z80)
+#define QEMU_ARCH QEMU_ARCH_Z80
 #endif
 
 const uint32_t arch_type = QEMU_ARCH;
