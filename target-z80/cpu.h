@@ -199,4 +199,6 @@ static inline void cpu_get_tb_cpu_state(CPUState *env, target_ulong *pc,
     *flags = env->hflags;
 }
 
+#include "exec-all.h"
+
 #endif /* CPU_Z80_H */
