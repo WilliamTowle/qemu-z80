@@ -75,8 +75,9 @@ void cpu_loop(CPUZ80State *env)
          * A register dump is informative here
          */
         printf("%s(): Calling cpu_exec() here...\n", __func__);
-        trapnr= cpu_exec(env);	/* cpu-exec.c cpu_exec() */
-        printf("BAILING - abnormal return %d from cpu_exec() - dump of env at %p follows\n", trapnr, env);
+        //trapnr= cpu_z80_exec(env);
+        trapnr= cpu_exec(env);
+        printf("BAILING - abnormal return %d from cpu_z80_exec() - dump of env at %p follows\n", trapnr, env);
         cpu_dump_state(env, stderr, fprintf, 0);
         exit(1);
 
