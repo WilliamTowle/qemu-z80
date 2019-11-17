@@ -64,7 +64,7 @@ void cpu_loop(CPUZ80State *env)
 	 * Temporary indication we're doing something
 	 */
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - cpu_exec() exit will exit() below...\n", __func__);
+;fprintf(stderr, "%s(): PARTIAL - trap in cpu_exec() will exit() below...\n", __func__);
 #endif
 
 	for (;;)
@@ -73,9 +73,10 @@ void cpu_loop(CPUZ80State *env)
          * Machine exceptions (0 to 18 defined, only EXCP06_ILLOP
          * generated?) should be handled here.
          */
-        printf("%s(): Calling cpu_exec() here...\n", __func__);
-        trapnr= cpu_exec(env);	/* cpu-exec.c cpu_exec() */
-        printf("BAILING - abnormal return %d from cpu_exec() - dump of env at %p follows\n", trapnr, env);
+        printf("%s(): Calling cpu_z80_exec() here...\n", __func__);
+        //trapnr= cpu_z80_exec(env);
+        trapnr= cpu_exec(env);
+        printf("BAILING - abnormal return %d from cpu_z80_exec() - dump of env at %p follows\n", trapnr, env);
         cpu_dump_state(env, stderr, fprintf, 0);
         exit(1);
 
