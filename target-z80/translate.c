@@ -63,6 +63,14 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
+{
+    gen_jmp_im(cur_pc);
+    gen_helper_raise_exception(trapno);
+    s->is_jmp = 3;
+}
+
+
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
 static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong pc_start)
