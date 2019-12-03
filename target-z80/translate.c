@@ -53,7 +53,7 @@ typedef struct DisasContext {
                    static state change (stop translation) */
 //    int model;
 //    /* current block context */
-//    target_ulong cs_base; /* base of CS segment */
+    target_ulong cs_base; /* base of CS segment */
 //    int singlestep_enabled; /* "hardware" single step enabled */
 //    int jmp_opt; /* use direct block chaining for direct jumps */
 //    int flags; /* all execution flags */
@@ -61,6 +61,12 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
+{
+    gen_jmp_im(cur_pc);
+    gen_helper_raise_exception(trapno);
+    s->is_jmp = 3;
+}
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
 static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
@@ -1043,7 +1049,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 //    CPUBreakpoint *bp;
 //    int flags, j, lj, cflags;
     target_ulong pc_start;
-//    target_ulong cs_base;
+    target_ulong cs_base;
 //    int num_insns;
 //    int max_insns;
 
@@ -1052,12 +1058,12 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
 #endif
-//    cs_base = tb->cs_base;
+    cs_base = tb->cs_base;
 //    flags = tb->flags;
 //    cflags = tb->cflags;
 
 //    dc->singlestep_enabled = env->singlestep_enabled;
-//    dc->cs_base = cs_base;
+    dc->cs_base = cs_base;
 //    dc->tb = tb;
 //    dc->flags = flags;
 //    dc->jmp_opt = !(env->singlestep_enabled ||
