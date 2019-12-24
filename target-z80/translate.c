@@ -1273,6 +1273,7 @@ void z80_translate_init(void)
 {
 #if 1	/* WmT - PARTIAL */
 ;DPRINTF("[%s:%d] *** ENTERED %s() - PARTIAL ONLY ***\n", __FILE__, __LINE__, __func__);
+;exit(1);
 #endif
 	/* PARTIAL. Missing steps:
 	 * 1. assignment of tcg_global_reg_new_ptr() result to 'cpu_env'
