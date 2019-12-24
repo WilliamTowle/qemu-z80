@@ -116,7 +116,7 @@ obj-y = $(GENERATED_HEADERS)
 obj-y += main.o bblbrxload.o rawload.o
 
 # cpu emulator library
-libobj-y =
+libobj-y = cpu-exec.o
 libobj-y += helper.o
 
 obj-y += $(libobj-y)
