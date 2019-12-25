@@ -156,7 +156,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - HACK */
+#if 0	/* WmT - HACK */
 ;DPRINTF("[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #else
@@ -501,9 +501,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 
 /* [WmT] 'ret' has p=0 */
                     case 0:
-#if 1	/* WmT - HACK */
+#if 0	/* WmT - HACK */
 ;DPRINTF("[%s:%d] PARTIAL - missing 'ret' opcode handling in %s() -> bail\n", __FILE__, __LINE__, __func__);
 ;goto illegal_op;
+//;fprintf(stderr, "%s(): INFO - process 'ret' opcode\n", __func__);
+#else
+;fprintf(stderr, "[%s:%d] HACK - 'ret' causes forced EXCP_KERNEL_TRAP (n=%d) exception (insn at s->pc 0x%04x follows)\n", __FILE__, __LINE__, EXCP_KERNEL_TRAP, s->pc);
+;gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
+;return s->pc;
 #endif
 //                        gen_popw(cpu_T[0]);
 //                        gen_helper_jmp_T0();
