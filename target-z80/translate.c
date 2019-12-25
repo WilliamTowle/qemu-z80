@@ -39,7 +39,6 @@
 	do { } while (0)
 #endif
 
-#if 0
 #define PREFIX_CB  0x01
 #define PREFIX_DD  0x02
 #define PREFIX_ED  0x04
@@ -48,7 +47,6 @@
 #define MODE_NORMAL 0
 #define MODE_DD     1
 #define MODE_FD     2
-#endif
 
 #if 0	/* debug instruction decode? */
 #define zprintf printf
@@ -115,57 +113,6 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
    be stopped. Return the next pc value */
 static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong pc_start)
 {
-#if 1	/* HACK */
-    /* PARTIAL. For testing purposes, we implement:
-     * 1. Reading of a byte (at least one ensures TB has non-zero size)
-     * 2. Triggering of ILLOP exception for missing translation cases
-     * 3. Unprefixed and prefixed instruction implementation (stepwise)
-     */
-    uint8_t b;
-
-    s->pc= pc_start;
-    /* TODO: "next_byte" label and zprintf() of PC/insns here.
-     * Full translation implementation tracks prefixes and accounts
-     * for CPU model (Z80 vs R800) emulation
-     */
-    {
-        uint8_t x, y, z, p, q;
-
-        b = cpu_ldub_code(env, s->pc);
-        //s->pc++;
-
-        x = (b >> 6) & 0x03;
-        y = (b >> 3) & 0x07;
-        z = b & 0x07;
-        p = y >> 1;
-        q = y & 0x01;
-
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: Byte read at 0x%04x got value 0x%02x - has x=%x, y=%x [p=%x/q=%d], z=%x\n", s->pc, b, x, y,p,q, z);
-#endif
-    }
-
-    switch (b)
-    {
-    case 0xc9:  /* 'ret' */
-#if 1   /* TRACE */
-;DPRINTF("INFO: BAILING %s() with EXCP_KERNEL_TRAP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP_KERNEL_TRAP, s->pc);
-    /* TODO: only trigger KERNEL_TRAP if this is end-of-program */
-#endif
-#if 0	/* i386 */
-        gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
-#else
-        gen_exception(s, EXCP_KERNEL_TRAP, pc_start);
-#endif
-        return s->pc;
-    default:
-#if 1   /* TRACE */
-;DPRINTF("INFO: read byte OK, was non-ret op\n");
-    /* TODO: trigger ILLOP and return if translation is not available */
-#endif
-        goto illegal_op;
-    }
-#else	/* legacy repo.or.cz implementation */
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
@@ -212,14 +159,14 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+#if 0	/* WmT - HACK */
+;DPRINTF("[%s:%d] HACK - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 ;goto illegal_op;
 #else
-;fprintf(stderr, "[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] PARTIAL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 //...
 #endif
-//        switch (x) {
+        switch (x) {
 //        case 0:	/* instr pattern 00yyyzzz */
 //            switch (z) {
 //
@@ -532,32 +479,49 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                zprintf("%s%s\n", alu[y], regnames[r1]);
 //            }
 //            break;
-//
-//        case 3:	/* instr pattern 11yyyzzz */
-//            switch (z) {
+
+/* [WmT] 'ret' has x=3 */
+        case 3:	/* instr pattern 11yyyzzz */
+            switch (z) {
 //            case 0:
 //                gen_retcc(s, y, s->pc);
 //                zprintf("ret %s\n", cc[y]);
 //                break;
-//            case 1:
-//                switch (q) {
-//                case 0:
+
+/* [WmT] 'ret' has z=1 */
+            case 1:
+                switch (q) {
+                case 0:
 //                    r1 = regpairmap(regpair2[p], m);
 //                    gen_popw(cpu_T[0]);
 //                    gen_movw_reg_v(r1, cpu_T[0]);
 //                    zprintf("pop %s\n", regpairnames[r1]);
 //                    break;
-//                case 1:
-//                    switch (p) {
-//                    case 0:
+
+/* [WmT] 'ret' has q=1 */
+                case 1:
+                    switch (p) {
+
+/* [WmT] 'ret' has p=0 */
+                    case 0:
+#if 0	/* WmT - HACK */
+;DPRINTF("[%s:%d] PARTIAL - missing 'ret' opcode handling in %s() -> bail\n", __FILE__, __LINE__, __func__);
+;goto illegal_op;
+//;DPRINTF("%s(): INFO - process 'ret' opcode\n", __func__);
+#else
+;DPRINTF("[%s:%d] HACK - 'ret' causes forced EXCP_KERNEL_TRAP (n=%d) exception (insn at s->pc 0x%04x follows)\n", __FILE__, __LINE__, EXCP_KERNEL_TRAP, s->pc);
+//;gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
+;gen_exception(s, EXCP_KERNEL_TRAP, pc_start);
+;return s->pc;
+#endif
 //                        gen_popw(cpu_T[0]);
 //                        gen_helper_jmp_T0();
 //                        zprintf("ret\n");
 //                        gen_eob(s);
 //                        s->is_jmp = 3;
 ////                      s->is_ei = 1;
-//                        break;
-//
+                        break;
+
 //                    case 1:
 //                        gen_ex(OR2_BC, OR2_BCX);
 //                        gen_ex(OR2_DE, OR2_DEX);
@@ -578,10 +542,10 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                        gen_movw_SP_v(cpu_T[0]);
 //                        zprintf("ld sp,%s\n", regpairnames[r1]);
 //                        break;
-//                    }
-//                    break;
-//                }
-//                break;
+                    }
+                    break;
+                }
+                break;
 //
 //            case 2:
 //                n = lduw_code(s->pc);
@@ -721,9 +685,14 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                gen_eob(s);
 //                s->is_jmp = 3;
 //                break;
-//            }
-//            break;
-//        }
+            }
+            break;
+        }
+
+#if 1	/* WmT - HACK */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_NORMAL op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) unhandled\n", __FILE__, __LINE__, b, x, y,p,q, z);
+;goto illegal_op;
+#endif
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
 
@@ -1104,7 +1073,6 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
 //#endif
 //    return s->pc;
-#endif
 
  illegal_op:
 #if 1	/* WmT - TRACE */
