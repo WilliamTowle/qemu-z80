@@ -118,7 +118,7 @@ void cpu_loop(CPUZ80State *env)
             printf("cpu_exec() encountered EXCP06_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
             break;	/* to exit() beyond switch */
         default:
-            printf("cpu_exec() exited abnormally (with trapnr=%d) - aborting emulation\n", trapnr);
+            printf("BAILING - abnormal return %d from cpu_exec()\n", trapnr);
         }
 
         /* PARTIAL:
