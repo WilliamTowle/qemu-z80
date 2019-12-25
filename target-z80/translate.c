@@ -37,7 +37,6 @@
 #endif
 
 
-#if 0
 #define PREFIX_CB  0x01
 #define PREFIX_DD  0x02
 #define PREFIX_ED  0x04
@@ -46,7 +45,6 @@
 #define MODE_NORMAL 0
 #define MODE_DD     1
 #define MODE_FD     2
-#endif
 
 #if 1	/* debug instruction decode? */
 #define zprintf printf
@@ -112,28 +110,6 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
    be stopped. Return the next pc value */
 static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 {
-#if 1
-    int b;
-
-    /* reading at least one byte is critical to ensuring the
-     * translation block has non-zero size
-     */
-    s->pc = pc_start;
-    zprintf("PC = %04x: ", s->pc);
-
-    b = ldub_code(s->pc);
-    switch (b)
-    {
-    case 0xc9:  /* 'ret' */
-        zprintf("ret (** HACK - EXCP_KERNEL_TRAP trigger **)\n");
-        //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
-        gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
-        return s->pc;
-    default:
-        zprintf("byte 0x%02x (** HACK - illegal_op trigger **)\n", b);
-        goto illegal_op;
-    }
-#else
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
@@ -180,14 +156,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - HACK */
+#if 0	/* WmT - HACK */
 ;fprintf(stderr, "[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #else
 ;fprintf(stderr, "[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
 //...
 #endif
-//        switch (x) {
+        switch (x) {
 //        case 0:	/* instr pattern 00yyyzzz */
 //            switch (z) {
 //
@@ -500,32 +476,48 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                zprintf("%s%s\n", alu[y], regnames[r1]);
 //            }
 //            break;
-//
-//        case 3:	/* instr pattern 11yyyzzz */
-//            switch (z) {
+
+/* [WmT] 'ret' has x=3 */
+        case 3:	/* instr pattern 11yyyzzz */
+            switch (z) {
 //            case 0:
 //                gen_retcc(s, y, s->pc);
 //                zprintf("ret %s\n", cc[y]);
 //                break;
-//            case 1:
-//                switch (q) {
-//                case 0:
+
+/* [WmT] 'ret' has z=1 */
+            case 1:
+                switch (q) {
+                case 0:
 //                    r1 = regpairmap(regpair2[p], m);
 //                    gen_popw(cpu_T[0]);
 //                    gen_movw_reg_v(r1, cpu_T[0]);
 //                    zprintf("pop %s\n", regpairnames[r1]);
 //                    break;
-//                case 1:
-//                    switch (p) {
-//                    case 0:
+
+/* [WmT] 'ret' has q=1 */
+                case 1:
+                    switch (p) {
+
+/* [WmT] 'ret' has p=0 */
+                    case 0:
+#if 0	/* WmT - HACK */
+;DPRINTF("[%s:%d] PARTIAL - missing 'ret' opcode handling in %s() -> bail\n", __FILE__, __LINE__, __func__);
+;goto illegal_op;
+//;DPRINTF("%s(): INFO - process 'ret' opcode\n", __func__);
+#else
+;DPRINTF("[%s:%d] HACK - 'ret' causes forced EXCP_KERNEL_TRAP (n=%d) exception (insn at s->pc 0x%04x follows)\n", __FILE__, __LINE__, EXCP_KERNEL_TRAP, s->pc);
+;gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
+;return s->pc;
+#endif
 //                        gen_popw(cpu_T[0]);
 //                        gen_helper_jmp_T0();
 //                        zprintf("ret\n");
 //                        gen_eob(s);
 //                        s->is_jmp = 3;
 ////                      s->is_ei = 1;
-//                        break;
-//
+                        break;
+
 //                    case 1:
 //                        gen_ex(OR2_BC, OR2_BCX);
 //                        gen_ex(OR2_DE, OR2_DEX);
@@ -546,10 +538,10 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                        gen_movw_SP_v(cpu_T[0]);
 //                        zprintf("ld sp,%s\n", regpairnames[r1]);
 //                        break;
-//                    }
-//                    break;
-//                }
-//                break;
+                    }
+                    break;
+                }
+                break;
 //
 //            case 2:
 //                n = lduw_code(s->pc);
@@ -689,9 +681,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                gen_eob(s);
 //                s->is_jmp = 3;
 //                break;
-//            }
-//            break;
-//        }
+            }
+            break;
+        }
+
+#if 1	/* WmT - HACK */
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
 
@@ -1072,7 +1069,6 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
 //#endif
 //    return s->pc;
-#endif
 
  illegal_op:
 #if 1	/* WmT - TRACE */
