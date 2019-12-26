@@ -98,7 +98,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
      */
     b = cpu_ldub_code(env, s->pc);
     s->pc++;
-;DPRINTF("HACK: all insns temporarily illegal (...value read: 0x%02x)\n", __func__, b);
+;DPRINTF("HACK: all insns temporarily illegal (...value read: 0x%02x)\n", b);
     goto illegal_op;
 ;exit(1);
 #else
@@ -1074,6 +1074,9 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     target_ulong cs_base;
 //    int num_insns;
 //    int max_insns;
+#if 1	/* WmT - TRACE */
+;DPRINTF("*** ENTER %s() ****\n", __func__);
+#endif
 
 //    /* generate intermediate code */
     pc_start = tb->pc;
@@ -1203,6 +1206,9 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 ;fprintf(stderr, "** BAILING - %s() PARTIAL IMPLEMENTATION ONLY **\n", __func__);
 ;exit(1);
 #endif
+#endif
+#if 1	/* WmT - TRACE */
+;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
 #endif
 }
 
