@@ -1066,6 +1066,9 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     target_ulong cs_base;
 //    int num_insns;
 //    int max_insns;
+#if 1	/* WmT - TRACE */
+;DPRINTF("*** ENTER %s() ****\n", __func__);
+#endif
 
 //    /* generate intermediate code */
     pc_start = tb->pc;
@@ -1195,6 +1198,9 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 ;fprintf(stderr, "** BAILING - %s() PARTIAL IMPLEMENTATION ONLY **\n", __func__);
 ;exit(1);
 #endif
+#endif
+#if 1	/* WmT - TRACE */
+;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
 #endif
 }
 
