@@ -73,6 +73,16 @@ void HELPER(raise_exception)(uint32_t exception_index)
     raise_exception(exception_index);
 }
 
+//void HELPER(set_inhibit_irq)(void)
+//{
+//    env->hflags |= HF_INHIBIT_IRQ_MASK;
+//}
+
+void HELPER(reset_inhibit_irq)(void)
+{
+    env->hflags &= ~HF_INHIBIT_IRQ_MASK;
+}
+
 void HELPER(movl_pc_im)(uint32_t new_pc)
 {
     PC = (uint16_t)new_pc;
