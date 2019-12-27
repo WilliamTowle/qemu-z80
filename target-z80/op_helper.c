@@ -103,6 +103,18 @@ void raise_exception(CPUZ80State *env, int exception_index)
     raise_interrupt2(env, exception_index, 0, 0, 0);
 }
 
+
+//void HELPER(set_inhibit_irq)(void)
+//{
+//    env->hflags |= HF_INHIBIT_IRQ_MASK;
+//}
+
+void HELPER(reset_inhibit_irq)(void)
+{
+    env->hflags &= ~HF_INHIBIT_IRQ_MASK;
+}
+
+
 void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 {
     PC = (uint16_t)new_pc;
