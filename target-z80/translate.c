@@ -550,8 +550,18 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                        gen_movw_SP_v(cpu_T[0]);
 //                        zprintf("ld sp,%s\n", regpairnames[r1]);
 //                        break;
+#if 1	/* WmT - HACK */
+                      default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled p case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
                     }
                     break;
+#if 1	/* WmT - HACK */
+                default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled q case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
                 }
                 break;
 //
@@ -693,14 +703,19 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //                gen_eob(s);
 //                s->is_jmp = 3;
 //                break;
-            }
-            break;
-        }
-
 #if 1	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+            default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled z case\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #endif
+            }
+            break;
+#if 1	/* WmT - HACK */
+          default:
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled x case\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;goto illegal_op;
+#endif
+        }
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
 
@@ -1076,10 +1091,13 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 ////        goto illegal_op;
 ////    }
 //    /* lock generation */
-//#if 1        /* WmT - TRACE */
-//;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
-//#endif
-//    return s->pc;
+#if 1  /* WmT - TRACE */
+;fprintf(stderr, "[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
+goto illegal_op;
+#else
+;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
+#endif
+    return s->pc;
  illegal_op:
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
