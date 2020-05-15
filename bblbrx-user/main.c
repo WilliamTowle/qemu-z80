@@ -248,6 +248,9 @@ int main(int argc, char **argv)
      */
     if (bprm.magic_ramloc)
     {
+#if 1  /* WmT - HACK */
+;DPRINTF("[%s:%d] magic_ramloc enabled, setting regs and memory...\n", __FILE__, __LINE__);
+#endif
         env->regs[R_SP]= bprm.magic_ramloc;
         cpu_stw_data(env, env->regs[R_SP], bprm.magic_ramloc);
     }
