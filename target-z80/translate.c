@@ -37,8 +37,8 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
-//#define zprintf(...)
-#define zprintf printf
+#define zprintf(...)
+//#define zprintf printf
 
 /* global register indexes */
 static TCGv cpu_env, cpu_T[3], cpu_A0;
