@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 
+#include "qemu.h"
 #include "cpu.h"
 #include "tcg-op.h"
 
@@ -1181,6 +1182,40 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 
     gen_icount_start();
     for (;;) {
+#if defined(CONFIG_USER_ONLY) && defined(TARGET_Z80)
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "[%s:%d] PARTIAL - check magic_ram value (current PC 0x%04x, opaque %p) here?\n", __FILE__, __LINE__, pc_ptr, env->opaque);
+#endif
+        /* PARTIAL:
+         * If the magic RAM location has been hit (either direct jump
+         * or popping the relevant value off the stack with a 'ret'), we
+         * exit the program.
+         * This is similar to the ARM emulation's magic kernel page, which
+         * reaches the code block above by having
+         * gen_intermediate_code_internal() intercept jumps there
+         */
+        if (env->opaque)
+        {
+          struct TaskState	*ts= (struct TaskState *)env->opaque;
+          target_ulong	magic= ts->bprm->magic_ramloc;
+
+            if (magic && pc_ptr == magic)
+            {
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "[%s:%d] PARTIAL - HANDLE TRAP HERE\n", __FILE__, __LINE__);
+;exit(1);
+                /* Equivalent ARM code calls its gen_exception() with
+                 * EXCP_KERNEL_TRAP, and ends up calling a handler in
+                 * linux-user/main.c
+                 * We also have a gen_exception() [with different
+                 * arguments], used to bail from disas_insn() in the
+                 * failure case
+                 */
+#endif
+            }
+        }
+#endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
+
 #if 1	/* WmT - TRACE */
 ;DPRINTF("[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
 #else
