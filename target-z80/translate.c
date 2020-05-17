@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 
+#include "qemu.h"
 #include "cpu.h"
 #include "tcg-op.h"
 
@@ -1208,6 +1209,29 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 
     gen_tb_start();
     for (;;) {
+#if defined(CONFIG_USER_ONLY) && defined(TARGET_Z80)
+        /* Exit the program if the magic RAMTOP location has been set
+         * [either by direct jump to it, or popping the relevant
+         * value off the stack with a 'ret']
+         */
+        if (env->opaque)
+        {
+          struct TaskState	*ts= (struct TaskState *)env->opaque;
+          target_ulong	magic= ts->bprm->magic_ramloc;
+
+            if (magic && pc_ptr == magic)
+            {
+#if 1	/* WmT - TRACE */
+;fprintf(stderr, "[%s:%d] PARTIAL - HANDLE TRAP HERE\n", __FILE__, __LINE__);
+;exit(1);
+#endif
+                env->exception_index = EXCP_KERNEL_TRAP;
+                cpu_loop_exit(env);
+                break;
+            }
+        }
+#endif /* defined(CONFIG_USER_ONLY) && defined(TARGET_Z80) */
+
 #if 1	/* WmT - TRACE */
 ;DPRINTF("[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
 #else
