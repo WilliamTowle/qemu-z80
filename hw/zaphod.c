@@ -241,9 +241,9 @@ static void zaphod_init_common(int zaphodspec,
 	}
 #endif
 
-#ifdef ZAPHOD_HAS_MACHINESPEC
+#if defined(ZAPHOD_HAS_MACHINESPEC)
 	if (zaphodspec == ZAPHOD_SPEC_ZAPHODPB)
-#elif ZAPHOD_HAS_CONSOLEGUI
+#elif defined(ZAPHOD_HAS_CONSOLEGUI)
 	if (1)
 #endif
 	{   /* Phil Brown's Zaphod reserves ports 0 and 1 for normal I/O:
@@ -254,9 +254,9 @@ static void zaphod_init_common(int zaphodspec,
 	    register_ioport_write(0x01, 1,sizeof(char), zaphod_io_write, zs);
 	}
 
-#ifdef ZAPHOD_HAS_MACHINESPEC
+#if defined(ZAPHOD_HAS_MACHINESPEC)
 	if (zaphodspec != ZAPHOD_SPEC_ZAPHODPB)
-#elif ZAPHOD_HAS_SERIALIO
+#elif defined(ZAPHOD_HAS_SERIALIO)
 	if (1)
 #endif
 	{
