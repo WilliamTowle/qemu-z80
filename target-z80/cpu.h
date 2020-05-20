@@ -174,6 +174,13 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 #define cpu_signal_handler cpu_z80_signal_handler
 
 #define MMU_USER_IDX 1
+static inline int cpu_mmu_index(CPUState *env)
+{
+    /* see i386? returns 1 or 0 depending on HF_CPL_MASK setting:
+     *	return (env->hflags & HF_CPL_MASK) == 3 ? 1 : 0;
+     */
+    return 0;
+}
 
 #include "cpu-all.h"
 
