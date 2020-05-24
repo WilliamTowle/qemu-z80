@@ -23,6 +23,26 @@
 #include "cpu.h"
 #include "helper.h"
 
+#include "exec/softmmu_exec.h"
+
+#if !defined(CONFIG_USER_ONLY)
+
+#define MMUSUFFIX _mmu
+
+#define SHIFT 0
+#include "exec/softmmu_template.h"
+
+#define SHIFT 1
+#include "exec/softmmu_template.h"
+
+#define SHIFT 2
+#include "exec/softmmu_template.h"
+
+#define SHIFT 3
+#include "exec/softmmu_template.h"
+
+#endif
+
 
 //#define A0 (env->a0)
 //
