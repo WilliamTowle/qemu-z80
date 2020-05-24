@@ -24,6 +24,26 @@
 #include "helper.h"
 
 
+#if !defined(CONFIG_USER_ONLY)
+#include "exec/softmmu_exec.h"
+
+#define MMUSUFFIX _mmu
+
+#define SHIFT 0
+#include "exec/softmmu_template.h"
+
+#define SHIFT 1
+#include "exec/softmmu_template.h"
+
+#define SHIFT 2
+#include "exec/softmmu_template.h"
+
+#define SHIFT 3
+#include "exec/softmmu_template.h"
+
+#endif
+
+
 #include "exec/ioport.h"
 
 #if 1  /* was: TARGET_LONG_BITS > HOST_LONG_BITS
