@@ -255,6 +255,8 @@ int cpu_exec(CPUState *env)
                        loop */
 #if defined(TARGET_I386)
                     do_interrupt(env);
+#elif defined(TARGET_Z80)
+                    do_interrupt(env);
 #endif
                     ret = env->exception_index;
                     break;
