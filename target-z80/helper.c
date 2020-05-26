@@ -198,8 +198,10 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
     paddr = (addr & TARGET_PAGE_MASK) + page_offset;
     vaddr = virt_addr + page_offset;
 
-    ret = tlb_set_page_exec(env, vaddr, paddr, prot, is_user, is_softmmu);
-    return ret;
+    //ret = tlb_set_page_exec(env, vaddr, paddr, prot, is_user, is_softmmu);
+    //return ret;
+    tlb_set_page(env, vaddr, paddr, prot, mmu_idx, page_size);
+    return 0;
 }
 
 target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
