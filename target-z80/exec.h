@@ -27,8 +27,9 @@
 /* at least 4 register variables are defined */
 register struct CPUZ80State *env asm(AREG0);
 
-#if TARGET_LONG_BITS > HOST_LONG_BITS
-
+#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
+	 * suits logic change elsewhere due to no TCG_AREG{1|2}
+	 */
 /* no registers can be used */
 #define T0 (env->t0)
 #define T1 (env->t1)
