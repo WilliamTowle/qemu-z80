@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <stdio.h>	/* 'FILE' for cpu_list() */
+
 #define TARGET_LONG_BITS 32
 
 /* target supports implicit self modifying code */
