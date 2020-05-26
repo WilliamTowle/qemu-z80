@@ -1830,6 +1830,29 @@ void gen_intermediate_code_pc(CPUState *env, TranslationBlock *tb)
     gen_intermediate_code_internal(env, tb, 1);
 }
 
+void restore_state_to_opc(CPUState *env, TranslationBlock *tb, int pc_pos)
+{
+    int cc_op;
+#ifdef DEBUG_DISAS
+    if (qemu_loglevel_mask(CPU_LOG_TB_OP)) {
+        int i;
+        qemu_log("RESTORE:\n");
+        for(i = 0;i <= pc_pos; i++) {
+            if (gen_opc_instr_start[i]) {
+                qemu_log("0x%04x: " TARGET_FMT_lx "\n", i, gen_opc_pc[i]);
+            }
+        }
+        qemu_log("pc_pos=0x%x eip=" TARGET_FMT_lx " cs_base=%x\n",
+                pc_pos, gen_opc_pc[pc_pos] - tb->cs_base,
+                (uint32_t)tb->cs_base);
+    }
+#endif
+    env->eip = gen_opc_pc[pc_pos] - tb->cs_base;
+    cc_op = gen_opc_cc_op[pc_pos];
+    if (cc_op != CC_OP_DYNAMIC)
+        env->cc_op = cc_op;
+}
+
 void gen_pc_load(CPUState *env, TranslationBlock *tb,
                  unsigned long searched_pc, int pc_pos, void *puc)
 {
