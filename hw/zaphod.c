@@ -19,7 +19,20 @@ typedef struct {
 	ram_addr_t		ram_handle;
 } ZaphodState;
 
-static CPUState* zaphod_new_cpu(const char *cpu_model)
+
+/* pic_info() and irq_info() are monitor functions for
+ * hardware we don't have
+ */
+
+void pic_info(Monitor *mon)
+{
+}
+
+void irq_info(Monitor *mon)
+{
+}
+
+ static CPUState* zaphod_new_cpu(const char *cpu_model)
 {
   CPUState	*cpu;
 #ifdef ZAPHOD_DEBUG
