@@ -1847,7 +1847,9 @@ void restore_state_to_opc(CPUState *env, TranslationBlock *tb, int pc_pos)
                 (uint32_t)tb->cs_base);
     }
 #endif
+#if 0	/* not Z80 */
     env->eip = gen_opc_pc[pc_pos] - tb->cs_base;
+#endif
     cc_op = gen_opc_cc_op[pc_pos];
     if (cc_op != CC_OP_DYNAMIC)
         env->cc_op = cc_op;
