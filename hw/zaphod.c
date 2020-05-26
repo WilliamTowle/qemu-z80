@@ -20,6 +20,18 @@
 #define	RAM_SIZE	(64 * 1024)
 #define ZAPHOD_RAM_SIZE		ZAPHOD_MAX_RAMTOP
 
+/* pic_info() and irq_info() are monitor functions for
+ * hardware we don't have
+ */
+
+void pic_info(Monitor *mon)
+{
+}
+
+void irq_info(Monitor *mon)
+{
+}
+
 /*  Zaphod-1 has a "medium-res two-colour 24x80 screen" and its
  *  console responds with "An IN from port 0 will respond with the
  *  ASCII code of the last key pressed, or 0 if none available. An
