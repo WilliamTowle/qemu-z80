@@ -10,7 +10,7 @@
 
 #include "sysemu.h"		/* bios_name and other externs */
 
-#include "hw/boards.h"		/* QEMUMachine */
+#include "hw/boards.h"		/* emulator datatypes */
 #include "hw/hw.h"
 #include "hw/isa.h"
 #include "hw/loader.h"
@@ -19,6 +19,18 @@
 /* RAM: maximum for a Z80 is 64K */
 #define	RAM_SIZE	(64 * 1024)
 #define ZAPHOD_RAM_SIZE		ZAPHOD_MAX_RAMTOP
+
+/* pic_info() and irq_info() are monitor functions for
+ * hardware we don't have
+ */
+
+void pic_info(Monitor *mon)
+{
+}
+
+void irq_info(Monitor *mon)
+{
+}
 
 /*  Zaphod-1 has a "medium-res two-colour 24x80 screen" and its
  *  console responds with "An IN from port 0 will respond with the
