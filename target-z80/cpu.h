@@ -244,11 +244,22 @@ void z80_cpu_list(FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
 #define MMU_USER_IDX 1
 static inline int cpu_mmu_index (CPUState *env)
 {
-    /* return (env->hflags & HF_CPL_MASK) == 3 ? 1 : 0; */
+    /* see i386? returns 1 or 0 depending on HF_CPL_MASK setting:
+     *	return (env->hflags & HF_CPL_MASK) == 3 ? 1 : 0;
+     */
     return 0;
 }
 
 #include "cpu-all.h"
+
+static inline int cpu_has_work(CPUState *env)
+{
+    /* see i386? has env->eflags bit relating to IF_MASK; NMIs (and
+     * others) also cause a 'true' result
+     */
+    return env->interrupt_request & CPU_INTERRUPT_HARD;
+}
+
 #include "exec-all.h"
 
 static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
