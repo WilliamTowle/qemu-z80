@@ -141,7 +141,9 @@
 #define NB_MMU_MODES 2
 
 typedef struct CPUZ80State {
-#if TARGET_LONG_BITS > HOST_LONG_BITS
+#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
+	 * but can't compile else cases
+	 */
     /* temporaries if we cannot store them in host registers */
     target_ulong t0, t1;
 #endif
