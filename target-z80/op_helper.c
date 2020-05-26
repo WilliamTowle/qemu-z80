@@ -110,7 +110,7 @@ void raise_interrupt(int intno, int is_int, int error_code,
     env->error_code = error_code;
     env->exception_is_int = is_int;
     env->exception_next_pc = env->pc + next_eip_addend;
-    cpu_loop_exit();
+    cpu_loop_exit(env);
 }
 
 /* same as raise_exception_err, but do not restore global registers */
@@ -138,7 +138,7 @@ void raise_exception(int exception_index)
 void HELPER(debug)(void)
 {
     env->exception_index = EXCP_DEBUG;
-    cpu_loop_exit();
+    cpu_loop_exit(env);
 }
 
 void HELPER(raise_exception)(uint32_t exception_index)
@@ -171,7 +171,7 @@ void HELPER(halt)(void)
     env->halted = 1;
     env->hflags &= ~HF_INHIBIT_IRQ_MASK; /* needed if sti is just before */
     env->exception_index = EXCP_HLT;
-    cpu_loop_exit();
+    cpu_loop_exit(env);
 }
 
 /* In / Out */
