@@ -211,19 +211,20 @@ static inline void cpu_z80_set_cpl(CPUZ80State *s, int cpl)
 #endif
 }
 
+
+void z80_cpu_list(FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
+
 /* you can call this signal handler from your SIGBUS and SIGSEGV
    signal handlers to inform the virtual CPU of exceptions. non zero
    is returned if the signal was handled by the virtual CPU.  */
-struct siginfo;
-int cpu_z80_signal_handler(int host_signum, struct siginfo *info,
+int cpu_z80_signal_handler(int host_signum, void *pinfo,
                            void *puc);
-
-uint64_t cpu_get_tsc(CPUZ80State *env);
 
 int cpu_z80_handle_mmu_fault(CPUZ80State *env1, target_ulong address, int rw,
                              int mmu_idx, int is_softmmu);
 
-void z80_cpu_list(FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
+uint64_t cpu_get_tsc(CPUZ80State *env);
+
 
 #define Z80_CPU_Z80  1
 #define Z80_CPU_R800 2
