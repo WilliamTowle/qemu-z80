@@ -167,6 +167,22 @@ static void cpu_z80_flush_tlb(CPUZ80State *env, target_ulong addr)
     tlb_flush_page(env, addr);
 }
 
+#if defined(CONFIG_USER_ONLY)
+
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write, int mmu_idx, int is_softmmu)
+{
+    /* user mode only emulation */
+    is_write &= 1;
+    env->cr[2] = addr;
+    env->error_code = (is_write << PG_ERROR_W_BIT);
+    env->error_code |= PG_ERROR_U_MASK;
+    env->exception_index = EXCP0E_PAGE;
+    return 1;
+}
+
+#else
+
 /* return value:
    -1 = cannot handle fault
    0  = nothing more to do
@@ -218,3 +234,4 @@ target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
     paddr = (pte & TARGET_PAGE_MASK) + page_offset;
     return paddr;
 }
+#endif /* !CONFIG_USER_ONLY */
