@@ -222,6 +222,7 @@ int cpu_z80_signal_handler(int host_signum, void *pinfo,
 
 int cpu_z80_handle_mmu_fault(CPUZ80State *env1, target_ulong address, int rw,
                              int mmu_idx, int is_softmmu);
+#define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
 
 uint64_t cpu_get_tsc(CPUZ80State *env);
 
