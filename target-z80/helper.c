@@ -175,8 +175,10 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
     /* user mode only emulation */
     is_write &= 1;
     env->cr[2] = addr;
+#if 0	/* not z80 */
     env->error_code = (is_write << PG_ERROR_W_BIT);
     env->error_code |= PG_ERROR_U_MASK;
+#endif
     env->exception_index = EXCP0E_PAGE;
     return 1;
 }
