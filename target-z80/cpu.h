@@ -219,6 +219,7 @@ uint64_t cpu_get_tsc(CPUZ80State *env);
 
 int cpu_z80_handle_mmu_fault(CPUZ80State *env1, target_ulong address, int rw,
                              int mmu_idx, int is_softmmu);
+#define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
 
 void z80_cpu_list(FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
 
