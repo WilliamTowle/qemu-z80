@@ -45,8 +45,11 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
+#if 1	/* silent */
 #define zprintf(...)
-//#define zprintf printf
+#else	/* debug PC/insn */
+#define zprintf printf
+#endif
 
 /* global register indexes */
 static TCGv cpu_env, cpu_T[3], cpu_A0;
@@ -759,7 +762,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     rex_w = -1;
     rex_r = 0;
 
-    //printf("PC = %04x: ", s->pc);
+    zprintf("PC = %04x: ", s->pc);
 next_byte:
     s->prefix = prefixes;
 
