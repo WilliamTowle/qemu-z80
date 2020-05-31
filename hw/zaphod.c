@@ -19,20 +19,7 @@ typedef struct {
 	ram_addr_t		ram_handle;
 } ZaphodState;
 
-
-/* pic_info() and irq_info() are monitor functions for
- * hardware we don't have
- */
-
-void pic_info(Monitor *mon)
-{
-}
-
-void irq_info(Monitor *mon)
-{
-}
-
- static CPUState* zaphod_new_cpu(const char *cpu_model)
+static CPUState* zaphod_new_cpu(const char *cpu_model)
 {
   CPUState	*cpu;
 #ifdef ZAPHOD_DEBUG
@@ -70,7 +57,7 @@ static void zaphod_init(ram_addr_t ram_size,
 
 	/*  allocate CPU and attach some RAM  */
 	zs->cpu= zaphod_new_cpu(cpu_model);
-	zs->ram_handle= qemu_ram_alloc(NULL, "ram", ZAPHOD_RAM_SIZE);
+	zs->ram_handle= qemu_ram_alloc(ZAPHOD_RAM_SIZE);
 	cpu_register_physical_memory(0, ZAPHOD_RAM_SIZE,
 					zs->ram_handle | IO_MEM_RAM);
 
