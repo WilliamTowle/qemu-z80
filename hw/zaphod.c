@@ -18,6 +18,7 @@
 
 /* RAM: maximum for a Z80 is 64K */
 #define	RAM_SIZE	(64 * 1024)
+#define ZAPHOD_RAM_SIZE		ZAPHOD_MAX_RAMTOP
 
 /*  Zaphod-1 has a "medium-res two-colour 24x80 screen" and its
  *  console responds with "An IN from port 0 will respond with the
@@ -182,7 +183,7 @@ static void zaphod_init_common(int zaphodspec,
 	/*  allocate CPU and attach some RAM  */
 	zs->cpu= zaphod_new_cpu(cpu_model);
 	zs->ram_handle= qemu_ram_alloc(RAM_SIZE);
-	cpu_register_physical_memory(0, RAM_SIZE,
+	cpu_register_physical_memory(0, ZAPHOD_RAM_SIZE,
 					zs->ram_handle | IO_MEM_RAM);
 
 #ifdef ZAPHOD_HAS_BIOS
