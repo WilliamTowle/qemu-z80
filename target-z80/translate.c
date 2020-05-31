@@ -22,7 +22,10 @@
 
 #include <stdio.h>
 
-#include "qemu.h"
+#include "config.h"
+#if defined(CONFIG_USER_ONLY)
+#include "qemu.h"	/* bblbrx magic ramtop uses Taskstate struct */
+#endif
 #include "cpu.h"
 #include "tcg-op.h"
 
