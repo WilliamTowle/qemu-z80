@@ -1,5 +1,7 @@
 /* Skeleton Z80 machine for QEmu */
-/* Wm. Towle c. 2013-2018 */
+/* Wm. Towle c. 2013-2020 */
+
+#include "hw/zaphod.h"
 
 #ifdef ZAPHOD_DEBUG
 #include <stdio.h>
@@ -7,12 +9,11 @@
 #include <stdlib.h>
 
 #include "sysemu.h"		/* bios_name and other externs */
-#include "hw/boards.h"		/* QEmuMachine */
+#include "hw/boards.h"		/* emulator datatypes */
 #include "hw/hw.h"
 #include "hw/isa.h"
 #include "hw/loader.h"
 
-#include "hw/zaphod.h"
 
 typedef struct {
 	CPUState		*cpu;
