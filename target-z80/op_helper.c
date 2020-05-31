@@ -21,6 +21,8 @@
 #include "exec.h"
 #include "helper.h"
 
+#include "ioport.h"
+
 #if 1  /* was: TARGET_LONG_BITS > HOST_LONG_BITS
         * but TCG_AREG{1|2} no longer available for else case
         */
@@ -171,6 +173,7 @@ void HELPER(halt)(void)
 
 void HELPER(in_T0_im)(uint32_t val)
 {
+    /* FIXME: uint8_t cpu_inb(pio_addr_t addr); */
     T0 = cpu_inb(env, (A << 8) | val);
 }
 
@@ -178,6 +181,7 @@ void HELPER(in_T0_bc_cc)(void)
 {
     int sf, zf, pf;
 
+    /* FIXME: uint8_t cpu_inb(pio_addr_t addr); */
     T0 = cpu_inb(env, BC);
 
     sf = (T0 & 0x80) ? CC_S : 0;
@@ -188,11 +192,13 @@ void HELPER(in_T0_bc_cc)(void)
 
 void HELPER(out_T0_im)(uint32_t val)
 {
+    /* FIXME: void cpu_outb(pio_addr_t addr, uint8_t val); */
     cpu_outb(env, (A << 8) | val, T0);
 }
 
 void HELPER(out_T0_bc)(void)
 {
+    /* FIXME: void cpu_outb(pio_addr_t addr, uint8_t val); */
     cpu_outb(env, BC, T0);
 }
 
