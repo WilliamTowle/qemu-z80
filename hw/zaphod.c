@@ -15,10 +15,14 @@
 #include "hw/loader.h"
 
 
+/* Machine configuration */
+#define ZAPHOD_RAM_SIZE		ZAPHOD_MAX_RAMTOP
+
 typedef struct {
 	CPUState		*cpu;
 	ram_addr_t		ram_handle;
 } ZaphodState;
+
 
 static CPUState* zaphod_new_cpu(const char *cpu_model)
 {
