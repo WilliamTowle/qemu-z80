@@ -25,10 +25,7 @@
 #include <inttypes.h>
 #include <signal.h>
 
-#include "config.h"
-#if defined(CONFIG_USER_ONLY)
-#include "qemu.h"	/* for bblbrx magic ramloc address via TaskState */
-#endif
+#include "qemu.h"
 #include "cpu.h"
 #include "exec-all.h"
 #include "disas.h"
@@ -49,7 +46,7 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
-#if 0	/* silent */
+#if 1	/* silent */
 #define zprintf(...)
 #else	/* debug PC/insn */
 #define zprintf printf
