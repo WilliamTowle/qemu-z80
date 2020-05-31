@@ -25,7 +25,10 @@
 #include <inttypes.h>
 #include <signal.h>
 
-#include "qemu.h"
+#include "config.h"
+#if defined(CONFIG_USER_ONLY)
+#include "qemu.h"	/* bblbrx magic ramtop uses Taskstate struct */
+#endif
 #include "cpu.h"
 #include "exec-all.h"
 #include "disas.h"
