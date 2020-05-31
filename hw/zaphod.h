@@ -1,5 +1,5 @@
 /* Skeleton Z80 machine for QEmu */
-/* Wm. Towle c. 2013-2018 */
+/* Wm. Towle c. 2013-2020 */
 
 #ifndef _ZAPHOD_H_
 #define _ZAPHOD_H_
