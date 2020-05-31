@@ -46,7 +46,7 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
-#if 1	/* silent */
+#if 0	/* silent */
 #define zprintf(...)
 #else	/* debug PC/insn */
 #define zprintf printf
