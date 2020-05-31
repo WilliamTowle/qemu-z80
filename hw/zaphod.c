@@ -1,5 +1,7 @@
 /* "Zaphod" Z80 machine family for QEmu */
-/* Wm. Towle c. 2013-2018 */
+/* Wm. Towle c. 2013-2020 */
+
+#include "hw/zaphod.h"
 
 #ifdef ZAPHOD_DEBUG
 #include <stdio.h>
@@ -13,7 +15,6 @@
 #include "hw/isa.h"
 #include "hw/loader.h"
 
-#include "hw/zaphod.h"
 
 /* RAM: maximum for a Z80 is 64K */
 #define	RAM_SIZE	(64 * 1024)
