@@ -4,11 +4,14 @@
 #ifndef _ZAPHOD_H_
 #define _ZAPHOD_H_
 
-/* "Zaphod" Z80 machine family */
-
 #define ZAPHOD_DEBUG	1	/* WARNING: uses fprintf() */
 
-/* ZAPHOD_RAM_SIZE: maximum for a Z80 is 64K */
-#define	ZAPHOD_RAM_SIZE	(64 * 1024)
+/* "Zaphod" Z80 machine family configuration */
+
+/* ZAPHOD_MAX_RAMTOP:
+ * Address space for a Z80 ends at 64K (some emulations might want less)
+ */
+#define	ZAPHOD_MAX_RAMTOP	(64 * 1024)
+
 
 #endif	/*  _ZAPHOD_H_  */
