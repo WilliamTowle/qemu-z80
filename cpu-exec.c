@@ -223,7 +223,7 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_Z80)
-    /* XXXXX */
+    /* 'put eflags in CPU temporary format' step not required */
 #else
 #error unsupported target CPU
 #endif
@@ -249,6 +249,7 @@ int cpu_exec(CPUState *env)
 #if defined(TARGET_I386)
                     do_interrupt(env);
 #elif defined(TARGET_Z80)
+;fprintf(stderr, "[%s:%d] debug TARGET_Z80 execute do_interrupt()\n", __FILE__, __LINE__);
                     do_interrupt(env);
 #endif
                     ret = env->exception_index;
@@ -490,6 +491,15 @@ int cpu_exec(CPUState *env)
                         do_interrupt(env);
                         next_tb = 0;
                     }
+#elif defined(TARGET_Z80)
+;fprintf(stderr, "[%s:%d] debug TARGET_Z80 check interrupt_request...\n", __FILE__, __LINE__);
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+//                      Z80 FIXME Z80
+//                        env->exception_index = EXCP_IRQ;
+                        do_interrupt(env);
+                        next_tb = 0;
+                    }
 #endif
                    /* Don't use the cached interrupt_request value,
                       do_interrupt may have updated the EXITTB flag. */
@@ -520,6 +530,7 @@ int cpu_exec(CPUState *env)
                               | env->cc_dest | (env->cc_x << 4);
                     log_cpu_state(env, 0);
 #elif defined(TARGET_Z80)
+		    /* restore eflags step not required here */
                     log_cpu_state(env, 0);
 #else
                     log_cpu_state(env, 0);
@@ -622,7 +633,7 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_CRIS)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_Z80)
-    /* XXXXX */
+    /* restore eflags step not required here */
 #else
 #error unsupported target CPU
 #endif
