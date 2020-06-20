@@ -398,7 +398,6 @@ obj-alpha-y += vga.o cirrus_vga.o
 
 # [WmT] machine-specific
 obj-z80-y += zaphod.o
-#obj-z80-y += zaphod.o zaphod_console.o
 
 main.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
 
