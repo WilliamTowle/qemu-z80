@@ -24,17 +24,6 @@ typedef struct {
 } ZaphodState;
 
 
-/* pic_info() and irq_info() are monitor functions for
- * hardware we don't have
- */
-
-void pic_info(Monitor *mon)
-{
-}
-
-void irq_info(Monitor *mon)
-{
-}
 
 /*  Zaphod-1 has a "medium-res two-colour 24x80 screen" and its
  *  console responds with "An IN from port 0 will respond with the
