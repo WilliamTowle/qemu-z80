@@ -161,6 +161,11 @@ typedef struct CPUZ80State {
 
     /* emulator internal eflags handling */
     uint32_t hflags; /* hidden flags, see HF_xxx constants */
+
+    /* exception/interrupt handling */
+    int error_code;
+    int exception_is_int;
+    target_ulong exception_next_pc;
 } CPUZ80State;
 
 CPUZ80State *cpu_z80_init(const char *cpu_model);
