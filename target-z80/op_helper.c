@@ -104,7 +104,7 @@ const uint8_t parity_table[256] = {
  * EIP value AFTER the interrupt instruction. It is only relevant if
  * is_int is TRUE.
  */
-void raise_interrupt(int intno, int is_int, int error_code,
+static void raise_interrupt(int intno, int is_int, int error_code,
                      int next_eip_addend)
 {
     env->exception_index = intno;
@@ -120,7 +120,22 @@ void raise_interrupt(int intno, int is_int, int error_code,
 #endif
 }
 
-void raise_exception(int exception_index)
+/* same as raise_exception_err, but do not restore global registers */
+static void raise_exception_err_norestore(int exception_index, int error_code)
+{
+    raise_interrupt(exception_index, 0, error_code, 0);
+}
+
+static void raise_exception_err(int exception_index, int error_code)
+{
+    env->exception_index = exception_index;
+    env->error_code = error_code;
+    env->exception_is_int = 0;
+    env->exception_next_pc = 0;
+    longjmp(env->jmp_env, 1);
+}
+
+static void raise_exception(int exception_index)
 {
     raise_interrupt(exception_index, 0, 0, 0);
 }
