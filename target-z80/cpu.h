@@ -271,5 +271,6 @@ void QEMU_NORETURN raise_exception_err(CPUZ80State *env, int exception_index,
                                        int error_code);
 void QEMU_NORETURN raise_interrupt(CPUZ80State *env, int intno, int is_int, int error_code,
                      int next_eip_addend);
+void do_interrupt(CPUZ80State *env);
 
 #endif /* !defined (CPU_Z80_H) */
