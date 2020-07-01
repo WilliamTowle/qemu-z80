@@ -97,7 +97,7 @@
 //#define EXCP0B_NOSEG	11
 //#define EXCP0C_STACK	12
 //#define EXCP0D_GPF	13
-//#define EXCP0E_PAGE	14
+#define EXCP0E_PAGE	14
 //#define EXCP10_COPR	16
 //#define EXCP11_ALGN	17
 //#define EXCP12_MCHK	18
@@ -167,6 +167,8 @@ typedef struct CPUZ80State {
 
     /* emulator internal eflags handling */
     uint32_t hflags; /* hidden flags, see HF_xxx constants */
+
+    target_ulong cr[5]; /* NOTE: cr1 is unused */
 
     CPU_COMMON
 
