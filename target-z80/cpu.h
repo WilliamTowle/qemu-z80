@@ -149,6 +149,8 @@ typedef struct CPUZ80State {
     int iff2;
     int imode;
 
+    target_ulong (*mapaddr)(target_ulong addr);
+
     /* emulator internal eflags handling */
     uint32_t hflags; /* hidden flags, see HF_xxx constants */
 
