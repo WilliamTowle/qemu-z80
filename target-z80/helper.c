@@ -135,3 +135,20 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
     return 0;
 }
 #endif
+
+#if !defined(CONFIG_USER_ONLY)
+target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
+{
+    uint32_t pte, paddr, page_offset, page_size;
+
+    pte = addr;
+    page_size = TARGET_PAGE_SIZE;
+
+    if (env->mapaddr) {
+        addr = env->mapaddr(addr);
+    }
+    page_offset = (addr & TARGET_PAGE_MASK) & (page_size - 1);
+    paddr = (pte & TARGET_PAGE_MASK) + page_offset;
+    return paddr;
+}
+#endif /* !CONFIG_USER_ONLY */
