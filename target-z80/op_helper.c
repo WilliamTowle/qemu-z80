@@ -159,6 +159,12 @@ void raise_interrupt(int intno, int is_int, int error_code,
 #endif
 }
 
+/* same as raise_exception_err, but do not restore global registers */
+static void raise_exception_err_norestore(int exception_index, int error_code)
+{
+    raise_interrupt(exception_index, 0, error_code, 0);
+}
+
 /* shortcuts to generate exceptions */
 
 void (raise_exception_err)(int exception_index, int error_code)
