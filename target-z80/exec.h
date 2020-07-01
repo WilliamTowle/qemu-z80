@@ -51,3 +51,9 @@ register struct CPUZ80State *env asm(AREG0);
 void raise_interrupt(int intno, int is_int, int error_code,
                      int next_eip_addend);
 void raise_exception(int exception_index);
+
+#if !defined(CONFIG_USER_ONLY)
+
+#include "softmmu_exec.h"
+
+#endif /* !defined(CONFIG_USER_ONLY) */
