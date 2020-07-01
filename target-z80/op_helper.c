@@ -159,6 +159,17 @@ void raise_interrupt(int intno, int is_int, int error_code,
 #endif
 }
 
+/* shortcuts to generate exceptions */
+
+void (raise_exception_err)(int exception_index, int error_code)
+{
+    env->exception_index = exception_index;
+    env->error_code = error_code;
+    env->exception_is_int = 0;
+    env->exception_next_pc = 0;
+    longjmp(env->jmp_env, 1);
+}
+
 void raise_exception(int exception_index)
 {
     raise_interrupt(exception_index, 0, 0, 0);
