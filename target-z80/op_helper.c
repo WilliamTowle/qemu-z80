@@ -927,3 +927,42 @@ void HELPER(muluw_cc)(void)
 }
 
 #endif
+
+#if !defined(CONFIG_USER_ONLY)
+/* try to fill the TLB and return an exception if error. If retaddr is
+   NULL, it means that the function was called in C code (i.e. not
+   from generated code or from helper.c) */
+/* XXX: fix it to restore all registers */
+void tlb_fill(target_ulong addr, int is_write, int is_user, void *retaddr)
+{
+    TranslationBlock *tb;
+    int ret;
+    unsigned long pc;
+    CPUZ80State *saved_env;
+
+    /* XXX: hack to restore env in all cases, even if not called from
+       generated code */
+    saved_env = env;
+    env = cpu_single_env;
+
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    if (ret) {
+        if (retaddr) {
+            /* now we have a real cpu fault */
+            pc = (unsigned long)retaddr;
+            tb = tb_find_pc(pc);
+            if (tb) {
+                /* the PC is inside the translated code. It means that we have
+                   a virtual CPU fault */
+                cpu_restore_state(tb, env, pc);
+            }
+        }
+        if (retaddr) {
+            raise_exception_err(env->exception_index, env->error_code);
+        } else {
+            raise_exception_err_norestore(env->exception_index, env->error_code);
+        }
+    }
+    env = saved_env;
+}
+#endif
