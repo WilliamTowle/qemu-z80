@@ -177,24 +177,63 @@ void cpu_dump_state(CPUState *env, FILE *f,
                    env->imode, env->iff1, env->iff2, env->regs[R_I], env->regs[R_R]);
 }
 
+/***********************************************************/
+
+#if defined(CONFIG_USER_ONLY)
+
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write, int mmu_idx, int is_softmmu)
+{
+    /* user mode only emulation */
+    is_write &= 1;
+    env->cr[2] = addr;
+#if 0	/* not z80 */
+    env->error_code = (is_write << PG_ERROR_W_BIT);
+    env->error_code |= PG_ERROR_U_MASK;
+#endif
+    env->exception_index = EXCP0E_PAGE;
+    return 1;
+}
+
+#else
+
 /* return value:
    -1 = cannot handle fault
    0  = nothing more to do
-   1  = generate pf fault
-   2  = soft mmu activation required for this block
+   1  = generate PF fault
+   2  = soft MMU activation required for this block
 */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
                              int is_write, int mmu_idx)
 {
-#if 1	/* TODO: temp'y */
-;DPRINTF("[%s:%d] MMU fault handler INCOMPLETE\n", __FILE__, __LINE__);
-;exit(1);
-#else
-	/* TODO: see g106f733 "Add target-z80 tree, z80-dis.c" */
+    int prot, page_size, ret, is_write;
+    unsigned long paddr, page_offset;
+    target_ulong vaddr, virt_addr;
+    int is_user = 0;
+
+#if defined(DEBUG_MMU)
+    printf("MMU fault: addr=" TARGET_FMT_lx " w=%d u=%d pc=" TARGET_FMT_lx "\n",
+           addr, is_write1, mmu_idx, env->pc);
 #endif
+    is_write = is_write1 & 1;
+
+    virt_addr = addr & TARGET_PAGE_MASK;
+    prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
+    page_size = TARGET_PAGE_SIZE;
+
+    if (env->mapaddr) {
+        addr = env->mapaddr(addr);
+    }
+    page_offset = (addr & TARGET_PAGE_MASK) & (page_size - 1);
+    paddr = (addr & TARGET_PAGE_MASK) + page_offset;
+    vaddr = virt_addr + page_offset;
+
+    //ret = tlb_set_page_exec(env, vaddr, paddr, prot, is_user, is_softmmu);
+    //return ret;
+    tlb_set_page(env, vaddr, paddr, prot, mmu_idx, page_size);
+    return 0;
 }
 
-#if !defined(CONFIG_USER_ONLY)
 target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
 {
     uint32_t pte, paddr, page_offset, page_size;
@@ -209,4 +248,5 @@ target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
     paddr = (pte & TARGET_PAGE_MASK) + page_offset;
     return paddr;
 }
+
 #endif /* !CONFIG_USER_ONLY */
