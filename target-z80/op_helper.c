@@ -131,6 +131,7 @@ void helper_raise_exception(CPUZ80State *env, int exception_index)
     raise_exception(env, exception_index);
 }
 
+
 /*
  * Signal an interruption. It is executed in the main CPU loop.
  * is_int is TRUE if coming from the int instruction. next_eip is the
@@ -178,6 +179,49 @@ void raise_exception(CPUZ80State *env, int exception_index)
 {
     raise_interrupt2(env, exception_index, 0, 0, 0);
 }
+
+void do_interrupt(CPUZ80State *env)
+{
+// printf("z80: do_interrupt()\n");
+
+    if (!env->iff1) {
+        return;
+    }
+
+    env->iff1 = 0;
+    env->iff2 = 0; /* XXX: Unchanged for NMI */
+
+    {
+        target_ulong sp;
+        sp = (uint16_t)(env->regs[R_SP] - 2);
+        env->regs[R_SP] = sp;
+        stw_kernel(sp, env->pc);
+    }
+
+    /* IM0 = execute data on bus (0xff == rst $38) */
+    /* IM1 = execute rst $38 (ROM uses this)*/
+    /* IM2 = indirect jump -- address is held at (I << 8) | DATA */
+
+    /* value on data bus is 0xff for the zx spectrum */
+
+    /* when an interrupt occurs, iff1 and iff2 are reset, disabling interrupts */
+    /* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
+
+    uint8_t d;
+    switch (env->imode) {
+    case 0:
+        /* XXX: assuming 0xff on data bus */
+    case 1:
+        env->pc = 0x0038;
+        break;
+    case 2:
+        /* XXX: assuming 0xff on data bus */
+        d = 0xff;
+        env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
+        break;
+    }
+}
+
 
 void HELPER(debug)(CPUZ80State *env)
 {
