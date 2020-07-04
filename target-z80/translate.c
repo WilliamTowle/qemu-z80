@@ -69,7 +69,7 @@ typedef struct DisasContext {
     uint16_t pc; /* pc = pc + cs_base */
     int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
                    static state change (stop translation) */
-//    int model;
+    int model;
     /* current block context */
     target_ulong cs_base; /* base of CS segment */
     int singlestep_enabled; /* "hardware" single step enabled */
@@ -1776,10 +1776,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 ;DPRINTF("%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
 #endif
     lj = -1;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): PARTIAL - not considering model (missing in env?)\n", __func__);
-#endif
-//    dc->model = env->model;
+    dc->model = env->model;
 
     num_insns = 0;
     max_insns = tb->cflags & CF_COUNT_MASK;
