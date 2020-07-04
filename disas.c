@@ -220,6 +220,8 @@ void target_disas(FILE *out, target_ulong code, target_ulong size, int flags)
 #elif defined(TARGET_MICROBLAZE)
     disasm_info.mach = bfd_arch_microblaze;
     print_insn = print_insn_microblaze;
+#elif defined(TARGET_Z80)
+    print_insn = print_insn_z80;
 #else
     fprintf(out, "0x" TARGET_FMT_lx
 	    ": Asm output not supported on this arch\n", code);
@@ -304,6 +306,8 @@ void disas(FILE *out, void *code, unsigned long size)
     print_insn = print_insn_hppa;
 #elif defined(__ia64__)
     print_insn = print_insn_ia64;
+#elif defined(TARGET_Z80)	/* TODO: overkill if we're checking host CPU */
+    print_insn = print_insn_z80;
 #else
     fprintf(out, "0x%lx: Asm output not supported on this arch\n",
 	    (long) code);
@@ -421,6 +425,8 @@ void monitor_disas(Monitor *mon, CPUState *env,
 #elif defined(TARGET_S390X)
     disasm_info.mach = bfd_mach_s390_64;
     print_insn = print_insn_s390;
+#elif defined(TARGET_Z80)
+    print_insn = print_insn_z80;
 #else
     monitor_printf(mon, "0x" TARGET_FMT_lx
                    ": Asm output not supported on this arch\n", pc);
