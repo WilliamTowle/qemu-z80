@@ -136,6 +136,8 @@ typedef struct CPUZ80State {
 
     CPU_COMMON
 
+    int model;
+
     /* Z80 registers */
     uint16_t pc;
 
@@ -152,6 +154,9 @@ typedef struct CPUZ80State {
 CPUZ80State *cpu_z80_init(const char *cpu_model);
 void z80_translate_init(void);
 int cpu_z80_exec(CPUZ80State *s);
+
+#define Z80_CPU_Z80  1
+#define Z80_CPU_R800 2
 
 struct siginfo;
 int cpu_z80_signal_handler(int host_signum, void *pinfo,
