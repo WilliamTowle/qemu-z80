@@ -170,7 +170,8 @@ typedef struct CPUZ80State {
 
     CPU_COMMON
 
-    /* TODO: 'int model' CPU identifier */
+    /* CPU model identifier */
+    int model;
 } CPUZ80State;
 
 
@@ -185,7 +186,7 @@ int cpu_z80_exec(CPUZ80State *s);
 
 
 #define Z80_CPU_Z80  1
-//#define Z80_CPU_R800 2
+#define Z80_CPU_R800 2
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
