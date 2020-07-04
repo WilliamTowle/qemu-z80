@@ -546,6 +546,8 @@ void disas(FILE *out, void *code, unsigned long size)
     print_insn = print_insn_s390;
 #elif defined(__hppa__)
     print_insn = print_insn_hppa;
+#elif defined(TARGET_Z80)	/* TODO: overkill if we're checking host CPU */
+    print_insn = print_insn_z80;
 #endif
 
     if (s.info.cap_arch >= 0 && cap_disas_host(&s.info, code, size)) {
