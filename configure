@@ -3682,11 +3682,11 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_XTENSA_DIS=y"  >> $config_target_mak
     echo "CONFIG_XTENSA_DIS=y"  >> $libdis_config_mak
   ;;
-#  z80*)
-#    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
-#    echo "CONFIG_Z80_DIS=y"  >> $libdis_config_mak
+  z80*)
+    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+    echo "CONFIG_Z80_DIS=y"  >> $libdis_config_mak
 #    echo "INFO: Z80 disas support configured..." 1>&2
-#  ;;
+  ;;
   esac
 done
 if test "$tcg_interpreter" = "yes" ; then
