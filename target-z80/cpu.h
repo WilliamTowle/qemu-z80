@@ -155,7 +155,8 @@ typedef struct CPUZ80State {
 
     CPU_COMMON
 
-    /* TODO: 'int model' CPU identifier */
+    /* CPU model identifier */
+    int model;
 } CPUZ80State;
 
 #include "cpu-qom.h"
@@ -166,6 +167,9 @@ Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
 int cpu_z80_exec(CPUZ80State *s);
 
+
+#define Z80_CPU_Z80  1
+#define Z80_CPU_R800 2
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
 #define TARGET_PAGE_BITS 12	/* from target-x86 */
