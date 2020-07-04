@@ -729,7 +729,9 @@ static inline void gen_ex(int regpair1, int regpair2)
     tcg_temp_free(tmp2);
 }
 
-///* TODO: condition code optimisation */
+/* TODO: condition code optimisation */
+
+/* micro-ops that modify condition codes should end in _cc */
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
@@ -738,9 +740,6 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "ENTER %s() - context %p, pc_start 0x%04x\n", __func__, s, pc_start);
-#endif
 
     s->pc = pc_start;
     prefixes = 0;
@@ -748,9 +747,6 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     //rex_w = -1;
     //rex_r = 0;
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
-#endif
     zprintf("PC = %04x: ", s->pc);
 next_byte:
     s->prefix = prefixes;
@@ -781,9 +777,6 @@ next_byte:
         p = y >> 1;
         q = y & 0x01;
 
-#if 1	/* WmT - PARTIAL */
-;DPRINTF("[%s:%d] PARTIAL - unprefixed [MODE_%s] op 0x%02x (x %d, y %d [p=%d/q=%d], z %d) retrieved\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
         switch (x) {
         case 0:	/* instr pattern 00yyyzzz */
             switch (z) {
@@ -1128,7 +1121,6 @@ next_byte:
                         s->is_jmp = 3;
 //                      s->is_ei = 1;
                         break;
-
                     case 1:
                         gen_ex(OR2_BC, OR2_BCX);
                         gen_ex(OR2_DE, OR2_DEX);
@@ -1638,37 +1630,26 @@ next_byte:
                     } else if (use_icount) {
                         gen_jmp_im(s->pc);
                     }
-                    break;	/* case z=3 ends */
+                    break;
                 }
 
                 zprintf("%s\n", bli[y-4][z]);
                 break;
-            }	/* case 2 end - falls through for y=0..3 */
+            }
         }
     }
 
     prefixes = 0;
 
-//    /* now check op code */
-#if 1	/* WmT - INFO */
-;DPRINTF("** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
-#endif
+    /* now check op code */
 //    switch (b) {
 //    default:
 //        goto illegal_op;
 //    }
     /* lock generation */
-#if 0  /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
-goto illegal_op;
-#else
-;DPRINTF("EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
     return s->pc;
-#endif
+
  illegal_op:
-#if 1	/* WmT - TRACE */
-;DPRINTF("EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
-#endif
     /* XXX: ensure that no lock was generated */
     //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
     gen_exception(s, EXCP06_ILLOP, pc_start /* - s->cs_base */);
@@ -1693,15 +1674,9 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 //    target_ulong cs_base; /* i386 */
     int num_insns;
     int max_insns;
-#if 1	/* WmT - TRACE */
-;DPRINTF("*** ENTER %s() ****\n", __func__);
-#endif
 
     /* generate intermediate code */
     pc_start = tb->pc;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
-#endif
 //    cs_base = tb->cs_base;
     flags = tb->flags;
     //cflags = tb->cflags;
@@ -1721,9 +1696,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
-#endif
     lj = -1;
     dc->model = env->model;
 
@@ -1732,9 +1704,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     if (max_insns == 0) {
         max_insns = CF_COUNT_MASK;
     }
-#if 1	/* WmT - TRACE */
-;DPRINTF("[%s:%d] decided on max_insns %d\n", __FILE__, __LINE__, max_insns);
-#endif
 
     gen_tb_start();
     for (;;) {
@@ -1790,9 +1759,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         num_insns++;
         /* stop translation if indicated */
         if (dc->is_jmp) {
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): is_jmp %d -> stop translation\n", __func__, dc->is_jmp);
-#endif
             break;
         }
         /* if single step mode, we generate only one instruction and
@@ -1848,23 +1814,20 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     }
 
 #ifdef DEBUG_DISAS
-;DPRINTF("** %s(): PARTIAL - handle DEBUG_DISAS via log_target_disas() **\n", __func__);
-//    log_cpu_state_mask(CPU_LOG_TB_CPU, env, 0);
-//    if (qemu_loglevel_mask(CPU_LOG_TB_IN_ASM)) {
-//        qemu_log("----------------\n");
-//        qemu_log("IN: %s\n", lookup_symbol(pc_start));
-//        log_target_disas(pc_start, pc_ptr - pc_start, 0);
-//        qemu_log("\n");
-//    }
+    if (qemu_loglevel_mask(CPU_LOG_TB_IN_ASM)) {
+        int disas_flags;
+        qemu_log("----------------\n");
+        qemu_log("IN: %s\n", lookup_symbol(pc_start));
+	disas_flags= 0;	/* varies for target-i386 */
+        log_target_disas(env, pc_start, pc_ptr - pc_start, disas_flags);
+        qemu_log("\n");
+    }
 #endif
 
     if (!search_pc) {
         tb->size = pc_ptr - pc_start;
         tb->icount = num_insns;
     }
-#if 1	/* WmT - TRACE */
-;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
-#endif
 }
 
 void gen_intermediate_code(CPUZ80State *env, TranslationBlock *tb)
@@ -1879,11 +1842,9 @@ void gen_intermediate_code_pc(CPUZ80State *env, TranslationBlock *tb)
 
 void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb, int pc_pos)
 {
-#if 1
-;DPRINTF("%s() UNIMPLEMENTED\n", __func__);
-;exit(1);
-#else   /* Suitable for X86 */
+#if 0	/* not Z80 */
     int cc_op;
+#endif
 #ifdef DEBUG_DISAS
     if (qemu_loglevel_mask(CPU_LOG_TB_OP)) {
         int i;
@@ -1904,7 +1865,8 @@ void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb, int pc_pos)
 #endif
     }
 #endif
-    env->eip = tcg_ctx.gen_opc_pc[pc_pos] - tb->cs_base;
+#if 0	/* not Z80 */
+    env->eip = gen_opc_pc[pc_pos] - tb->cs_base;
     cc_op = gen_opc_cc_op[pc_pos];
     if (cc_op != CC_OP_DYNAMIC)
         env->cc_op = cc_op;
@@ -1938,3 +1900,11 @@ void z80_translate_init(void)
 #endif
 #endif
 }
+
+#if 0	/* unused? */
+void gen_pc_load(CPUState *env, TranslationBlock *tb,
+                 unsigned long searched_pc, int pc_pos, void *puc)
+{
+    env->pc = gen_opc_pc[pc_pos];
+}
+#endif
