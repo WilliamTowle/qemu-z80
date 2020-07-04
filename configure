@@ -3507,10 +3507,10 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
     echo "CONFIG_SPARC_DIS=y"  >> $config_target_mak
     echo "CONFIG_SPARC_DIS=y"  >> $libdis_config_mak
   ;;
-#  z80)
-#    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
-#    disas_config "Z80"
-#  ;;
+  z80*)
+    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
+    echo "CONFIG_Z80_DIS=y"  >> $libdis_config_mak
+  ;;
   esac
 done
 
