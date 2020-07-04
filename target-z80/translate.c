@@ -656,7 +656,14 @@ static rot_helper_func *const gen_rot_T0[8] = {
     gen_helper_srl_T0_cc,
 };
 
-///* Block instructions */
+/* Block instructions */
+
+static const char *const bli[4][4] = {
+    { "ldi",  "cpi",  "ini",  "outi", },
+    { "ldd",  "cpd",  "ind",  "outd", },
+    { "ldir", "cpir", "inir", "otir", },
+    { "lddr", "cpdr", "indr", "otdr", },
+};
 
 static const int imode[8] = {
     0, 0, 1, 2, 0, 0, 1, 2,
