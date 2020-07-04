@@ -292,6 +292,9 @@ void target_disas(FILE *out, CPUArchState *env, target_ulong code,
 #elif defined(TARGET_LM32)
     s.info.mach = bfd_mach_lm32;
     print_insn = print_insn_lm32;
+#elif defined(TARGET_Z80)
+    s.info.mach = bfd_mach_z80;
+    print_insn = print_insn_z80;
 #endif
     if (print_insn == NULL) {
         print_insn = print_insn_od_target;
@@ -375,6 +378,8 @@ void disas(FILE *out, void *code, unsigned long size)
     print_insn = print_insn_hppa;
 #elif defined(__ia64__)
     print_insn = print_insn_ia64;
+#elif defined(TARGET_Z80)	/* TODO: overkill if we're checking host CPU */
+    print_insn = print_insn_z80;
 #endif
     if (print_insn == NULL) {
         print_insn = print_insn_od_host;
@@ -500,6 +505,9 @@ void monitor_disas(Monitor *mon, CPUArchState *env,
 #elif defined(TARGET_LM32)
     s.info.mach = bfd_mach_lm32;
     print_insn = print_insn_lm32;
+#elif defined(TARGET_Z80)
+    s.info.mach = bfd_mach_z80;
+    print_insn = print_insn_z80;
 #else
     monitor_printf(mon, "0x" TARGET_FMT_lx
                    ": Asm output not supported on this arch\n", pc);
@@ -508,7 +516,7 @@ void monitor_disas(Monitor *mon, CPUArchState *env,
 
     for(i = 0; i < nb_insn; i++) {
 	monitor_printf(mon, "0x" TARGET_FMT_lx ":  ", pc);
-        count = print_insn(pc, &s.info);
+	count = print_insn(pc, &s.info);
 	monitor_printf(mon, "\n");
 	if (count < 0)
 	    break;
