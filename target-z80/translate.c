@@ -572,8 +572,29 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
     s->is_jmp = 3;
 }
 
-///* Conditions */
+/* Conditions */
 
+static const char *const cc[8] = {
+    "nz",
+    "z",
+    "nc",
+    "c",
+    "po",
+    "pe",
+    "p",
+    "m",
+};
+
+enum {
+    COND_NZ = 0,
+    COND_Z,
+    COND_NC,
+    COND_C,
+    COND_PO,
+    COND_PE,
+    COND_P,
+    COND_M,
+};
 
 static const int cc_flags[4] = {
     CC_Z,
