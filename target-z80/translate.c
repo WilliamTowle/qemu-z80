@@ -100,6 +100,36 @@ enum {
     OR_IYmem,
 };
 
+static const char *const regnames[] = {
+    [OR_B]     = "b",
+    [OR_C]     = "c",
+    [OR_D]     = "d",
+    [OR_E]     = "e",
+    [OR_H]     = "h",
+    [OR_L]     = "l",
+    [OR_HLmem] = "(hl)",
+    [OR_A]     = "a",
+
+    [OR_IXh]   = "ixh",
+    [OR_IXl]   = "ixl",
+
+    [OR_IYh]   = "iyh",
+    [OR_IYl]   = "iyl",
+
+    [OR_IXmem] = "(ix+d)",
+    [OR_IYmem] = "(iy+d)",
+};
+
+static const char *const idxnames[] = {
+    [OR_IXmem] = "ix",
+    [OR_IYmem] = "iy",
+};
+
+/* signed hex byte value for printf */
+#define shexb(val) (val < 0 ? '-' : '+'), (abs(val))
+
+/* Register accessor functions */
+
 #if defined(WORDS_BIGENDIAN)
 #define UNIT_OFFSET(type, units, num) (sizeof(type) - ((num + 1) * units))
 #else
@@ -396,6 +426,22 @@ enum {
     OR2_HLX,
 };
 
+static const char *const regpairnames[] = {
+    [OR2_AF]  = "af",
+    [OR2_BC]  = "bc",
+    [OR2_DE]  = "de",
+    [OR2_HL]  = "hl",
+
+    [OR2_IX]  = "ix",
+    [OR2_IY]  = "iy",
+    [OR2_SP]  = "sp",
+
+    [OR2_AFX] = "afx",
+    [OR2_BCX] = "bcx",
+    [OR2_DEX] = "dex",
+    [OR2_HLX] = "hlx",
+};
+
 static gen_mov_func *const gen_movw_reg_v_tbl[] = {
     [OR2_AF]  = gen_movw_AF_v,
     [OR2_BC]  = gen_movw_BC_v,
@@ -442,8 +488,12 @@ static const int regpair[4] = {
     OR2_SP,
 };
 
-//static const int regpair2[4] = ...
-
+static const int regpair2[4] = {
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+    OR2_AF,
+};
 
 static inline void gen_jmp_im(target_ulong pc)
 {
