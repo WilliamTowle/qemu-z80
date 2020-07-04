@@ -138,6 +138,8 @@ typedef struct CPUZ80State {
 
     CPU_COMMON
 
+    int model;
+
     /* Z80 registers */
     uint16_t pc;
 
@@ -167,6 +169,9 @@ int cpu_z80_exec(CPUZ80State *s);
 struct siginfo;
 int cpu_z80_signal_handler(int host_signum, void *pinfo,
                            void *puc);
+
+#define Z80_CPU_Z80  1
+#define Z80_CPU_R800 2
 
 #define TARGET_PAGE_BITS 12
 
