@@ -23,6 +23,7 @@
 
 #include "qemu.h"
 #include "cpu.h"
+#include "disas.h"
 #include "tcg-op.h"
 
 #include "helper.h"
@@ -752,7 +753,9 @@ static inline void gen_ex(int regpair1, int regpair2)
     tcg_temp_free(tmp2);
 }
 
-///* TODO: condition code optimisation */
+/* TODO: condition code optimisation */
+
+/* micro-ops that modify condition codes should end in _cc */
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
@@ -761,9 +764,6 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
-#if 1	/* WmT - TRACE */
-;fprintf(stderr, "ENTER %s() - context %p, pc_start 0x%04x\n", __func__, s, pc_start);
-#endif
 
     s->pc = pc_start;
     prefixes = 0;
@@ -771,9 +771,6 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     //rex_w = -1;
     //rex_r = 0;
 
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
-#endif
     zprintf("PC = %04x: ", s->pc);
 next_byte:
     s->prefix = prefixes;
@@ -804,16 +801,10 @@ next_byte:
         p = y >> 1;
         q = y & 0x01;
 
-#if 0	/* WmT - HACK */
-;DPRINTF("[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
-;goto illegal_op;
-#else
-;DPRINTF("[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
-//...
-#endif
         switch (x) {
         case 0:	/* instr pattern 00yyyzzz */
             switch (z) {
+
             case 0:
                 switch (y) {
                 case 0:
@@ -1155,7 +1146,6 @@ next_byte:
                         s->is_jmp = 3;
 //                      s->is_ei = 1;
                         break;
-
                     case 1:
                         gen_ex(OR2_BC, OR2_BCX);
                         gen_ex(OR2_DE, OR2_DEX);
@@ -1665,46 +1655,54 @@ next_byte:
                     } else if (use_icount) {
                         gen_jmp_im(s->pc);
                     }
-                    break;	/* case z=3 ends */
+                    break;
                 }
 
                 zprintf("%s\n", bli[y-4][z]);
                 break;
-            }	/* case 2 end - falls through for y=0..3 */
+            }
         }
     }
 
     prefixes = 0;
 
-//    /* now check op code */
-#if 1	/* WmT - INFO */
-;DPRINTF("** %s() INFO - omitted (? intended?) further illegal op test based on op=0x%02x **\n", __func__, b);
-#endif
+    /* now check op code */
 //    switch (b) {
 //    default:
 //        goto illegal_op;
 //    }
     /* lock generation */
-#if 0  /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - skipping 'return s->pc'...\n", __FILE__, __LINE__);
-goto illegal_op;
-#else
-;DPRINTF("EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
     return s->pc;
-#endif
+
  illegal_op:
-#if 1	/* WmT - TRACE */
-;DPRINTF("EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
-#endif
     /* XXX: ensure that no lock was generated */
     //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
     gen_exception(s, EXCP06_ILLOP, pc_start /* - s->cs_base */);
     return s->pc;
 }
 
-///* generate intermediate code in gen_opc_buf and gen_opparam_buf for
-//   basic block 'tb'. If search_pc is TRUE, also generate PC
-//   information for each intermediate instruction. */
+void z80_translate_init(void)
+{
+    cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
+
+#if 1	/* previously TARGET_LONG_BITS > HOST_LONG_BITS */
+	/* [WmT] TCG_AREG{1|2} obsolete */
+    cpu_T[0] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t0), "T0");
+    cpu_T[1] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t1), "T1");
+#else
+    cpu_T[0] = tcg_global_reg_new_i32(TCG_AREG1, "T0");
+    cpu_T[1] = tcg_global_reg_new_i32(TCG_AREG2, "T1");
+#endif
+    cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, a0), "A0");
+
+    /* register helpers */
+#define GEN_HELPER 2
+#include "helper.h"
+}
+
+/* generate intermediate code in gen_opc_buf and gen_opparam_buf for
+   basic block 'tb'. If search_pc is TRUE, also generate PC
+   information for each intermediate instruction. */
 static inline int gen_intermediate_code_internal(CPUState *env,
                                                  TranslationBlock *tb,
                                                  int search_pc)
@@ -1718,15 +1716,9 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     target_ulong cs_base;
     int num_insns;
     int max_insns;
-#if 1	/* WmT - TRACE */
-;DPRINTF("*** ENTER %s() ****\n", __func__);
-#endif
 
     /* generate intermediate code */
     pc_start = tb->pc;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
-#endif
     cs_base = tb->cs_base;
     flags = tb->flags;
     //cflags = tb->cflags;
@@ -1748,9 +1740,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
 
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
-#endif
     lj = -1;
     dc->model = env->model;
 
@@ -1759,9 +1748,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     if (max_insns == 0) {
         max_insns = CF_COUNT_MASK;
     }
-#if 1	/* WmT - TRACE */
-;DPRINTF("[%s:%d] decided on max_insns %d\n", __FILE__, __LINE__, max_insns);
-#endif
 
     gen_icount_start();
     for (;;) {
@@ -1828,9 +1814,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
         num_insns++;
         /* stop translation if indicated */
         if (dc->is_jmp) {
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): is_jmp %d -> stop translation\n", __func__, dc->is_jmp);
-#endif
             break;
         }
         /* if single step mode, we generate only one instruction and
@@ -1874,68 +1857,62 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     }
 
 #ifdef DEBUG_DISAS
-;DPRINTF("** %s(): PARTIAL - handle DEBUG_DISAS via log_target_disas() **\n", __func__);
-//    log_cpu_state_mask(CPU_LOG_TB_CPU, env, 0);
-//    if (qemu_loglevel_mask(CPU_LOG_TB_IN_ASM)) {
-//        qemu_log("----------------\n");
-//        qemu_log("IN: %s\n", lookup_symbol(pc_start));
-//        log_target_disas(pc_start, pc_ptr - pc_start, 0);
-//        qemu_log("\n");
-//    }
+    log_cpu_state_mask(CPU_LOG_TB_CPU, env, 0);
+    if (qemu_loglevel_mask(CPU_LOG_TB_IN_ASM)) {
+        qemu_log("----------------\n");
+        qemu_log("IN: %s\n", lookup_symbol(pc_start));
+        log_target_disas(pc_start, pc_ptr - pc_start, 0);
+        qemu_log("\n");
+    }
 #endif
 
     if (!search_pc) {
         tb->size = pc_ptr - pc_start;
         tb->icount = num_insns;
     }
-#if 1	/* WmT - TRACE */
-;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
-#endif
     return 0;
 }
 
 void gen_intermediate_code(CPUState *env, TranslationBlock *tb)
 {
-	gen_intermediate_code_internal(env, tb, 0);
+    gen_intermediate_code_internal(env, tb, 0);
 }
 
 void gen_intermediate_code_pc(CPUState *env, TranslationBlock *tb)
 {
-	gen_intermediate_code_internal(env, tb, 1);
+    gen_intermediate_code_internal(env, tb, 1);
 }
 
 void restore_state_to_opc(CPUState *env, TranslationBlock *tb, int pc_pos)
 {
-#if 1	/* WmT - PARTIAL */
-;DPRINTF("BAIL %s() - INCOMPLETE\n", __func__);
-;exit(1);
-#else
-	/* FIXME: see target-i386/translate.c */
+#if 0	/* not Z80 */
+    int cc_op;
+#endif
+#ifdef DEBUG_DISAS
+    if (qemu_loglevel_mask(CPU_LOG_TB_OP)) {
+        int i;
+        qemu_log("RESTORE:\n");
+        for(i = 0;i <= pc_pos; i++) {
+            if (gen_opc_instr_start[i]) {
+                qemu_log("0x%04x: " TARGET_FMT_lx "\n", i, gen_opc_pc[i]);
+            }
+        }
+        qemu_log("pc_pos=0x%x eip=" TARGET_FMT_lx " cs_base=%x\n",
+                pc_pos, gen_opc_pc[pc_pos] - tb->cs_base,
+                (uint32_t)tb->cs_base);
+    }
+#endif
+#if 0	/* not Z80 */
+    env->eip = gen_opc_pc[pc_pos] - tb->cs_base;
+    cc_op = gen_opc_cc_op[pc_pos];
+    if (cc_op != CC_OP_DYNAMIC)
+        env->cc_op = cc_op;
 #endif
 }
 
-void z80_translate_init(void)
+/* TODO: prototype missing - possibly unused? */
+void gen_pc_load(CPUState *env, TranslationBlock *tb,
+                 unsigned long searched_pc, int pc_pos, void *puc)
 {
-#if 0	/* WmT - PARTIAL */
-;DPRINTF("[%s:%d] *** ENTERED %s() - PARTIAL ONLY ***\n", __FILE__, __LINE__, __func__);
-;exit(1);
-#else
-	cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
-
-;DPRINTF("%s() skeleton ... compare %d, %d\n", __func__, TARGET_LONG_BITS, HOST_LONG_BITS);
-#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
-	 * but TCG_AREG{1|2} no longer available for else case
-	 */
-	cpu_T[0] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t0), "T0");
-	cpu_T[1] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t1), "T1");
-#else
-	cpu_T[0] = tcg_global_reg_new_i32(TCG_AREG1, "T0");
-	cpu_T[1] = tcg_global_reg_new_i32(TCG_AREG2, "T1");
-#endif
-	cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, a0), "A0");
-
-    /* register helpers */
-#define GEN_HELPER 2
-#include "helper.h"
-#endif
+    env->pc = gen_opc_pc[pc_pos];
 }
