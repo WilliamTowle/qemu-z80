@@ -48,39 +48,38 @@ CPUZ80State *cpu_z80_init(const char *model)
         z80_translate_init();
     }
 
-#if defined(TARGET_Z80)
-;printf("%s(): PARTIAL - model/flags init missing...\n", __func__);
-#endif
-    /* PARTIAL: cpu_z80_init() continues (requiring enhanced
-     * CPUZ80State?) with:
-     * 1. z80_translate_init() call, if not already done
-     * 2. store id in env->model
-     *
-     * ...target-i386 has:
-     *	1. initialising env->cpu_model_str
-     *	2. one-shot flags optimisation
-     *	3. breakpoint handler management
-     *	4. registering CPU[s] (with cpu_x86_close() on failure)
-     */
-
+    env->model= id;
     cpu_reset(env);		/* target-i386: in wrapper functions */
     qemu_init_vcpu(env);
 
     return env;
 }
 
+typedef struct {
+    int id;
+    const char *name;
+} Z80CPUModel;
+
+static const Z80CPUModel z80_cpu_names[] = {
+    { Z80_CPU_Z80,  "z80" },
+    { Z80_CPU_R800, "r800" },
+    { 0, NULL }
+};
+
 /* returns 0 to signify "not found" */
 static int cpu_z80_find_by_name(const char *name)
 {
-    /* PARTIAL: qemu-z80 iterates around z80_cpu_names[] list,
-     * containing "z80", "r800", and an end-of-list sentinel
-     */
-    if (strcmp(name, "z80") == 0)
-    {
-        return 1;	/* normally Z80_CPU_Z80, value 1, via list */
-    }
+    int i;
+    int id;
 
-  return 0;
+    id = 0;
+    for (i = 0; z80_cpu_names[i].name; i++) {
+        if (strcmp(name, z80_cpu_names[i].name) == 0) {
+            id = z80_cpu_names[i].id;
+            break;
+        }
+    }
+    return id;
 }
 
 void cpu_reset(CPUZ80State *env)
