@@ -165,7 +165,7 @@ int main(int argc, char **argv)
     if (cpu_model == NULL)
     {
 #if defined(TARGET_Z80)
-        cpu_model = "z80";
+        cpu_model = "z80";	/* TODO: support specifying "r800"? */
 #else
 #error unsupported target CPU
 #endif
