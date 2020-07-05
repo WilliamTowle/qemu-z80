@@ -38,6 +38,17 @@
 #endif
 
 
+typedef struct {
+    int id;
+    const char *name;
+} Z80CPUModel;
+
+static const Z80CPUModel z80_cpu_names[] = {
+    { Z80_CPU_Z80,  "z80" },
+    { Z80_CPU_R800, "r800" },
+    { 0, NULL }
+};
+
 static int cpu_z80_find_by_name(const char *name);
 
 CPUZ80State *cpu_z80_init(const char *model)
@@ -46,38 +57,28 @@ CPUZ80State *cpu_z80_init(const char *model)
     static int inited;
     int id;
 
+    /* TODO: INCOMPLETE
+     * For target-i386 there is also a cpu_*_close() call if
+     * something goes wrong.
+     */
     id = cpu_z80_find_by_name(model);
     if (id == 0) {
         return NULL;
     }
 
-    env= calloc(1, sizeof *env);
-    cpu_exec_init(env);
+    //env = qemu_mallocz(sizeof(CPUZ80State));
+    env = g_malloc0(sizeof(CPUZ80State));
+    env->model= id;
 
+    cpu_exec_init(env);
     /* init various static tables */
     if (!inited) {
         inited = 1;
         z80_translate_init();
     }
+    tlb_flush(env, 1);  /* via cpu_reset() in legacy implementation */
 
-#if defined(TARGET_Z80)
-;printf("%s(): PARTIAL - model/flags init missing...\n", __func__);
-#endif
-    /* PARTIAL: cpu_z80_init() continues (requiring enhanced
-     * CPUZ80State?) with:
-     * 1. z80_translate_init() call, if not already done
-     * 2. store id in env->model
-     *
-     * ...target-i386 has:
-     *	1. initialising env->cpu_model_str
-     *	2. one-shot flags optimisation
-     *	3. breakpoint handler management
-     *	4. registering CPU[s] (with cpu_x86_close() on failure)
-     */
-
-    cpu_reset(env);		/* target-i386: in wrapper functions */
     qemu_init_vcpu(env);
-
     return env;
 }
 
@@ -88,16 +89,17 @@ CPUZ80State *cpu_z80_init(const char *model)
  */
 static int cpu_z80_find_by_name(const char *name)
 {
-    /* PARTIAL: qemu-z80 iterates around z80_cpu_names[] list,
-     * containing "z80", "r800", an end-of-list sentinel, and
-     * the Z80_CPU_* constants used as return values
-     */
-    if (strcmp(name, "z80") == 0)
-    {
-        return 1;	/* value of Z80_CPU_Z80 */
-    }
+    int i;
+    int id;
 
-  return 0;
+    id = 0;
+    for (i = 0; z80_cpu_names[i].name; i++) {
+        if (strcmp(name, z80_cpu_names[i].name) == 0) {
+            id = z80_cpu_names[i].id;
+            break;
+        }
+    }
+    return id;
 }
 
 void cpu_reset(CPUZ80State *env)
