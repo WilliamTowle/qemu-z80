@@ -210,4 +210,7 @@ static inline void cpu_get_tb_cpu_state(CPUState *env, target_ulong *pc,
 
 #include "exec-all.h"
 
+/* op_helper.c */
+void do_interrupt(CPUZ80State *env);
+
 #endif /* CPU_Z80_H */
