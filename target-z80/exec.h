@@ -47,7 +47,6 @@ register struct CPUZ80State *env asm(AREG0);
 
 //#define PC  (env->pc)
 
-void do_interrupt(CPUZ80State *env);
 
 /* op_helper.c */
 void raise_interrupt(int intno, int is_int, int error_code,
