@@ -1397,32 +1397,30 @@ next_byte:
             break;
         case 3:
             if (s->model == Z80_CPU_R800) {
-;DPRINTF("[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, CPU R800)\n", __FILE__, __LINE__, b, x);
-                goto illegal_op;
-//                switch (z) {
-//                case 1:
-//                    /* does mulub work with r1 == h, l, (hl) or a? */
-//                    r1 = regmap(reg[y], m);
-//                    gen_movb_v_reg(cpu_T[0], r1);
-//                    gen_helper_mulub_cc();
-//                    zprintf("mulub a,%s\n", regnames[r1]);
-//                    break;
-//                case 3:
-//                    if (q == 0) {
-//                        /* does muluw work with r1 == de or hl? */
-//                        /* what is the effect of DD/FD prefixes here? */
-//                        r1 = regpairmap(regpair[p], m);
-//                        gen_movw_v_reg(cpu_T[0], r1);
-//                        gen_helper_muluw_cc();
-//                        zprintf("muluw hl,%s\n", regpairnames[r1]);
-//                    } else {
-//                        zprintf("nop\n");
-//                    }
-//                    break;
-//                default:
-//                    zprintf("nop\n");
-//                    break;
-//                }
+                switch (z) {
+                case 1:
+                    /* does mulub work with r1 == h, l, (hl) or a? */
+                    r1 = regmap(reg[y], m);
+                    gen_movb_v_reg(cpu_T[0], r1);
+                    gen_helper_mulub_cc();
+                    zprintf("mulub a,%s\n", regnames[r1]);
+                    break;
+                case 3:
+                    if (q == 0) {
+                        /* does muluw work with r1 == de or hl? */
+                        /* what is the effect of DD/FD prefixes here? */
+                        r1 = regpairmap(regpair[p], m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_helper_muluw_cc();
+                        zprintf("muluw hl,%s\n", regpairnames[r1]);
+                    } else {
+                        zprintf("nop\n");
+                    }
+                    break;
+                default:
+                    zprintf("nop\n");
+                    break;
+                }
             } else {
                 zprintf("nop\n");
             }
