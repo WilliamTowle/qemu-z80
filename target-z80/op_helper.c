@@ -891,3 +891,20 @@ void HELPER(ld_A_I)(void)
 
     F = (F & CC_C) | sf | zf | pf;
 }
+
+void HELPER(mulub_cc)(void)
+{
+    /* TODO: flags */
+
+    HL = A * T0;
+}
+
+void HELPER(muluw_cc)(void)
+{
+    /* TODO: flags */
+    uint32_t tmp;
+
+    tmp = HL * T0;
+    DE = tmp >> 16;
+    HL = tmp & 0xff;
+}
