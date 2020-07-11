@@ -40,6 +40,20 @@ static void usage(int exitcode)
     exit(exitcode);
 }
 
+static void handle_arg_cpu(char *arg)
+{
+    cpu_model= arg;
+
+    if (cpu_model == NULL || is_help_option(cpu_model)) {
+#if defined(cpu_list_id)
+        cpu_list_id(stdout, &fprintf, "");
+#elif defined(cpu_list)
+        cpu_list(stdout, &fprintf); /* deprecated */
+#endif
+        exit(1);
+    }
+}
+
 static int parse_args(int argc, char **argv)
 {
     int		optind;
@@ -62,7 +76,10 @@ static int parse_args(int argc, char **argv)
         {
             usage(EXIT_SUCCESS);
         }
-        /* TODO: support "cpu" option */
+        else if (strcmp(r, "-cpu") == 0)
+        {
+            handle_arg_cpu(argv[optind++]);
+        }
         /* TODO: support "singlestep" option */
         else
         {
