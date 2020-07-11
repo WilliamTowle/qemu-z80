@@ -13,6 +13,7 @@
 unsigned long guest_base;
 #endif
 
+const char *cpu_model= NULL;
 int singlestep;
 
 static void usage(int exitcode)
@@ -22,6 +23,20 @@ static void usage(int exitcode)
         "usage: qemu-" TARGET_ARCH " [options] program\n"
         );
     exit(exitcode);
+}
+
+static void handle_arg_cpu(char *arg)
+{
+    cpu_model= arg;
+
+    if (cpu_model == NULL || strcmp(cpu_model, "?") == 0) {
+#if defined(cpu_list_id)
+	cpu_list_id(stdout, &fprintf, "");
+#elif defined(cpu_list)
+	cpu_list(stdout, &fprintf); /* deprecated */
+#endif
+	exit(1);
+    }
 }
 
 static void handle_arg_singlestep(void)
@@ -51,7 +66,11 @@ static int parse_args(int argc, char **argv)
         {
             usage(EXIT_SUCCESS);
         }
-        if (strcmp(r, "-singlestep") == 0)
+        else if (strcmp(r, "-cpu") == 0)
+        {
+            handle_arg_cpu(argv[optind++]);
+        }
+        else if (strcmp(r, "-singlestep") == 0)
         {
             handle_arg_singlestep();
         }
@@ -129,7 +148,6 @@ void cpu_loop(CPUState *env)
 
 int main(int argc, char **argv)
 {
-  const char *cpu_model= NULL;
     char	*filename;
   CPUState *env;
   void  *target_ram;
