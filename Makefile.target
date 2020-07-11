@@ -113,10 +113,11 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 #QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR)
 
 obj-y = $(GENERATED_HEADERS)
-obj-y += main.o bblbrxload.o rawload.o mmap.o \
-      qemu-malloc.o user-exec.o $(oslib-obj-y)
+obj-y += main.o bblbrxload.o rawload.o mmap.o
 
 obj-z80-y += ioport-user.o
+
+obj-y += qemu-malloc.o user-exec.o $(oslib-obj-y)
 
 obj-y += $(addprefix ../libuser/, $(user-obj-y))
 obj-y += $(addprefix ../libdis-user/, $(libdis-y))
