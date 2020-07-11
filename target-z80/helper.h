@@ -84,4 +84,8 @@ DEF_HELPER_0(ld_I_A, void)
 DEF_HELPER_0(ld_A_R, void)
 DEF_HELPER_0(ld_A_I, void)
 
+/* R800 */
+DEF_HELPER_0(mulub_cc, void)
+DEF_HELPER_0(muluw_cc, void)
+
 #include "def-helper.h"
