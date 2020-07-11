@@ -12,6 +12,8 @@
 #include "cpu.h"
 
 #include "qemu/error-report.h"
+#include "qemu/help_option.h"
+
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 1
@@ -19,6 +21,7 @@
     do { if (EMIT_DEBUG) error_printf("bblbrx-user main: " fmt , ## __VA_ARGS__); } while(0)
 
 
+const char *cpu_model;
 unsigned long guest_base;
 unsigned long reserved_va;
 
@@ -44,6 +47,18 @@ static void usage(int exitcode)
     exit(exitcode);
 }
 
+static void handle_arg_cpu(char *arg)
+{
+    cpu_model= arg;
+
+    if (cpu_model == NULL || is_help_option(cpu_model)) {
+#if defined(cpu_list)
+        cpu_list();
+#endif
+        exit(EXIT_FAILURE);
+    }
+}
+
 static int parse_args(int argc, char **argv)
 {
     int         optind;
@@ -66,7 +81,10 @@ static int parse_args(int argc, char **argv)
         {
             usage(EXIT_SUCCESS);
         }
-        /* TODO: support "cpu" option */
+        else if (strcmp(r, "-cpu") == 0)
+        {
+            handle_arg_cpu(argv[optind++]);
+        }
         /* TODO: support "singlestep" option */
         else
         {
@@ -80,7 +98,6 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    const char *cpu_model= NULL;
     const char *cpu_type;
     CPUArchState *env;
     CPUState *cpu;
@@ -105,6 +122,7 @@ int main(int argc, char **argv)
     qemu_init_cpu_list();
     module_call_init(MODULE_INIT_QOM);
 
+    cpu_model= NULL;
 
     optind= parse_args(argc, argv);
     if (optind >= argc)
