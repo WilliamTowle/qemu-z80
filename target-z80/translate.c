@@ -1684,6 +1684,9 @@ next_byte:
     return s->pc;
 }
 
+//#define CC_SZHPNC (CC_S | CC_Z | CC_H | CC_P | CC_N | CC_C)
+//#define CC_SZHPN (CC_S | CC_Z | CC_H | CC_P | CC_N)
+
 void z80_translate_init(void)
 {
     cpu_env = tcg_global_reg_new_ptr(TCG_AREG0, "env");
