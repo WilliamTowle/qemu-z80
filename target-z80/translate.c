@@ -1694,10 +1694,13 @@ next_byte:
     return s->pc;
 }
 
+//#define CC_SZHPNC (CC_S | CC_Z | CC_H | CC_P | CC_N | CC_C)
+//#define CC_SZHPN (CC_S | CC_Z | CC_H | CC_P | CC_N)
+
 /* generate intermediate code in gen_opc_buf and gen_opparam_buf for
    basic block 'tb'. If search_pc is TRUE, also generate PC
    information for each intermediate instruction. */
-static inline void gen_intermediate_code_internal(Z80CPU *cpu,
+static void gen_intermediate_code_internal(Z80CPU *cpu,
                                                  TranslationBlock *tb,
                                                  int search_pc)
 {
