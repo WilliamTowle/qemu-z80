@@ -1702,9 +1702,12 @@ goto illegal_op;
     return s->pc;
 }
 
-///* generate intermediate code in gen_opc_buf and gen_opparam_buf for
-//   basic block 'tb'. If search_pc is TRUE, also generate PC
-//   information for each intermediate instruction. */
+//#define CC_SZHPNC (CC_S | CC_Z | CC_H | CC_P | CC_N | CC_C)
+//#define CC_SZHPN (CC_S | CC_Z | CC_H | CC_P | CC_N)
+
+/* generate intermediate code in gen_opc_buf and gen_opparam_buf for
+   basic block 'tb'. If search_pc is TRUE, also generate PC
+   information for each intermediate instruction. */
 static inline int gen_intermediate_code_internal(CPUState *env,
                                                  TranslationBlock *tb,
                                                  int search_pc)
