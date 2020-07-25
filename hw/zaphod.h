@@ -17,6 +17,7 @@
 /* Feature configuration - see also z80-softmmu.mak */
 
 #define ZAPHOD_HAS_SERCON
+#define ZAPHOD_HAS_SCREEN
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
@@ -34,6 +35,12 @@ typedef struct {
 } ZaphodSerConState;
 #endif
 
+#ifdef ZAPHOD_HAS_SCREEN
+typedef struct {
+    DisplayState    *ds;
+} ZaphodScreenState;
+#endif
+
 struct ZaphodState {
     CPUState        *cpu;
     MemoryRegion    *ram;
@@ -42,12 +49,19 @@ struct ZaphodState {
 #ifdef ZAPHOD_HAS_SERCON
     ZaphodSerConState   *sercon;
 #endif
+#ifdef ZAPHOD_HAS_SCREEN
+    ZaphodScreenState   *screen;
+#endif
 };
 
 #ifdef ZAPHOD_HAS_SERCON
 void zaphod_sercon_putchar(ZaphodSerConState *zss, const unsigned char ch);
 
 ZaphodSerConState *zaphod_new_sercon(ZaphodState *zs, CharDriverState* sercon);
+#endif
+
+#ifdef ZAPHOD_HAS_SCREEN
+ZaphodScreenState *zaphod_new_screen(void);
 #endif
 
 #endif	/*  _ZAPHOD_H_  */
