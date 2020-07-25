@@ -26,6 +26,7 @@ void irq_info(Monitor *mon);
 
 /* Feature configuration */
 #define ZAPHOD_HAS_BIOS
+#define ZAPHOD_HAS_CONSOLEGUI
 #define ZAPHOD_HAS_IOPORTS
 #define ZAPHOD_HAS_MACHINESPEC		/* support -M "zaphodpb" */
 #define ZAPHOD_HAS_SERIALIO
