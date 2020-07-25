@@ -1,7 +1,7 @@
 /* "Zaphod" Z80 machine family for QEmu */
 /* Wm. Towle c. 2013-2020 */
 
-#include "hw/zaphod.h"
+#include "hw/zaphod.h"		/* for configuration */
 
 #ifdef ZAPHOD_DEBUG
 #include <stdio.h>
@@ -33,7 +33,7 @@
 #ifdef ZAPHOD_HAS_MACHINESPEC
 #define	ZAPHOD_SPEC_DEVEL	0	/* misc config */
 #define ZAPHOD_SPEC_ZAPHODPB	1	/* Phil Brown */
-#endif
+#endif	/* ZAPHOD_HAS_MACHINESPEC */
 
 #ifdef ZAPHOD_HAS_IOPORTS
 static uint32_t zaphod_io_read(void *opaque, uint32_t addr)
@@ -166,6 +166,9 @@ void zaphod_interrupt(void *opaque, int source, int level)
   ZaphodState	*zs= (ZaphodState *)opaque;
 	fprintf(stderr, "DEBUG: %s() with source=%d, level=%d\n", __func__, source, level);
 #endif
+//	/* ...as per 128K Spectrum io_page_write()? */
+//		cpu_interrupt(first_cpu, CPU_INTERRUPT_EXITTB);
+//		tlb_flush(first_cpu, 1);
 	cpu_interrupt(zs->cpu, CPU_INTERRUPT_HARD);
 }
 #endif	/* ZAPHOD_HAS_RXINT_IRQ */
@@ -204,6 +207,7 @@ static void zaphod_init_common(int zaphodspec,
 	    }
 	    load_image_targphys(kernel_filename, 0, kernel_size);
 	}
+
 #if 0
 	/* Load a second image/program?
 	 * (NB: cannot use '-initrd' without '-kernel')
@@ -229,13 +233,18 @@ static void zaphod_init_common(int zaphodspec,
 #else
 	if (zaphodspec == ZAPHOD_SPEC_ZAPHODPB)
 #endif
-	{
-	    /* No IRQs, or not required */
+	{   /* No IRQs, or not required - Phil Brown's design just has
+	     * port read/writes fetch/send ASCII directly
+	     */
 	    zs->console= zaphod_console_init(NULL);
 	}
 #if defined(ZAPHOD_HAS_RXINT_IRQ)
-	else	/* we can support (and want) an IRQ on keypress */
-	{
+	else
+	{   /* We can support (and want) an IRQ on keypress - Grant
+	     * Searle's ROM requires the serial input to raise an
+	     * interrupt on receiving data [triggering a handler
+	     * at 0x0038 which handles reading PortStatus and RxData]
+	     */
 	    zs->irqs= qemu_allocate_irqs(zaphod_interrupt, zs, 1);
 	    zs->console= zaphod_console_init(&zs->irqs[0]);
 	}
@@ -243,7 +252,7 @@ static void zaphod_init_common(int zaphodspec,
 
 #ifdef ZAPHOD_HAS_MACHINESPEC
 	if (zaphodspec == ZAPHOD_SPEC_ZAPHODPB)
-#elif ZAPHOD_HAS_CONSOLEGUI
+#elif defined(ZAPHOD_HAS_SERIALIO)
 	if (1)
 #endif
 	{   /* Phil Brown's Zaphod reserves ports 0 and 1 for normal I/O:
@@ -256,12 +265,11 @@ static void zaphod_init_common(int zaphodspec,
 
 #ifdef ZAPHOD_HAS_MACHINESPEC
 	if (zaphodspec != ZAPHOD_SPEC_ZAPHODPB)
-#elif ZAPHOD_HAS_SERIALIO
+#elif defined(ZAPHOD_HAS_SERIALIO)
 	if (1)
 #endif
-	{
-	    /* ...Grant Searle's SimpleZ80 reserves 0x80 to 0xbf for serial
-	     * I/O (although circuitry makes all even/odd ports equivalent)
+	{   /* ...Grant Searle's SimpleZ80 reserves 0x80 to 0xbf for serial
+	     * I/O (although decoding makes all even/odd ports equivalent)
 	     */
 	    /* 0x80: mc6850 PortStatus (read) and PortControl (write) */
 	    register_ioport_read(0x80, 1,sizeof(char), zaphod_io_read, zs);
