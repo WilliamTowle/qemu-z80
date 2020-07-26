@@ -353,7 +353,12 @@ static void zaphod_consolegui_cursor_timer(void *opaque)
 	/* TODO: does CPU receive 50HZ interrupt? */
 
 	/* only approximately 50HZ */
+#
+#if 0	/* v0.12.5 */
 	next_time= qemu_get_clock(vm_clock) + muldiv64(1, get_ticks_per_sec(), 50);
+#else
+	next_time= qemu_get_clock_ms(vm_clock) + muldiv64(1, get_ticks_per_sec(), 50);
+#endif
 	qemu_mod_timer(zcs->cs_blink_timer, next_time);
 
 	if (++zcs->cs_blink_count == 16)	/* arbitrary on/off rate */
@@ -370,8 +375,13 @@ static void zaphod_consolegui_cursor_timer(void *opaque)
 
 static void zaphod_consolegui_cursor_init(ZaphodConsoleState *zcs)
 {
+#if 0	/* v0.12.5 */
   int64_t now= qemu_get_clock(vm_clock);
 	zcs->cs_blink_timer= qemu_new_timer(vm_clock, zaphod_consolegui_cursor_timer, zcs);
+#else
+  int64_t now= qemu_get_clock_ms(vm_clock);
+	zcs->cs_blink_timer= qemu_new_timer(vm_clock, SCALE_MS, zaphod_consolegui_cursor_timer, zcs);
+#endif
 	qemu_mod_timer(zcs->cs_blink_timer, now);
 }
 #endif
