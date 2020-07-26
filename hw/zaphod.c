@@ -10,7 +10,7 @@
 
 #include "sysemu.h"		/* bios_name and other externs */
 
-#include "hw/boards.h"		/* QEMUMachine */
+#include "hw/boards.h"		/* emulator datatypes */
 #include "hw/hw.h"
 #include "hw/isa.h"
 #include "hw/loader.h"
