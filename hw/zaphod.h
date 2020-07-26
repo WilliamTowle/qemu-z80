@@ -6,11 +6,13 @@
 
 #include "qemu-common.h"
 
-#include "hw/irq.h"
 #define ZAPHOD_DEBUG	1	/* WARNING: uses fprintf() */
 
 #include "hw/boards.h"		/* emulator datatypes */
 
+#ifdef ZAPHOD_HAS_RXINT_IRQ
+#include "hw/irq.h"
+#endif	/* ZAPHOD_HAS_RXINT_IRQ */
 
 /* "Zaphod" Z80 machine family configuration */
 
@@ -35,13 +37,39 @@ void irq_info(Monitor *mon);
 /* Support for specific configurations (Phil Brown, Grant Searle...) */
 
 /* Feature-specific defines */
+
+#ifdef ZAPHOD_HAS_CONSOLEGUI
+#define ZAPHOD_CONSOLE_RENDERER		/* multiple colour depth support */
+#undef ZAPHOD_CONSOLE_TEST_COLOUR
+#define ZAPHOD_CONSOLE_CURSOR_BLINK
+#endif
+
 #ifdef ZAPHOD_HAS_SERIALIO
 #define ZAPHOD_HAS_RXINT_IRQ		/* for Grant Searle machine */
+#endif
+
+#ifdef ZAPHOD_HAS_CONSOLEGUI
+#include "console.h"	/* QEmu DisplayState */
+
+#define TEXT_COLS	80
+#define TEXT_ROWS	25
 #endif
 
 typedef struct {
 	char		cs_inkey;
 #ifdef ZAPHOD_HAS_RXINT_IRQ
+#ifdef ZAPHOD_HAS_CONSOLEGUI
+	DisplayState *ds;
+	int		ds_invalid;		/* needs full redraw? */
+	unsigned char	char_grid[TEXT_ROWS][TEXT_COLS];
+	int		ds_putchar_minr, ds_putchar_minc;
+	int		ds_putchar_maxr, ds_putchar_maxc;
+	int		cpos_r, cpos_c;
+#ifdef ZAPHOD_CONSOLE_CURSOR_BLINK
+	QEMUTimer	 *cs_blink_timer;
+	int		cs_blink_count, cs_blink_state;
+#endif
+#endif	/* ZAPHOD_HAS_CONSOLEGUI */
 	qemu_irq		*rxint_irq;
 #endif	/* ZAPHOD_HAS_RXINT_IRQ */
 } ZaphodConsoleState;
@@ -57,13 +85,14 @@ typedef struct {
 
 
 #ifdef ZAPHOD_HAS_CONSOLEGUI
-/* zaphod_screen.c */
+/* hw/zaphod_screen.c */
 void zaphod_consolegui_invalidate_display(void *opaque);
 void zaphod_consolegui_putchar(void *opaque, char ch);
 void zaphod_consolegui_init(ZaphodConsoleState *zcs);
-#endif
+#endif	/* ZAPHOD_HAS_CONSOLEGUI */
 
 #ifdef ZAPHOD_HAS_SERIALIO
+/* hw/zaphod_serial.c */
 void zaphod_serio_putchar(const unsigned char ch);
 void zaphod_serial_init(ZaphodConsoleState *zcs);
 #endif	/* ZAPHOD_HAS_SERIALIO */
