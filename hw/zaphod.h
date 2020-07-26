@@ -56,6 +56,13 @@ typedef struct {
 } ZaphodState;
 
 
+#ifdef ZAPHOD_HAS_CONSOLEGUI
+/* zaphod_screen.c */
+void zaphod_consolegui_invalidate_display(void *opaque);
+void zaphod_consolegui_putchar(void *opaque, char ch);
+void zaphod_consolegui_init(ZaphodConsoleState *zcs);
+#endif
+
 #ifdef ZAPHOD_HAS_SERIALIO
 void zaphod_serio_putchar(const unsigned char ch);
 void zaphod_serial_init(ZaphodConsoleState *zcs);
