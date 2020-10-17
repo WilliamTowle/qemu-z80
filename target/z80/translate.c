@@ -7,8 +7,21 @@
  *  All versions under GPL
  */
 
+
+#include "qemu/osdep.h"
+#include "cpu.h"
+
 #include "qemu/error-report.h"
+#include "exec/exec-all.h"
+
 
 #define EMIT_DEBUG 0
 #define DPRINTF(fmt, ...) \
     do { if (EMIT_DEBUG) error_printf("Z80 translate: " fmt , ## __VA_ARGS__); } while(0)
+
+void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb,
+                            target_ulong *data)
+{
+    //int cc_op = data[1];  /* unused for Z80 */
+    env->pc = data[0];
+}
