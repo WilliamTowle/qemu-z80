@@ -243,6 +243,12 @@ supported_target() {
                 return 1
             fi
             ;;
+        *-bblbrx-user)
+            if test "$linux" != "yes"; then
+                print_error "Target '$target' is only available on a Linux host"
+                return 1
+            fi
+            ;;
         *-bsd-user)
             if test "$bsd" != "yes"; then
                 print_error "Target '$target' is only available on a BSD host"
@@ -389,6 +395,7 @@ profiler="no"
 cocoa="no"
 softmmu="yes"
 linux_user="no"
+bblbrx_user="no"
 bsd_user="no"
 blobs="yes"
 pkgversion=""
@@ -812,6 +819,7 @@ Linux)
   audio_possible_drivers="oss alsa sdl pa"
   linux="yes"
   linux_user="yes"
+  bblbrx_user="yes"
   kvm="yes"
   vhost_net="yes"
   vhost_crypto="yes"
@@ -1120,12 +1128,17 @@ for opt do
   ;;
   --disable-user)
       linux_user="no" ;
+      bblbrx_user="no" ;
       bsd_user="no" ;
   ;;
   --enable-user) ;;
   --disable-linux-user) linux_user="no"
   ;;
   --enable-linux-user) linux_user="yes"
+  ;;
+  --disable-bblbrx-user) bblbrx_user="no"
+  ;;
+  --enable-bblbrx-user) bblbrx_user="yes"
   ;;
   --disable-bsd-user) bsd_user="no"
   ;;
@@ -1444,6 +1457,7 @@ QEMU_CFLAGS="$CPU_CFLAGS $QEMU_CFLAGS"
 # support, even if we're using TCI.
 if [ "$ARCH" = "unknown" ]; then
   bsd_user="no"
+  bblbrx_user="no"
   linux_user="no"
 fi
 
@@ -1456,6 +1470,9 @@ if [ "$softmmu" = "yes" ]; then
 fi
 if [ "$linux_user" = "yes" ]; then
     mak_wilds="${mak_wilds} $source_path/default-configs/*-linux-user.mak"
+fi
+if [ "$bblbrx_user" = "yes" ]; then
+    mak_wilds="${mak_wilds} $source_path/default-configs/*-bblbrx-user.mak"
 fi
 if [ "$bsd_user" = "yes" ]; then
     mak_wilds="${mak_wilds} $source_path/default-configs/*-bsd-user.mak"
@@ -1556,6 +1573,7 @@ disabled with --disable-FEATURE, default is enabled if available:
   system          all system emulation targets
   user            supported user emulation targets
   linux-user      all linux usermode emulation targets
+  bblbrx-user     all bblbrx usermode emulation targets
   bsd-user        all BSD usermode emulation targets
   docs            build documentation
   guest-agent     build the QEMU Guest Agent
@@ -6743,6 +6761,7 @@ esac
 target_softmmu="no"
 target_user_only="no"
 target_linux_user="no"
+target_bblbrx_user="no"
 target_bsd_user="no"
 case "$target" in
   ${target_name}-softmmu)
@@ -6751,6 +6770,10 @@ case "$target" in
   ${target_name}-linux-user)
     target_user_only="yes"
     target_linux_user="yes"
+    ;;
+  ${target_name}-bblbrx-user)
+    target_user_only="yes"
+    target_bblbrx_user="yes"
     ;;
   ${target_name}-bsd-user)
     target_user_only="yes"
@@ -6904,16 +6927,16 @@ case "$target_name" in
     mttcg="yes"
   ;;
   z80)
-    # an 8-bit CPU with 16-bit addressing, no alignment restrictions
+    # an 8-bit CPU with 16-bit addressing, no alignment requirements
     # uses 32-bit host datatypes (legacy: target_phys_bits=32)
-    echo "INFO: Z80 CPU support configured..." 1>&2
+    echo "NOTE: Z80 case 1 (CPU support - validate target_name)..." 1>&2
     echo "NOTE: ...will use default TARGET_ARCH '${TARGET_ARCH}'"
     echo "NOTE: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
     echo "NOTE: ...will use default TARGET_ABI_DIR '${TARGET_ABI_DIR}'"
     echo "NOTE: ...will use default bflt '${bflt}'"
     echo "NOTE: ...will use target_bigendian '${target_bigendian}'"
     echo "NOTE: ...will use gdb_xml_files '${gdb_xml_files}'"
-  ;;
+    ;;
   *)
     error_exit "Unsupported target CPU"
   ;;
@@ -6991,6 +7014,9 @@ fi
 
 if test "$target_user_only" = "yes" -a "$bflt" = "yes"; then
   echo "TARGET_HAS_BFLT=y" >> $config_target_mak
+fi
+if test "$target_bblbrx_user" = "yes" ; then
+  echo "CONFIG_BBLBRX_USER=y" >> $config_target_mak
 fi
 if test "$target_bsd_user" = "yes" ; then
   echo "CONFIG_BSD_USER=y" >> $config_target_mak
@@ -7070,11 +7096,10 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
   xtensa*)
     disas_config "XTENSA"
   ;;
-  z80*)
-    echo "CONFIG_Z80_DIS=y"  >> $config_target_mak
-    echo "CONFIG_Z80_DIS=y"  >> config-all-disas.mak
-#    echo "INFO: Z80 disas support configured..." 1>&2
-  ;;
+#  z80)
+#    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
+#    disas_config "Z80"
+#  ;;
   esac
 done
 if test "$tcg_interpreter" = "yes" ; then
