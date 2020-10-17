@@ -1,0 +1,3 @@
+config ZAPHOD
+    # Support for Zaphod machine family
+    # Sample machine inspired by Phil Brown's Amiga Z80 system emulator
