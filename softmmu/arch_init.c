@@ -92,6 +92,8 @@ int graphic_depth = 32;
 #define QEMU_ARCH QEMU_ARCH_XTENSA
 #elif defined(TARGET_AVR)
 #define QEMU_ARCH QEMU_ARCH_AVR
+#elif defined(TARGET_Z80)
+#define QEMU_ARCH QEMU_ARCH_Z80
 #endif
 
 const uint32_t arch_type = QEMU_ARCH;
