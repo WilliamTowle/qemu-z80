@@ -107,6 +107,7 @@ obj-y += trace/
 
 #########################################################
 # cpu emulator library
+ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += exec.o exec-vary.o
 obj-y += accel/
 obj-$(CONFIG_TCG) += tcg/tcg.o tcg/tcg-op.o tcg/tcg-op-vec.o tcg/tcg-op-gvec.o
@@ -118,6 +119,7 @@ obj-y += target/$(TARGET_BASE_ARCH)/
 obj-y += disas.o
 obj-$(call notempty,$(TARGET_XML_FILES)) += gdbstub-xml.o
 LIBS := $(libs_cpu) $(LIBS)
+endif
 
 obj-$(CONFIG_PLUGIN) += plugins/
 
@@ -135,6 +137,24 @@ obj-y += linux-user/
 obj-y += gdbstub.o thunk.o
 
 endif #CONFIG_LINUX_USER
+
+#########################################################
+# BBLBRX user emulator target
+
+ifdef CONFIG_BBLBRX_USER
+
+#QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR) \
+#			 -I$(SRC_PATH)/bblbrx-user/$(HOST_VARIANT_DIR)
+QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
+
+## build subset (or none) of cpu emulator library
+obj-y=
+
+obj-y += bblbrx-user/
+#obj-y += gdbstub.o
+
+endif #CONFIG_BBLBRX_USER
+
 
 #########################################################
 # BSD user emulator target
@@ -168,7 +188,9 @@ LIBS := $(libs_softmmu) $(LIBS)
 ifeq ($(TARGET_NAME), sparc64)
 obj-y += hw/sparc64/
 else
+ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += hw/$(TARGET_BASE_ARCH)/
+endif
 endif
 
 generated-files-y += hmp-commands.h hmp-commands-info.h
@@ -204,12 +226,14 @@ dummy := $(call unnest-vars,.., \
                io-obj-y \
                common-obj-y \
                common-obj-m)
+ifneq (${TARGET_BASE_ARCH},z80)
 all-obj-y += $(common-obj-y)
 all-obj-y += $(qom-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(authz-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(block-obj-y) $(chardev-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(crypto-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(io-obj-y)
+endif
 
 ifdef CONFIG_SOFTMMU
 $(QEMU_PROG_BUILD): config-devices.mak
