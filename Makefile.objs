@@ -158,10 +158,12 @@ endif
 
 #######################################################################
 # Target-independent parts used in system and user emulation
+ifndef CONFIG_BBLBRX_USER
 common-obj-y += cpus-common.o
 common-obj-y += hw/
 common-obj-y += qom/
 common-obj-y += disas/
+endif
 
 ######################################################################
 # Resource file for Windows executables
@@ -169,8 +171,10 @@ version-obj-$(CONFIG_WIN32) += $(BUILD_DIR)/version.o
 
 ######################################################################
 # tracing
+ifneq (${TARGET_BASE_ARCH},z80)
 util-obj-y +=  trace/
 target-obj-y += trace/
+endif
 
 ######################################################################
 # guest agent
