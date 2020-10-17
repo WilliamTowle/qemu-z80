@@ -20,6 +20,44 @@
 #error "CONFIG_SOFTMMU builds for z80 have incomplete support"
 #endif
 
-/* TODO: CPUZ80State, Z80CPU, MMU modes */
+#include "cpu-qom.h"
+#include "exec/cpu-defs.h"
+
+/* TODO: TARGET_MAX_INSN_SIZE, TARGET_HAS_PRECISE_SMC */
+
+/* TODO: hidden flags, exception/interrupt defines */
+
+
+/* CPUZ80State */
+
+typedef struct CPUZ80State {
+    /* TODO: needs support variables, other registers */
+    target_ulong    pc;
+
+    /* TODO: full CPU reset needs imode, iff<n> */
+
+    /* emulator internal flags handling */
+    uint32_t hflags;    /* hidden flags, see HF_xxx constants */
+
+    /* TODO: identifier for CPU model */
+} CPUZ80State;
+
+
+/* Z80CPU - a Z80 CPU */
+
+struct Z80CPU {
+    /*< private >*/
+    CPUState parent_obj;
+
+    /*< public >*/
+    CPUNegativeOffsetState neg;
+    CPUZ80State env;
+};
+
+
+typedef CPUZ80State CPUArchState;
+typedef Z80CPU      ArchCPU;
+
+#include "exec/cpu-all.h"
 
 #endif /* Z80_CPU_H */

@@ -9,4 +9,6 @@
 #ifndef QEMU_Z80_CPU_QOM_H
 #define QEMU_Z80_CPU_QOM_H
 
+typedef struct Z80CPU Z80CPU;
+
 #endif /* !QEMU_Z80_CPU_QOM_H */
