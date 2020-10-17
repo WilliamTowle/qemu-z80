@@ -80,7 +80,14 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 #define TARGET_VIRT_ADDR_SPACE_BITS 24
 
 
-/* TODO: CPU type suffix, MMU modes list */
+#define Z80_CPU_TYPE_SUFFIX "-" TYPE_Z80_CPU
+#define Z80_CPU_TYPE_NAME(name) (name Z80_CPU_TYPE_SUFFIX)
+#define CPU_RESOLVING_TYPE TYPE_Z80_CPU
+
+/* TODO: TARGET_DEFAULT_CPU_TYPE */
+
+
+/* TODO: MMU modes list */
 
 #include "exec/cpu-all.h"
 
