@@ -6,7 +6,8 @@
  *  [...all versions under GPL...]
  */
 
-//#include "qemu/error-report.h"
-//
-//#define DPRINTF(fmt, ...) \
-//    do { error_printf( "Z80 cpu.c: " fmt , ## __VA_ARGS__); } while(0)
+#include "qemu/error-report.h"
+
+#define DPRINTF(fmt, ...) \
+    do { error_printf( "Z80 cpu.c: " fmt , ## __VA_ARGS__); } while(0)
+
