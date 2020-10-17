@@ -68,4 +68,13 @@ typedef Z80CPU      ArchCPU;
 
 #include "exec/cpu-all.h"
 
+
+static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
+                                        target_ulong *cs_base, uint32_t *flags)
+{
+    *cs_base = 0;               /* Z80: unused */
+    *pc = env->pc;
+    *flags = env->hflags;       /* Z80: no env->eflags */
+}
+
 #endif /* Z80_CPU_H */
