@@ -11,10 +11,10 @@
 #define Z80_CPU_H
 
 
-#ifdef CONFIG_USER_ONLY
-    /* Temporarily bail from builds of z80-bblbrx-user while partial */
-#error "CONFIG_USER_ONLY builds for z80 have incomplete support"
-#endif
+//#ifdef CONFIG_USER_ONLY
+//    /* Temporarily bail from builds of z80-bblbrx-user while partial */
+//#error "CONFIG_USER_ONLY builds for z80 have incomplete support"
+//#endif
 #ifdef CONFIG_SOFTMMU
     /* Temporarily bail from builds of z80-softmmu while partial */
 #error "CONFIG_SOFTMMU builds for z80 have incomplete support"
