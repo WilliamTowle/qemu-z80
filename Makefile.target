@@ -119,6 +119,24 @@ obj-y += gdbstub.o thunk.o
 endif #CONFIG_LINUX_USER
 
 #########################################################
+# BBLBRX user emulator target
+
+ifdef CONFIG_BBLBRX_USER
+
+#QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user -I$(SRC_PATH)/bblbrx-user/$(TARGET_ABI_DIR) \
+#			 -I$(SRC_PATH)/bblbrx-user/$(HOST_VARIANT_DIR)
+QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
+
+## build subset (or none) of cpu emulator library
+obj-y=
+
+obj-y += bblbrx-user/
+#obj-y += gdbstub.o user-exec.o
+
+endif #CONFIG_BBLBRX_USER
+
+
+#########################################################
 # BSD user emulator target
 
 ifdef CONFIG_BSD_USER
