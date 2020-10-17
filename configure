@@ -256,6 +256,12 @@ supported_target() {
                 return 1
             fi
             ;;
+        *-bblbrx-user)
+            if test "$linux" != "yes"; then
+                print_error "Target '$target' is only available on a Linux host"
+                return 1
+            fi
+            ;;
         *-bsd-user)
             if test "$bsd" != "yes"; then
                 print_error "Target '$target' is only available on a BSD host"
@@ -436,6 +442,7 @@ profiler="no"
 cocoa="no"
 softmmu="yes"
 linux_user="no"
+bblbrx_user="no"
 bsd_user="no"
 blobs="yes"
 edk2_blobs="no"
@@ -911,6 +918,7 @@ Linux)
   audio_possible_drivers="oss alsa sdl pa"
   linux="yes"
   linux_user="yes"
+  bblbrx_user="yes"
   kvm="yes"
   QEMU_INCLUDES="-isystem \$(SRC_PATH)/linux-headers -isystem $PWD/linux-headers $QEMU_INCLUDES"
   supported_os="yes"
@@ -1275,12 +1283,17 @@ for opt do
   ;;
   --disable-user)
       linux_user="no" ;
+      bblbrx_user="no" ;
       bsd_user="no" ;
   ;;
   --enable-user) ;;
   --disable-linux-user) linux_user="no"
   ;;
   --enable-linux-user) linux_user="yes"
+  ;;
+  --disable-bblbrx-user) bblbrx_user="no"
+  ;;
+  --enable-bblbrx-user) bblbrx_user="yes"
   ;;
   --disable-bsd-user) bsd_user="no"
   ;;
@@ -1699,6 +1712,7 @@ QEMU_CFLAGS="$CPU_CFLAGS $QEMU_CFLAGS"
 # support, even if we're using TCI.
 if [ "$ARCH" = "unknown" ]; then
   bsd_user="no"
+  bblbrx_user="no"
   linux_user="no"
 fi
 
@@ -1715,6 +1729,9 @@ if [ "$softmmu" = "yes" ]; then
 fi
 if [ "$linux_user" = "yes" ]; then
     mak_wilds="${mak_wilds} $source_path/default-configs/*-linux-user.mak"
+fi
+if [ "$bblbrx_user" = "yes" ]; then
+    mak_wilds="${mak_wilds} $source_path/default-configs/*-bblbrx-user.mak"
 fi
 if [ "$bsd_user" = "yes" ]; then
     mak_wilds="${mak_wilds} $source_path/default-configs/*-bsd-user.mak"
@@ -1839,6 +1856,7 @@ disabled with --disable-FEATURE, default is enabled if available:
   system          all system emulation targets
   user            supported user emulation targets
   linux-user      all linux usermode emulation targets
+  bblbrx-user     all bblbrx usermode emulation targets
   bsd-user        all BSD usermode emulation targets
   docs            build documentation
   guest-agent     build the QEMU Guest Agent
@@ -2278,6 +2296,8 @@ if test -z "${target_list+xxx}" ; then
     target_list="${target_list# }"
 else
     target_list=$(echo "$target_list" | sed -e 's/,/ /g')
+    echo "DEBUG: target_list ${target_list}" 1>&2
+    echo "DEBUG: check target ${target}" 1>&2
     for target in $target_list; do
         # Check that we recognised the target name; this allows a more
         # friendly error message than if we let it fall through.
@@ -8081,6 +8101,7 @@ esac
 target_softmmu="no"
 target_user_only="no"
 target_linux_user="no"
+target_bblbrx_user="no"
 target_bsd_user="no"
 case "$target" in
   ${target_name}-softmmu)
@@ -8089,6 +8110,10 @@ case "$target" in
   ${target_name}-linux-user)
     target_user_only="yes"
     target_linux_user="yes"
+    ;;
+  ${target_name}-bblbrx-user)
+    target_user_only="yes"
+    target_bblbrx_user="yes"
     ;;
   ${target_name}-bsd-user)
     target_user_only="yes"
@@ -8371,6 +8396,9 @@ fi
 
 if test "$target_user_only" = "yes" && test "$bflt" = "yes"; then
   echo "TARGET_HAS_BFLT=y" >> $config_target_mak
+fi
+if test "$target_bblbrx_user" = "yes" ; then
+  echo "CONFIG_BBLBRX_USER=y" >> $config_target_mak
 fi
 if test "$target_bsd_user" = "yes" ; then
   echo "CONFIG_BSD_USER=y" >> $config_target_mak
