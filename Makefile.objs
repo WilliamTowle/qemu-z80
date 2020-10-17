@@ -94,9 +94,11 @@ common-obj-y += qapi-visit.o qapi-types.o
 # Target-independent parts used in system and user emulation
 common-obj-y += qemu-log.o
 common-obj-y += tcg-runtime.o
+ifndef CONFIG_BBLBRX_USER
 common-obj-y += hw/
 common-obj-y += qom/
 common-obj-y += disas/
+endif
 
 ######################################################################
 # Resource file for Windows executables
