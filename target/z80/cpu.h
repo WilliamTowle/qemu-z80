@@ -72,9 +72,12 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
     return container_of(env, Z80CPU, env);
 }
 
+
 #define ENV_GET_CPU(e) CPU(z80_env_get_cpu(e))
 
 #define ENV_OFFSET offsetof(Z80CPU, env)
+
+int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
 
 #define TARGET_PAGE_BITS 8
@@ -88,6 +91,9 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 #define CPU_RESOLVING_TYPE TYPE_Z80_CPU
 
 /* TODO: TARGET_DEFAULT_CPU_TYPE */
+
+
+#define cpu_signal_handler cpu_z80_signal_handler
 
 
 /* MMU modes definitions:
