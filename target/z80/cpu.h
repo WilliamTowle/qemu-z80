@@ -55,6 +55,14 @@ struct Z80CPU {
 };
 
 
+#define Z80_CPU_TYPE_SUFFIX "-" TYPE_Z80_CPU
+#define Z80_CPU_TYPE_NAME(name) (name Z80_CPU_TYPE_SUFFIX)
+#define CPU_RESOLVING_TYPE TYPE_Z80_CPU
+
+/* TODO: TARGET_DEFAULT_CPU_TYPE */
+
+
+
 typedef CPUZ80State CPUArchState;
 typedef Z80CPU      ArchCPU;
 

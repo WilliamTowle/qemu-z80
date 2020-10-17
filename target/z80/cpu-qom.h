@@ -11,6 +11,8 @@
 
 #include "hw/core/cpu.h"
 
+#define TYPE_Z80_CPU "z80-cpu"
+
 typedef struct Z80CPU Z80CPU;
 
 #endif /* !QEMU_Z80_CPU_QOM_H */
