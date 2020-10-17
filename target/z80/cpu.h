@@ -63,6 +63,17 @@ struct Z80CPU {
 
 
 
+/* MMU modes definitions:
+ * Unlike x86 we have no kernel/user/SMAP distinction
+ */
+#define MMU_NONE_IDX    0
+#define MMU_USER_IDX    MMU_NONE_IDX    /* used by tcg implementation */
+static inline int cpu_mmu_index(CPUZ80State *env, bool ifetch)
+{
+    return MMU_NONE_IDX;
+}
+
+
 typedef CPUZ80State CPUArchState;
 typedef Z80CPU      ArchCPU;
 
