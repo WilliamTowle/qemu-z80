@@ -48,6 +48,9 @@ typedef struct CPUZ80State {
     /* TODO: needs support variables, other registers */
     target_ulong    pc;
 
+    /* emulator internal flags handling */
+    uint32_t hflags;    /* hidden flags, see HF_xxx constants */
+
     /* TODO: CPU_COMMON adds fields used by z80-softmmu */
     //CPU_COMMON
 } CPUZ80State;
@@ -90,5 +93,14 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 /* TODO: MMU modes list */
 
 #include "exec/cpu-all.h"
+
+
+static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
+                                        target_ulong *cs_base, uint32_t *flags)
+{
+    *cs_base = 0;               /* Z80: unused */
+    *pc = env->pc;
+    *flags = env->hflags;       /* Z80: no env->eflags */
+}
 
 #endif /* Z80_CPU_H */
