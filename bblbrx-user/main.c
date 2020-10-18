@@ -20,6 +20,21 @@
 
 
 unsigned long guest_base;
+unsigned long reserved_va;
+
+__thread CPUState *thread_cpu;
+int singlestep;
+
+
+bool qemu_cpu_is_self(CPUState *cpu)
+{   /* [QEmu v2] called by generic_handle_interrupt() */
+    return thread_cpu == cpu;
+}
+
+void qemu_cpu_kick(CPUState *cpu)
+{
+    cpu_exit(cpu);
+}
 
 
 static void usage(int exitcode)
@@ -110,6 +125,9 @@ int main(int argc, char **argv)
 
     /* init tcg before creating CPUs and to get qemu_host_page_size */
     //tcg_exec_init(0);
+
+    thread_cpu= NULL;   /* FIXME: needs 'cpu' from cpu_create() */
+
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
