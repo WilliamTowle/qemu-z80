@@ -64,6 +64,8 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    const char *cpu_model= NULL;
+    const char *cpu_type;
     char *filename;
     void  *target_ram;
     int optind;
@@ -85,6 +87,10 @@ int main(int argc, char **argv)
         usage(EXIT_FAILURE);
     filename= argv[optind];
 
+    if (cpu_model == NULL) {
+        cpu_model= "z80";       /* TODO: respect "cpu" option here */
+    }
+
     /* PARTIAL:
      * to effect CPU init, following parse_cpu_option() we:
      *  1. call tcg_exec_init()
@@ -95,6 +101,16 @@ int main(int argc, char **argv)
      *  6. manage passing arg{c|v} to target, if required
      *  7. allocate/initialise any TaskState
      */
+
+
+;DPRINTF("INFO: About to 'parse_cpu_model' for cpu_model '%s'...\n", cpu_model);
+    cpu_type= parse_cpu_model(cpu_model);
+;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
+
+
+    /* init tcg before creating CPUs and to get qemu_host_page_size */
+    //tcg_exec_init(0);
+
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
