@@ -20,6 +20,21 @@
 
 
 unsigned long guest_base;
+//unsigned long reserved_va;
+
+__thread CPUState *thread_cpu;
+//int singlestep;
+
+
+bool qemu_cpu_is_self(CPUState *cpu)
+{
+    return thread_cpu == cpu;
+}
+
+void qemu_cpu_kick(CPUState *cpu)
+{
+    cpu_exit(cpu);
+}
 
 
 static void usage(int exitcode)
