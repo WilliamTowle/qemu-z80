@@ -1,1 +1,3 @@
 #  QEmu Z80 CPU
+
+obj-$(CONFIG_TCG) += translate.o
