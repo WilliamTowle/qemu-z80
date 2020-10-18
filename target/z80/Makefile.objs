@@ -3,3 +3,5 @@
 #
 #  [...William Towle, under GPL...]
 #
+
+obj-$(CONFIG_TCG) += translate.o
