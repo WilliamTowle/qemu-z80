@@ -9,6 +9,7 @@
 
 #include "qemu/osdep.h"
 #include "qemu.h"
+#include "cpu.h"
 
 #include "qapi/error.h"
 #include "qemu/error-report.h"
@@ -64,6 +65,8 @@ static int parse_args(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    const char *cpu_model= NULL;
+    const char *cpu_type;
     char *filename;
     void  *target_ram;
     int optind;
@@ -85,6 +88,9 @@ int main(int argc, char **argv)
         usage(EXIT_FAILURE);
     filename= argv[optind];
 
+    if (cpu_model == NULL) {
+        cpu_model= "z80";       /* TODO: respect "cpu" option here */
+    }
 
     /* PARTIAL - following argument parse, v2.12.1 has:
      * 1. CPU register, binary image info, paths are prepared
@@ -97,6 +103,16 @@ int main(int argc, char **argv)
      * 8. 'randseed' is handled, if environment variable set
      * 9. Environment configuration is done, and target RAM set up
      */
+
+;DPRINTF("INFO: About to 'parse_cpu_model' for cpu_model '%s'...\n", cpu_model);
+    cpu_type= parse_cpu_model(cpu_model);
+;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
+
+    //tcg_exec_init(0);
+    /* NOTE: we need to init the CPU at this stage to get
+       qemu_host_page_size */
+
+    //cpu = cpu_create(cpu_type);
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
