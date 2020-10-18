@@ -21,6 +21,21 @@
 
 
 unsigned long guest_base;
+//unsigned long reserved_va;
+
+__thread CPUState *thread_cpu;
+//int singlestep;
+
+
+bool qemu_cpu_is_self(CPUState *cpu)
+{   /* [QEmu v2] called by generic_handle_interrupt() */
+    return thread_cpu == cpu;
+}
+
+void qemu_cpu_kick(CPUState *cpu)
+{
+    cpu_exit(cpu);
+}
 
 
 static void usage(int exitcode)
@@ -114,6 +129,7 @@ int main(int argc, char **argv)
        qemu_host_page_size */
 
     //cpu = cpu_create(cpu_type);
+    thread_cpu= cpu;
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
