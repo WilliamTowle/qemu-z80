@@ -59,6 +59,30 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 }
 
+static void z80_cpu_reset(DeviceState *dev)
+{
+    Z80CPU *cpu = Z80_CPU(CPU(dev));
+    Z80CPUClass *zcc = Z80_CPU_GET_CLASS(cpu);
+    CPUZ80State *env = &cpu->env;
+
+    zcc->parent_reset(dev);
+
+    memset(env, 0, offsetof(CPUZ80State, end_reset_fields));
+
+    /* init to reset state */
+    env->pc= 0x0000;
+    //env->iff1= 0;
+    //env->iff2= 0;
+    //env->imode= 0;
+    //env->regs[R_A]= 0xff;
+    //env->regs[R_F]= 0xff;
+    env->regs[R_SP]= 0xffff;
+
+    /* QEmu v2+: no initial hidden flags required */
+    env->hflags= 0;
+}
+
+
 /* Return type name for a given CPU model name
  * Caller is responsible for freeing the returned string.
  */
@@ -157,6 +181,8 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     /* target-i386 common class init */
     device_class_set_parent_realize(dc, z80_cpu_realizefn,
                                     &zcc->parent_realize);
+
+    device_class_set_parent_reset(dc, z80_cpu_reset, &zcc->parent_reset);
 
     cc->class_by_name = z80_cpu_class_by_name;
 

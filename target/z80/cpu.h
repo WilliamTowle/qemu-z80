@@ -39,6 +39,9 @@ typedef struct CPUZ80State {
     /* emulator internal flags handling */
     uint32_t hflags;    /* hidden flags, see HF_xxx constants */
 
+    struct {} end_reset_fields;
+    /* Fields after this point are preserved across CPU reset. */
+
     /* TODO: identifier for CPU model */
 } CPUZ80State;
 
