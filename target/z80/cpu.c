@@ -55,7 +55,6 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 }
 
-#if 0	/* unused */
 /* Return type name for a given CPU model name
  * Caller is responsible for freeing the returned string.
  */
@@ -69,7 +68,27 @@ static char *z80_cpu_type_name(const char *model_name)
     return g_strdup_printf(TYPE_Z80_CPU);
     //return g_strdup_printf(Z80_CPU_TYPE_NAME("%s"), model_name);
 }
+
+static ObjectClass *z80_cpu_class_by_name(const char *cpu_model)
+{
+#if 1   /* redo like i386 */
+    g_autofree char *typename= z80_cpu_type_name(cpu_model);
+    return object_class_by_name(typename);
+#else
+    ObjectClass *oc;
+
+    oc = object_class_by_name(cpu_model);
+;DPRINTF("DEBUG: %s() got initial oc=%p for cpu_model '%s'\n", __func__, oc);
+    if (object_class_dynamic_cast(oc, TYPE_Z80_CPU) == NULL ||
+        object_class_is_abstract(oc)) {
+;DPRINTF("DEBUG: Failed cast - reason %s\n",
+        (object_class_dynamic_cast(oc, TYPE_Z80_CPU) == NULL)?"cast was NULL":"object_class_is_abstract() problem");
+        oc = NULL;
+    }
+;DPRINTF("DEBUG: %s() returning oc %p\n", __func__, oc);
+    return oc;
 #endif
+}
 
 
 static bool z80_cpu_has_work(CPUState *cs)
@@ -138,9 +157,9 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     dc->realize = z80_cpu_realizefn;
 
 //    device_class_set_parent_reset(dc, z80_cpu_reset, &zcc->parent_reset);
-//
-//    cc->class_by_name = z80_cpu_class_by_name;
-//
+
+    cc->class_by_name = z80_cpu_class_by_name;
+
     cc->has_work = z80_cpu_has_work;
 //#ifdef CONFIG_TCG
 //    cc->do_interrupt = z80_cpu_do_interrupt;
