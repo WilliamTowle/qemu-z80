@@ -7096,10 +7096,10 @@ for i in $ARCH $TARGET_BASE_ARCH ; do
   xtensa*)
     disas_config "XTENSA"
   ;;
-#  z80)
-#    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
-#    disas_config "Z80"
-#  ;;
+  z80)
+    echo "NOTE: Z80 case 2 [disas support - validate ARCH/TARGET_BASE_ARCH]..." 1>&2
+    disas_config "Z80"
+  ;;
   esac
 done
 if test "$tcg_interpreter" = "yes" ; then
