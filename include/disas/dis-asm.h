@@ -249,6 +249,9 @@ enum bfd_architecture
 #define bfd_mach_rx            0x75
 #define bfd_mach_rx_v2         0x76
 #define bfd_mach_rx_v3         0x77
+  bfd_arch_z80,
+#define bfd_mach_z80_z80        0x01    /* Zilog Z80 */
+    /* TODO: also differentiate Mitsui R800 */
   bfd_arch_last
   };
 #define bfd_mach_s390_31 31
@@ -460,6 +463,7 @@ int print_insn_xtensa           (bfd_vma, disassemble_info*);
 int print_insn_riscv32          (bfd_vma, disassemble_info*);
 int print_insn_riscv64          (bfd_vma, disassemble_info*);
 int print_insn_rx(bfd_vma, disassemble_info *);
+int print_insn_z80		(bfd_vma, disassemble_info *);
 
 #if 0
 /* Fetch the disassembler for a given BFD, if that support is available.  */
