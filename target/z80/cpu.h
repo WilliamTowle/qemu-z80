@@ -25,13 +25,26 @@
 
 /* TODO: TARGET_MAX_INSN_SIZE, TARGET_HAS_PRECISE_SMC */
 
+
+/* Array indexes for registers.
+ * NB: corresponding z80-cpu.xml "gdb target" file with register sizes
+ * has not been written
+ */
+enum {
+    R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
+};
+
+
 /* TODO: hidden flags, exception/interrupt defines */
+
+#define CPU_NB_REGS 1
 
 
 /* CPUZ80State */
 
 typedef struct CPUZ80State {
     /* TODO: needs support variables, other registers */
+    target_ulong    regs[CPU_NB_REGS];
     target_ulong    pc;
 
     /* TODO: full CPU reset needs imode, iff<n> */
@@ -57,6 +70,9 @@ struct Z80CPU {
     CPUZ80State env;
 };
 
+
+/* helper.c */
+void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
