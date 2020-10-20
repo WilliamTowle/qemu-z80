@@ -65,6 +65,9 @@ typedef struct CPUZ80State {
     /* TODO: CPU_COMMON adds fields used by z80-softmmu */
     //CPU_COMMON
 
+    struct {} end_reset_fields;
+    /* Fields after this point are preserved across CPU reset. */
+
     /* TODO: identifier for CPU model */
 } CPUZ80State;
 
