@@ -34,10 +34,18 @@
 
 #define CPUArchState struct CPUZ80State
 
-/* TODO: hidden flags, exception/interrupt defines, register count */
 
+/* Array indexes for registers.
+ * NB: corresponding z80-cpu.xml "gdb target" file with register sizes
+ * has not been written
+ */
+enum {
+    R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
+};
 
-/* TODO: Register-related declarations and count */
+/* TODO: hidden flags, exception/interrupt defines */
+
+#define CPU_NB_REGS 1
 
 //#define NB_MMU_MODES 1
 
@@ -46,7 +54,10 @@
 
 typedef struct CPUZ80State {
     /* TODO: needs support variables, other registers */
+    uint32_t        regs[CPU_NB_REGS];
     target_ulong    pc;
+
+    /* TODO: full CPU reset needs imode, iff<n> */
 
     /* emulator internal flags handling */
     uint32_t hflags;    /* hidden flags, see HF_xxx constants */
