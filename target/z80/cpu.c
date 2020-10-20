@@ -55,6 +55,33 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 }
 
+/* CPUClass::reset() */
+static void z80_cpu_reset(CPUState *s)
+{
+    Z80CPU *cpu = Z80_CPU(s);
+    Z80CPUClass *zcc = Z80_CPU_GET_CLASS(cpu);
+    CPUZ80State *env = &cpu->env;
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
+#endif
+
+    zcc->parent_reset(s);
+
+    memset(env, 0, offsetof(CPUZ80State, end_reset_fields));
+
+    /* init to reset state */
+    env->pc= 0x0000;
+    //env->iff1= 0;
+    //env->iff2= 0;
+    //env->imode= 0;
+    //env->regs[R_A]= 0xff;
+    //env->regs[R_F]= 0xff;
+    env->regs[R_SP]= 0xffff;
+
+    env->hflags= 0;
+}
+
+
 /* Return type name for a given CPU model name
  * Caller is responsible for freeing the returned string.
  */
@@ -156,8 +183,8 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     /* TODO: device_class_set_parent_unrealize(...); */
     dc->realize = z80_cpu_realizefn;
 
-//    zcc->parent_reset = cc->reset;
-//    cc->reset = z80_cpu_reset;
+    zcc->parent_reset= cc->reset;
+    cc->reset= z80_cpu_reset;
 
     cc->class_by_name = z80_cpu_class_by_name;
 
