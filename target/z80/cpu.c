@@ -262,10 +262,10 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
      * cc->cpu_exec_enter
      * cc->cpu_exec_exit
      */
-//#ifdef CONFIG_TCG
-//    cc->tcg_initialize = tcg_z80_init;
-//    cc->tlb_fill = z80_cpu_tlb_fill;
-//#endif
+#ifdef CONFIG_TCG
+    cc->tcg_initialize = tcg_z80_init;
+    //cc->tlb_fill = z80_cpu_tlb_fill;
+#endif
 //    cc->disas_set_info = z80_cpu_disas_set_info;
 
     /* NB. user_creatable relates to instantiation in the monitor */

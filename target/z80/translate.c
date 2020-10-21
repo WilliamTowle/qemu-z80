@@ -24,6 +24,14 @@
 /* TODO: struct DisasContext, translation ops/disas_insn() */
 
 
+void tcg_z80_init(void)
+{
+    /* CPU initialisation for i386 has:
+     * - cpu_regs[] as a static TCGv[] above, initialised here
+     * - "TCG local temps" A0, T0, T1 are in struct DisasContext
+     */
+}
+
 /* generate intermediate code for basic block 'tb'.  */
 void gen_intermediate_code(CPUState *cs, TranslationBlock *tb, int max_insns)
 {

@@ -101,6 +101,9 @@ static inline int cpu_mmu_index(CPUZ80State *env, bool ifetch)
 }
 
 
+/* translate.c */
+void tcg_z80_init(void);
+
 typedef CPUZ80State CPUArchState;
 typedef Z80CPU      ArchCPU;
 
