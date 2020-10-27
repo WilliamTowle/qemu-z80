@@ -28,6 +28,8 @@ typedef struct CPUZ80State {
     /* TODO: 'int model' CPU identifier */
 } CPUZ80State;
 
+#include "cpu-qom.h"
+
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
