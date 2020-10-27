@@ -41,6 +41,9 @@ typedef struct CPUZ80State {
     /* TODO: 'int model' CPU identifier */
 } CPUZ80State;
 
+
+#include "cpu-qom.h"
+
 Z80CPU *cpu_z80_init(const char *cpu_model);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
