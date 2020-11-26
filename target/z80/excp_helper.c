@@ -27,7 +27,7 @@
 #include "exec/helper-proto.h"
 
 
-#define EMIT_DEBUG 0
+#define EMIT_DEBUG 1
 #define DPRINTF(fmt, ...) \
     do { if (EMIT_DEBUG) error_printf("Z80 excp_helper: " fmt , ## __VA_ARGS__); } while(0)
 
@@ -73,4 +73,46 @@ void raise_exception(CPUZ80State *env, int exception_index)
 void helper_raise_exception(CPUZ80State *env, int exception_index)
 {
     raise_exception(env, exception_index);
+}
+
+
+bool z80_cpu_tlb_fill(CPUState *cs, vaddr addr, int size,
+                      MMUAccessType access_type, int mmu_idx,
+                      bool probe, uintptr_t retaddr)
+{
+#if 1
+;DPRINTF("UNIMPLEMENTED %s() called\n", __func__);
+;exit(1);
+#else	/* repo.or.cz final */
+    TranslationBlock *tb;
+    int ret;
+    unsigned long pc;
+    CPUZ80State *saved_env;
+
+    /* XXX: hack to restore env in all cases, even if not called from
+generated code */
+    saved_env = env;
+    env = cpu_single_env;
+
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    if (ret) {
+        if (retaddr) {
+            /* now we have a real cpu fault */
+            pc = (unsigned long)retaddr;
+            tb = tb_find_pc(pc);
+            if (tb) {
+                    /* the PC is inside the translated code. It means that we have
+                     * a virtual CPU fault */
+                cpu_restore_state(tb, env, pc, NULL);
+                }
+            }
+
+            if (retaddr) {
+                raise_exception_err(env->exception_index, env->error_code);
+            } else {
+                raise_exception_err_norestore(env->exception_index, env->error_code);
+            }
+        }
+        env = saved_env;
+#endif
 }
