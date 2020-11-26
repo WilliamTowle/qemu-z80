@@ -59,3 +59,34 @@ void helper_raise_exception(CPUZ80State *env, int exception_index)
 {
     raise_exception(env, exception_index);
 }
+
+
+bool z80_cpu_tlb_fill(CPUState *cs, vaddr address, int size,
+                      MMUAccessType access_type, int mmu_idx,
+                      bool probe, uintptr_t retaddr)
+{
+#ifdef CONFIG_USER_ONLY
+    /* [QEmu v5] Calls here are unexpected; x86 triggers EXCP0E_PAGE */
+;DPRINTF("*** HERE ***\n");
+;exit(1);
+#else   /* !CONFIG_USER_ONLY */
+    int prot = 0;
+    //MemTxAttrs attrs = {};
+    //uint32_t paddr;
+
+    /* Z80 can write to its pages, and has self-modifying code. */
+    //prot = PAGE_READ | PAGE_WRITE;
+    prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
+
+    /* TODO: assume that for systems without MMU, all virtual and physical
+     * addresses match at all times (and tlb_set_{page|page_with_attrs}()
+     * may be overkill). Otherwise, we need exceptions and handlers.
+     */
+//    tlb_set_page_with_attrs(cs, address, paddr, attrs, prot,
+//                            mmu_idx, TARGET_PAGE_SIZE);
+    tlb_set_page(cs, address /* virt */, address /* phys */,
+                    prot, mmu_idx, TARGET_PAGE_SIZE);
+
+    return true;
+#endif  /* !CONFIG_USER_ONLY */
+}

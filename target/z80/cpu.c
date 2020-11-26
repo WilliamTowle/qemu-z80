@@ -217,10 +217,6 @@ static void z80_cpu_set_pc(CPUState *cs, vaddr value)
     cpu->env.pc = value;
 }
 
-/* TODO:
- * z80_cpu_tlb_fill() via excp_helper.c
- */
-
 //static void z80_cpu_disas_set_info(CPUState *cs, disassemble_info *info)
 //{
 //;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
@@ -277,7 +273,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
      */
 #ifdef CONFIG_TCG
     cc->tcg_initialize = tcg_z80_init;
-    //cc->tlb_fill = z80_cpu_tlb_fill;
+    cc->tlb_fill = z80_cpu_tlb_fill;
 #endif
 //    cc->disas_set_info = z80_cpu_disas_set_info;
 

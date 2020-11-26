@@ -163,6 +163,12 @@ void z80_cpu_list(void);
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
 
+/* excp_helper.c */
+bool z80_cpu_tlb_fill(CPUState *cs, vaddr address, int size,
+                      MMUAccessType access_type, int mmu_idx,
+                      bool probe, uintptr_t retaddr);
+
+
 #define Z80_CPU_TYPE_SUFFIX "-" TYPE_Z80_CPU
 #define Z80_CPU_TYPE_NAME(name) (name Z80_CPU_TYPE_SUFFIX)
 #define CPU_RESOLVING_TYPE TYPE_Z80_CPU
