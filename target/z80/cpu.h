@@ -199,7 +199,7 @@ int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 #define Z80_CPU_TYPE_NAME(name) (name Z80_CPU_TYPE_SUFFIX)
 #define CPU_RESOLVING_TYPE TYPE_Z80_CPU
 
-/* TODO: TARGET_DEFAULT_CPU_TYPE */
+#define TARGET_DEFAULT_CPU_TYPE TYPE_Z80_CPU
 
 
 #define cpu_signal_handler cpu_z80_signal_handler
