@@ -98,6 +98,12 @@ int main(int argc, char **argv)
      * 5. trace options and plugins are managed
      */
 
+    //error_init(argv[0]);
+    //module_call_init(MODULE_INIT_TRACE);
+    qemu_init_cpu_list();
+    module_call_init(MODULE_INIT_QOM);
+
+
     optind= parse_args(argc, argv);
     if (optind >= argc)
         usage(EXIT_FAILURE);
