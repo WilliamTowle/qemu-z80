@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     const char *cpu_type;
+    CPUArchState *env;
+    CPUState *cpu;
     char *filename;
     void  *target_ram;
     int optind;
@@ -113,26 +115,25 @@ int main(int argc, char **argv)
         cpu_model= "z80";       /* TODO: respect "cpu" option here */
     }
 
-    /* PARTIAL:
-     * to effect CPU init, following parse_cpu_option() we:
-     *  1. call tcg_exec_init()
-     *  2. initialise 'cpu' from cpu_create() result
-     *  3. calls cpu_reset()
-     *  4. initialise 'thread_cpu'
-     *  5. handle CONFIG_USE_GUEST_BASE/target_ram and TCG init
-     *  6. manage passing arg{c|v} to target, if required
-     *  7. allocate/initialise any TaskState
-     */
-
-;DPRINTF("INFO: About to parse_cpu_option() for cpu_model '%s'...\n", cpu_model);
     cpu_type= parse_cpu_option(cpu_model);
-;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
-
 
     /* init tcg before creating CPUs and to get qemu_host_page_size */
     //tcg_exec_init(0);
 
-    thread_cpu= NULL;   /* FIXME: needs 'cpu' from cpu_create() */
+    cpu= cpu_create(cpu_type);
+    env= cpu->env_ptr;
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: CPU created at %p [env %p]; reset() to follow\n", cpu, env);
+#endif
+
+    /* Following CPU init:
+     *  1. a cpu_reset(state) call
+     *  2. initialise 'thread_cpu'
+     *  3. set 'do_strace', if supported
+     *  4. initialisation of 'target_environ' [if required]
+     */
+    //cpu_reset(cpu);
+    thread_cpu= cpu;
 
 
     /* Since we have no MMU, the entirety of target RAM is
