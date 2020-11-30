@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     const char *cpu_type;
+    //CPUArchState *env;
+    CPUState *cpu;
     char *filename;
     void  *target_ram;
     int optind;
@@ -112,19 +114,6 @@ int main(int argc, char **argv)
         cpu_model= "z80";       /* TODO: respect "cpu" option here */
     }
 
-    /* PARTIAL - following argument parse, v2.12.1 has:
-     * 1. CPU register, binary image info, paths are prepared
-     * 2. checking the binary file opens is done
-     * 3. cpu_model is defaulted based on the binary, if unset
-     * 4. TCG subsystem is initialised with tcg_exec_init(0);
-     * 5. CPU is initialised, and reset called
-     * 6. Local variable 'thread_cpu' is set
-     * 7. 'do_strace' is enabled, if environment variable set
-     * 8. 'randseed' is handled, if environment variable set
-     * 9. Environment configuration is done, and target RAM set up
-     */
-
-;DPRINTF("INFO: About to 'parse_cpu_model' for cpu_model '%s'...\n", cpu_model);
     cpu_type= parse_cpu_model(cpu_model);
 ;DPRINTF("INFO: ...got cpu_type '%s'\n", cpu_type);
 
@@ -132,7 +121,17 @@ int main(int argc, char **argv)
     /* NOTE: we need to init the CPU at this stage to get
        qemu_host_page_size */
 
-    //cpu = cpu_create(cpu_type);
+    cpu= cpu_create(cpu_type);
+    //env= cpu->env_ptr;
+;DPRINTF("INFO: ...CPU created - ptr %p\n", cpu);
+    /* Following CPU init:
+     *  1. a cpu_reset(state) call
+     *  2. check QEMU_{STRACE|QEMU_RAND_SEED}
+     *  3. initialisation of 'target_environ' [if required]
+     */
+    //cpu_reset(cpu);
+
+    //thread_cpu= cpu;
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
