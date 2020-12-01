@@ -1,3 +1,5 @@
 #  QEmu Z80 CPU
 
+#obj-y += helper.o cpu.o
+obj-y += cpu.o
 obj-$(CONFIG_TCG) += translate.o
