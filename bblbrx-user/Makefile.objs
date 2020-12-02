@@ -1,2 +1,3 @@
 obj-y = main.o mmap.o
 obj-y += bblbrxload.o rawload.o
+obj-y += $(TARGET_ABI_DIR)/cpu_loop.o

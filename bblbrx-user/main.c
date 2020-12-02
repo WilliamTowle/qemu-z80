@@ -185,11 +185,18 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /* PARTIAL. May now want/need to:
+     * free memory for any redundant data structures
+     * log information about the program
+     * initialise brk and syscall/signal handlers
+     * further initialise 'env' (esp. registers)
+     * further initialise TaskState
+     * manage any GDB stub
+     */
 #if 1   /* WmT - PARTIAL */
-;return fprintf(stderr, "%s(): INCOMPLETE - need cpu_loop() to execute %s\n", __func__, filename);
-#else
-    /* NB: cpu_loop() exits on ILLOP/KERNEL_TRAP */
-
-  return EXIT_SUCCESS;
+;DPRINTF("%s(): PARTIAL - run filename=%s via cpu_loop() (requested CPU '%s', env %p)\n", __func__, filename, cpu_model, env);
 #endif
+    cpu_loop(env);
+
+    return EXIT_SUCCESS; /* if cpu_loop() exits (ILLOP/KERNEL_TRAP) */
 }
