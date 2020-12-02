@@ -16,15 +16,30 @@
 
 void cpu_loop(CPUZ80State *env)
 {
-#if 1   /* WmT - TRACE */
-;DPRINTF( "%s(): PARTIAL - empty infinite loop (TODO: cpu_exec() call missing) follows\n", __func__);
-#endif
+    CPUState *cs= env_cpu(env);
+    int trapnr;
+
     for(;;) {
-        /* TODO: v5 implementation for x86 has
-         * 1. cpu_exec_start(), cpu_exec(), cpu_exec_end() calls
-         * 2. possible process_queued_cpu_work()
-         * 3. handling the 'trapnr' returned by cpu_exec()
-         * 4. calls to process_{queued_cpu_work|pending_signals}()
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() calling cpu_exec_*()...\n", __func__);
+#endif
+        cpu_exec_start(cs);
+        trapnr= cpu_exec(cs);
+        cpu_exec_end(cs);
+        //process_queued_cpu_work(cs);
+
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("INFO: %s(): got 'trapnr' %d from cpu_exec() - state dump (env at %p) follows:\n", __func__, trapnr, env);
+        /* TODO:
+         * 'trapnr' tells us why translation has stopped. Our key
+         * exception cases are EXCP_ILLOP (bad/unsupported
+         * instruction) and KERNEL_TRAP (end of usermode program).
          */
+        //cpu_dump_state(cs, stderr, fprintf, 0);
+        cpu_dump_state(cs, stderr, 0);
+;exit(1);
+#else   /* TODO: as per target-i386? */
+        process_pending_signals(env);
+#endif
     }
 }
