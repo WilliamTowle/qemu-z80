@@ -74,6 +74,11 @@ typedef struct CPUZ80State {
     /* TODO: CPU_COMMON adds fields used by z80-softmmu */
     //CPU_COMMON
 
+    /* exception/interrupt handling */
+    int error_code;
+    int exception_is_int;
+    //target_ulong exception_next_eip;
+
     struct {} end_reset_fields;
     /* Fields after this point are preserved across CPU reset. */
 
@@ -153,5 +158,9 @@ static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
     *pc = env->pc;
     *flags = env->hflags;       /* Z80: no env->eflags */
 }
+
+
+/* excp_helper.c */
+void QEMU_NORETURN raise_exception(CPUZ80State *env, int exception_index);
 
 #endif /* Z80_CPU_H */
