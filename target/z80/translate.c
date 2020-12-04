@@ -26,6 +26,11 @@
 /* Placeholder for prefixes and parsing mode defines */
 
 
+/* global register indexes */
+#if 0   /* overkill? feature unused for z80 */
+static TCGv_i32 cpu_cc_op;
+#endif
+
 typedef struct DisasContext {
     DisasContextBase base;
     /* [WmT] repo.or.cz does not implement:
@@ -36,7 +41,71 @@ typedef struct DisasContext {
     /* current insn context */
     target_ulong pc;
     //int model;
+
+    /* current block context */
+#if 0   /* overkill? feature unused for z80 */
+    CCOp cc_op;  /* current CC operation */
+    bool cc_op_dirty;
+#endif
 } DisasContext;
+
+
+#if 0   /* overkill: feature unused for z80 */
+static void gen_update_cc_op(DisasContext *s)
+{
+    if (s->cc_op_dirty) {
+        tcg_gen_movi_i32(cpu_cc_op, s->cc_op);
+        s->cc_op_dirty = false;
+    }
+}
+#endif
+
+
+static inline void gen_jmp_im(target_ulong pc)
+{
+    gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
+}
+
+static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
+{
+#if 0   /* overkill: feature unused for z80 */
+    gen_update_cc_op(s);
+#endif
+    gen_jmp_im(cur_pc);
+    gen_helper_raise_exception(cpu_env, tcg_const_i32(trapno));
+    s->base.is_jmp = DISAS_NORETURN;
+}
+
+/* Called by gen_unknown_opcode() only. For Z80, we don't have the
+ * concept of modes in which instructions are disallowed
+ */
+static void gen_illegal_opcode(DisasContext *s)
+{
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, s->pc_start, s->cs_base);
+#endif
+    gen_exception(dc, EXCP_ILLOP, s->pc_start - s->cs_base);
+}
+
+/* Signal a missing opcode or an unimplemented feature. For I386
+ * there is also a concept of "bogus instruction stream", whereas
+ * Z80 simulates a 'nop'.
+ */
+static void gen_unknown_opcode(CPUZ80State *env, DisasContext *s)
+{
+    gen_illegal_opcode(s);
+
+    if (qemu_loglevel_mask(LOG_UNIMP)) {
+        target_ulong pc = s->pc_start, end = s->pc;
+        qemu_log_lock();
+        qemu_log("ILLOPC: " TARGET_FMT_lx ":", pc);
+        for (; pc < end; ++pc) {
+            qemu_log(" %02x", cpu_ldub_code(env, pc));
+        }
+        qemu_log("\n");
+        qemu_log_unlock();
+    }
+}
 
 
 static target_ulong advance_pc(CPUZ80State *env, DisasContext *s, int num_bytes)
@@ -329,7 +398,8 @@ static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
     if (dc->base.is_jmp == DISAS_TOO_MANY) {
-        gen_jmp_im(dc->base.pc_next - dc->cs_base);
+        //gen_jmp_im(dc->base.pc_next - dc->cs_base);
+        gen_jmp_im(dc->base.pc_next);
         gen_eob(dc);
     }
 #endif
