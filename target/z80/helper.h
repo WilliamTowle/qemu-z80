@@ -10,4 +10,6 @@
 
 /* QEmu internal */
 
+DEF_HELPER_2(raise_exception, void, env, int)
+
 DEF_HELPER_2(movl_pc_im, void, env, int)
