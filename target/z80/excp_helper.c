@@ -29,7 +29,7 @@
 static void QEMU_NORETURN raise_interrupt2(CPUZ80State *env, int intno,
                                            int is_int, int error_code)
 {
-    CPUState *cs = CPU(z80_env_get_cpu(env));
+    CPUState *cs = env_cpu(env);
 
     cs->exception_index = intno;
     env->error_code = error_code;
