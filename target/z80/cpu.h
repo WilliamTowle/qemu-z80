@@ -23,7 +23,13 @@
 #include "cpu-qom.h"
 #include "exec/cpu-defs.h"
 
-/* TODO: TARGET_MAX_INSN_SIZE, TARGET_HAS_PRECISE_SMC */
+
+/* Maximum instruction code size */
+#define TARGET_MAX_INSN_SIZE 16     /* from x86, z80 probably 4 (w/ IX+offs) */
+
+/* support for self modifying code even if the modified instruction is
+   close to the modifying instruction */
+#define TARGET_HAS_PRECISE_SMC
 
 
 /* Array indexes for registers.
