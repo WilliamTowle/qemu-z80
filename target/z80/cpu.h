@@ -30,7 +30,12 @@
 
 #include "exec/cpu-defs.h"
 
-/* TODO: TARGET_MAX_INSN_SIZE, TARGET_HAS_PRECISE_SMC */
+
+/* Maximum instruction code size */
+#define TARGET_MAX_INSN_SIZE 16     /* from x86, z80 probably 4 (w/ IX+offs) */
+
+/* TODO: TARGET_HAS_PRECISE_SMC */
+
 
 #define CPUArchState struct CPUZ80State
 
@@ -43,7 +48,16 @@ enum {
     R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
 };
 
-/* TODO: hidden flags */
+
+/* hidden flags - used internally by qemu to represent additional cpu
+   states. Only the INHIBIT_IRQ, SMM and SVMI are not redundant. We
+   avoid using the IOPL_MASK, TF_MASK, VM_MASK and AC_MASK bit
+   positions to ease oring with eflags. */
+/* true if hardware interrupts must be disabled for next instruction */
+#define HF_INHIBIT_IRQ_SHIFT 3
+
+#define HF_INHIBIT_IRQ_MASK  (1 << HF_INHIBIT_IRQ_SHIFT)
+
 
 /* Exception defines */
 
