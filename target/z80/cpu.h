@@ -40,7 +40,16 @@ enum {
     R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
 };
 
-/* TODO: hidden flags */
+
+/* hidden flags - used internally by qemu to represent additional cpu
+   states. Only the INHIBIT_IRQ, SMM and SVMI are not redundant. We
+   avoid using the IOPL_MASK, TF_MASK, VM_MASK and AC_MASK bit
+   positions to ease oring with eflags. */
+/* true if hardware interrupts must be disabled for next instruction */
+#define HF_INHIBIT_IRQ_SHIFT 3
+
+#define HF_INHIBIT_IRQ_MASK  (1 << HF_INHIBIT_IRQ_SHIFT)
+
 
 /* Exception defines */
 
