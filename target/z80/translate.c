@@ -66,6 +66,81 @@ static inline void gen_jmp_im(target_ulong pc)
     gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
 }
 
+/* Generate an end of block. Trace exception is also generated if needed.
+   If INHIBIT, set HF_INHIBIT_IRQ_MASK if it isn't already set.
+   If RECHECK_TF, emit a rechecking helper for #DB, ignoring the state of
+   S->TF.  This is used by the syscall/sysret insns.  */
+static void
+do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, bool jr)
+{
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("DEBUG: Reached PARTIAL %s() with s=%p, inhibit %s, recheck_tf %s, jr %s\n", __func__, s, inhibit?"y":"n", recheck_tf?"y":"n", jr?"y":"n");
+#endif
+#if 0   /* overkill? feature unused for z80 */
+//#if 1 /* WmT - PARTIAL */
+//;DPRINTF("NOTE: %s() about to gen_update_cc_op()...\n", __func__);
+//#endif
+    gen_update_cc_op(s);
+#endif
+
+#if 1   /* WmT - PARTIAL */
+;if (inhibit) {
+;DPRINTF("DEBUG: inhibit parameter TRUE -> %s() needs helpers\n", __FILE__);
+;exit(1);
+}
+#endif
+//    /* If several instructions disable interrupts, only the first does it.  */
+//    if (inhibit && !(s->flags & HF_INHIBIT_IRQ_MASK)) {
+//        gen_set_hflag(s, HF_INHIBIT_IRQ_MASK);
+//    } else {
+//        gen_reset_hflag(s, HF_INHIBIT_IRQ_MASK);
+//    }
+//
+//    if (s->base.tb->flags & HF_RF_MASK) {
+//        gen_helper_reset_rf(cpu_env);
+//    }
+//    if (s->base.singlestep_enabled) {
+//        gen_helper_debug(cpu_env);
+#if 1   /* WmT - PARTIAL */
+;if (recheck_tf) {
+;DPRINTF("DEBUG: recheck_tf parameter TRUE -> %s() needs helpers\n", __FILE__);
+;exit(1);
+}
+#endif
+//    } else if (recheck_tf) {
+//        gen_helper_rechecking_single_step(cpu_env);
+//        tcg_gen_exit_tb(NULL, 0);
+//    } else if (s->tf) {
+//        gen_helper_single_step(cpu_env);
+#if 1   /* WmT - PARTIAL */
+;if (jr) {
+;DPRINTF("DEBUG: jr parameter TRUE -> %s() needs helpers\n", __FILE__);
+;exit(1);
+}
+#endif
+//    } else if (jr) {
+//        tcg_gen_lookup_and_goto_ptr();
+//    } else {
+        //tcg_gen_exit_tb(NULL, 0);
+        tcg_gen_exit_tb(0);
+//    }
+    s->base.is_jmp = DISAS_NORETURN;
+}
+
+
+static inline void
+gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf)
+{
+    do_gen_eob_worker(s, inhibit, recheck_tf, false);
+}
+
+/* End of block, resetting the inhibit irq flag.  */
+static void gen_eob(DisasContext *s)
+{
+    gen_eob_worker(s, false, false);
+}
+
+
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 {
 #if 1   /* WmT - PARTIAL */
