@@ -49,6 +49,8 @@ typedef struct DisasContext {
     CCOp cc_op;  /* current CC operation */
     bool cc_op_dirty;
 #endif
+    int tf;         /* i386 "trap flag" (CPU single-stepping) */
+    uint32_t        flags; /* all execution flags */
 } DisasContext;
 
 
