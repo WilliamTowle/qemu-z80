@@ -88,7 +88,7 @@ static void gen_eob(DisasContext *s)
     if (s->base.singlestep_enabled) {
         gen_helper_debug(cpu_env);
     } else {
-        tcg_gen_exit_tb(0);
+        tcg_gen_exit_tb(NULL, 0);
     }
     s->base.is_jmp = DISAS_NORETURN;
 }
