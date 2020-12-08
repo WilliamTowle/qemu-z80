@@ -86,6 +86,7 @@ typedef struct DisasContext {
     CCOp cc_op;  /* current CC operation */
     bool cc_op_dirty;
 #endif
+    uint32_t flags; /* all execution flags */
 #ifdef CONFIG_USER_ONLY
     target_ulong    magic_ramloc;
 #endif
@@ -1877,7 +1878,7 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
     ...initialisation of relevant 'static TCGv's
  */
 //    CPUX86State *env = cpu->env_ptr;
-//    uint32_t flags = dc->base.tb->flags;
+    uint32_t flags = dc->base.tb->flags;
 //    target_ulong cs_base = dc->base.tb->cs_base;
 //
 //    dc->pe = (flags >> HF_PE_SHIFT) & 1;
@@ -1908,11 +1909,12 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
-#if 1   /* PARTIAL */
-;DPRINTF("INFO: %s() flags init would use tb flags %d\n", __func__, dc->base.tb->flags);
-;if (dc->base.tb->flags) exit(1);
-#endif
-//    dc->flags = flags;
+
+    /* [QEmu v2] z80-softmmu initialises with non-zero flags (due
+     * to obsolete HF_SOFTMMU_MASK use?)
+     */
+    dc->flags = flags;
+
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
 //    /* Do not optimize repz jumps at all in icount mode, because
@@ -1944,6 +1946,10 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    cpu_ptr0 = tcg_temp_new_ptr();
 //    cpu_ptr1 = tcg_temp_new_ptr();
 //    cpu_cc_srcT = tcg_temp_local_new();
+
+#ifdef CONFIG_USER_ONLY
+    dc->magic_ramloc= magic;
+#endif
 
 #ifdef CONFIG_USER_ONLY
     dc->magic_ramloc= magic;
