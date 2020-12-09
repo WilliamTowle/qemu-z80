@@ -40,6 +40,27 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+static target_ulong advance_pc(CPUZ80State *env, DisasContext *s, int num_bytes)
+{
+    target_ulong pc = s->pc;
+
+    /* Z80 program counter adjustment needs to be manually wrapped at
+     * RAMTOP=64KiB due to cpu-defs.h needing TARGET_LONG_BITS >= 32
+     */
+    s->pc += num_bytes;
+    s->pc&= 0xffff;
+
+    return pc;
+}
+
+/* Helpers for physical memory read (TODO: ld{sb|uw} also needed) */
+
+static inline uint8_t z80_ldub_code(CPUZ80State *env, DisasContext *s)
+{
+    return translator_ldub(env, advance_pc(env, s, 1));
+}
+
+
 /* Convert one instruction and return the next PC value */
 static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 {
@@ -52,6 +73,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
      * 2. Triggering of ILLOP exception for missing translation cases
      * 3. Unprefixed and prefixed instruction parse/CPU differentiation
      */
+    CPUZ80State *env = cpu->env_ptr;
     unsigned int b;     /* instruction byte */
     target_ulong    pc_start = s->base.pc_next;
 
@@ -59,9 +81,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, pc_start);
 #endif
-    //b= ldub_code(s->pc);
+    b= z80_ldub_code(env, s);
     //s->pc++;
-;exit(1);
 
     switch (b)
     {
@@ -69,12 +90,14 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
         /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
+;exit(1);
 #endif
         break;
     default:    /* other op */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, was non-ret op with value 0x%02x\n", b);
         /* TODO: trigger ILLOP if translation is unimplemented */
+;exit(1);
 #endif
     }
 #else   /* normal parsing continues ... */
@@ -89,7 +112,7 @@ __asm__ volatile("unknown_op:");    /* "bad insn" case (Z80: normally unreachabl
     gen_unknown_opcode(env, s);
 #endif
 #if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: %s() returning s->pc value 0x%04x **\n", __func__, s->pc);
+;DPRINTF("** EXIT %s(), with unmodified s->pc 0x%04x **\n", __func__, s->pc);
 #endif
     return s->pc;
 }
