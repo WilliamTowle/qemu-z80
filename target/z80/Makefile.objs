@@ -5,4 +5,5 @@
 #
 
 obj-y += helper.o cpu.o
+obj-$(CONFIG_TCG) += op_helper.o
 obj-$(CONFIG_TCG) += translate.o
