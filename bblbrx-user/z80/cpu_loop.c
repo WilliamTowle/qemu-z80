@@ -28,6 +28,25 @@ void cpu_loop(CPUZ80State *env)
         cpu_exec_end(cs);
         //process_queued_cpu_work(cs);
 
+        switch(trapnr)
+        {
+        case EXCP_ILLOP:
+            /* instruction parser is incomplete - bailing is normal */
+            printf("%s() encountered EXCP_ILLOP (trapnr=%d) - aborting emulation\n", __func__, trapnr);
+            break;      /* to exit() beyond switch */
+        case EXCP_KERNEL_TRAP:
+            /* "magic ramtop" reached - exit and show CPU state */
+            printf("cpu_exec() encountered EXCP_KERNEL_TRAP (trapnr=%d) - stopping emulation\n", trapnr);
+            break;
+        default:
+            printf("cpu_exec() exited abnormally (with unexpected trapnr=%d) - aborting emulation\n", trapnr);
+        }
+
+        /* PARTIAL:
+         * For a system that can generate interrupts and signals
+         * them here, process_pending_signals() is required here,
+         * and we should restart the loop. Abnormal exit drops here
+         */
 #if 1   /* WmT - PARTIAL */
 ;DPRINTF("INFO: %s(): got 'trapnr' %d from cpu_exec() - state dump (env at %p) follows:\n", __func__, trapnr, env);
         /* TODO:
