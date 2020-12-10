@@ -32,9 +32,13 @@
 
 
 /* global register indexes */
+//static TCGv cpu_A0;
 #if 0   /* overkill? feature unused for z80 */
 static TCGv_i32 cpu_cc_op;
 #endif
+/* local temps */
+static TCGv cpu_T[3];           /* n=2, n=3 unused? */
+
 
 typedef struct DisasContext {
     DisasContextBase base;
@@ -329,6 +333,13 @@ void tcg_z80_init(void)
      * - cpu_regs[] as a static TCGv[] above, initialised here
      * - "local temps" cpu_{T0|T1|A0} are set up at disas context init
      */
+
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() tcg_global_mem_new_i32() for cpu_T[0]...\n", __func__);
+#endif
+    cpu_T[0] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t0), "T0");
+    //cpu_T[1] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t1), "T1");
+    //cpu_A0= tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, a0), "A0");
 }
 
 
