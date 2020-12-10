@@ -32,9 +32,15 @@
 
 
 /* global register indexes */
+//static TCGv cpu_A0;
 #if 0   /* overkill? feature unused for z80 */
 static TCGv_i32 cpu_cc_op;
 #endif
+/* local temps */
+static TCGv cpu_T[3];           /* n=2, n=3 unused? */
+
+
+#define MEM_INDEX 0     /* MMU_USER_IDX? */
 
 typedef struct DisasContext {
     DisasContextBase base;
@@ -57,6 +63,23 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+/* Register accessor functions */
+
+#if defined(HOST_WORDS_BIGENDIAN)
+#define UNIT_OFFSET(type, field, units, num) (sizeof_field(type, field) - ((num + 1) * units))
+#else
+#define UNIT_OFFSET(type, field, units, num) (num * units)
+#endif
+
+#define BYTE_OFFSET(type, field, num) UNIT_OFFSET(type, field, 1, num)
+#define WORD_OFFSET(type, field, num) UNIT_OFFSET(type, field, 2, num)
+
+
+#define REGPAIR SP
+#include "genreg_template.h"
+#undef REGPAIR
+
+
 #if 0   /* overkill? feature unused for z80 */
 static void gen_update_cc_op(DisasContext *s)
 {
@@ -66,6 +89,18 @@ static void gen_update_cc_op(DisasContext *s)
     }
 }
 #endif
+
+
+static inline void gen_popw(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_SP(addr);
+    tcg_gen_qemu_ld16u(v, addr, MEM_INDEX);
+    tcg_gen_addi_i32(addr, addr, 2);
+    tcg_gen_ext16u_i32(addr, addr);
+    gen_movw_SP_v(addr);
+    tcg_temp_free(addr);
+}
 
 
 static inline void gen_jmp_im(target_ulong pc)
@@ -203,14 +238,46 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
          */
 
         case 3: /* insn pattern 11yyyzzz */
+            switch (z) {
+            /* TODO: z=0 case covers conditional return */
 
-#if 1   /* WmT - TRACE */
-;DPRINTF("GETTING HERE? possible 'ret' insn - op 0x%02x (x=%o)...\n", b, x);
-;exit(1);   /* TODO: differentiate unconditional 'ret'/other here */
-#endif
+            case 1: /* POP and various ops */
+                switch (q)
+                {
+                /* TODO: case for q=0 */
 
-        default:    /* PARTIAL: switch(x) cases incomplete */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (has x %o, y %o [p=%o/q=%o], z %o) read - unhandled x case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+                case 1:
+                    switch (p)
+                    {
+                    case 0: /* 0xc9 */
+                        gen_popw(cpu_T[0]);
+                        gen_helper_jmp_T0(cpu_env);
+                        zprintf("ret\n");
+                        gen_eob(s);
+                        s->base.is_jmp= DISAS_NORETURN;
+//                      s->is_ei = 1;
+                        break;
+
+                    /* TODO: case(s) for p=1 to p=3 */
+
+                    default:    /* PARTIAL: switch(p) incomplete */
+                        goto unknown_op;
+                    }
+                    break;
+
+                default:    /* PARTIAL: switch(q) incomplete */
+                    goto unknown_op;
+                }
+                break;
+
+            /* TODO: case(s) for z=2 to z=7 */
+
+            default:    /* PARTIAL: switch(z) incomplete */
+                goto unknown_op;
+            }
+            break;
+
+        default:    /* PARTIAL: switch(x) incomplete */
             goto unknown_op;
         }   /* switch(x) ends */
     }
@@ -245,6 +312,10 @@ void tcg_z80_init(void)
      * - cpu_regs[] as a static TCGv[] above, initialised here
      * - "TCG local temps" A0, T0, T1 are in struct DisasContext
      */
+
+#define Z80_REG_OFFS(x) offsetof(CPUZ80State, x)
+    cpu_T[0]= tcg_global_mem_new_i32(cpu_env, Z80_REG_OFFS(t0), "T0");
+    /* PARTIAL: also declare/init cpu_A0, cpu_T[1] */
 }
 
 static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
