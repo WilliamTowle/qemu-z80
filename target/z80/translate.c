@@ -40,6 +40,8 @@ static TCGv_i32 cpu_cc_op;
 static TCGv cpu_T[3];           /* n=2, n=3 unused? */
 
 
+#define MEM_INDEX 0     /* MMU_USER_IDX? */
+
 typedef struct DisasContext {
     DisasContextBase base;
     /* [WmT] repo.or.cz does not implement:
@@ -59,6 +61,23 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+/* Register accessor functions */
+
+#if defined(WORDS_BIGENDIAN)
+#define UNIT_OFFSET(type, units, num) (sizeof(type) - ((num + 1) * units))
+#else
+#define UNIT_OFFSET(type, units, num) (num * units)
+#endif
+
+#define BYTE_OFFSET(type, num) UNIT_OFFSET(type, 1, num)
+#define WORD_OFFSET(type, num) UNIT_OFFSET(type, 2, num)
+
+
+#define REGPAIR SP
+#include "genreg_template.h"
+#undef REGPAIR
+
+
 #if 0   /* overkill: feature unused for z80 */
 static void gen_update_cc_op(DisasContext *s)
 {
@@ -68,6 +87,18 @@ static void gen_update_cc_op(DisasContext *s)
     }
 }
 #endif
+
+
+static inline void gen_popw(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_SP(addr);
+    tcg_gen_qemu_ld16u(v, addr, MEM_INDEX);
+    tcg_gen_addi_i32(addr, addr, 2);
+    tcg_gen_ext16u_i32(addr, addr);
+    gen_movw_SP_v(addr);
+    tcg_temp_free(addr);
+}
 
 
 static inline void gen_jmp_im(target_ulong pc)
