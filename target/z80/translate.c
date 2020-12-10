@@ -194,15 +194,46 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
          */
 
         case 3: /* insn pattern 11yyyzzz */
-#if 1   /* WmT - TRACE */
-;DPRINTF("GETTING HERE? possible 'ret' insn - op 0x%02x (x=%o)...\n", b, x);
-;exit(1);   /* TODO: differentiate unconditional 'ret'/other here */
-#endif
+            switch (z) {
+            /* TODO: z=0 case covers conditional return */
 
-        default:    /* PARTIAL: switch(x) cases incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (has x %o, y %o [p=%o/q=%o], z %o) read - unhandled x case\n", __FILE__, __LINE__, b, x, y,p,q, z);
-#endif
+            case 1: /* POP and various ops */
+                switch (q)
+                {
+                /* TODO: case for q=0 */
+
+                case 1:
+                    switch (p)
+                    {
+                    case 0: /* 0xc9 */
+                        gen_popw(cpu_T[0]);
+                        gen_helper_jmp_T0(cpu_env);
+                        zprintf("ret\n");
+                        gen_eob(s);
+                        s->base.is_jmp = DISAS_NORETURN;
+//                      s->is_ei = 1;
+                        break;
+
+                    /* TODO: case(s) for p=1 to p=3 */
+
+                    default:    /* PARTIAL: switch(p) incomplete */
+                        goto unknown_op;
+                    }
+                    break;
+
+                default:    /* PARTIAL: switch(q) incomplete */
+                    goto unknown_op;
+                }
+                break;
+
+            /* TODO: case(s) for z=2 to z=7 */
+
+            default:    /* PARTIAL: switch(z) incomplete */
+                goto unknown_op;
+            }
+            break;
+
+        default:    /* PARTIAL: switch(x) incomplete */
             goto unknown_op;
         }   /* switch(x) ends */
     }
