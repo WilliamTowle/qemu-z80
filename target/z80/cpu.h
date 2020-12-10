@@ -76,7 +76,7 @@ enum {
 /* CPUZ80State */
 
 typedef struct CPUZ80State {
-    /* TODO: needs support variables, other registers */
+    target_ulong    t0 /*, t1 */;
     uint32_t        regs[CPU_NB_REGS];
     target_ulong    pc;
 
