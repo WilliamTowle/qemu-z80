@@ -249,7 +249,7 @@ int main(int argc, char **argv)
     if (bprm.magic_ramloc)
     {
         env->regs[R_SP]= bprm.magic_ramloc;
-        stw_raw(env->regs[R_SP], bprm.magic_ramloc);
+        cpu_stw_data(env, env->regs[R_SP], bprm.magic_ramloc);
     }
 #else
 #error unsupported target CPU
