@@ -460,26 +460,25 @@ static bool z80_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
 #endif
 }
 
+static bool z80_pre_translate_insn(DisasContext *dc)
+{
+#ifdef CONFIG_USER_ONLY
+#if 1	/* WmT - BAIL */
+;DPRINTF("Z80 translate.c is incomplete (%s() PARTIAL)\n", __func__);
+;exit(1);
+#endif
+#endif
+}
+
 static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 {
     DisasContext *dc = container_of(dcbase, DisasContext, base);
     target_ulong pc_next;
 
-#if 1   /* WmT - PARTIAL */
-    pc_next = dcbase->pc_next;
-    if (pc_next > 0x0000)
-    {
-#if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: reached %s() with pc_next 0x%04x\n", __func__, pc_next);
-;exit(1);
-#endif
+    if (z80_pre_translate_insn(dc)) {
+        return;
     }
-    /* TODO: for magic ramtop detect:
-     * 1a. consult z80_pre_translate_insn();
-     * 1b. return if result true [because KERNEL_TRAP was triggered]
-     * 2. call disas_insn() otherwise
-     */
-#endif
+
     pc_next = disas_insn(dc, cpu);
 
 #if 1   /* WmT - TRACE */
