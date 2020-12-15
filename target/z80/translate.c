@@ -15,6 +15,9 @@
 #include "exec/exec-all.h"
 #include "exec/translator.h"
 #include "tcg/tcg-op.h"
+#ifdef CONFIG_USER_ONLY
+#include "qemu.h"       /* bblbrx wants TaskState struct */
+#endif
 
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
@@ -60,6 +63,9 @@ typedef struct DisasContext {
     bool cc_op_dirty;
 #endif
     uint32_t        flags; /* all execution flags */
+#ifdef CONFIG_USER_ONLY
+    target_ulong    magic_ramloc;
+#endif
 } DisasContext;
 
 
@@ -332,20 +338,13 @@ void tcg_z80_init(void)
 
 static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 0   /* WmT - PARTIAL */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
-#else   /* unported */
-;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
-/* TODO: v2 target-i386 sets:
-    ...dc->mem_index to 0, or cpu_mmu_index() result [CONFIG_SOFTMMU]
-    ...dc->flags
-    ...dc->jmp_opt, based on singlestepping configuration
-    ...initialisation of relevant 'static TCGv's
- */
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 //    CPUX86State *env = cpu->env_ptr;
     uint32_t flags = dc->base.tb->flags;
+#ifdef CONFIG_USER_ONLY
+    TaskState       *ts = cpu->opaque;
+    target_ulong    magic= ts->bprm->magic_ramloc;
+#endif
 
 //    dc->pe = (flags >> HF_PE_SHIFT) & 1;
 //    dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
@@ -409,6 +408,9 @@ static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
 //    cpu_ptr0 = tcg_temp_new_ptr();
 //    cpu_ptr1 = tcg_temp_new_ptr();
 //    cpu_cc_srcT = tcg_temp_local_new();
+
+#ifdef CONFIG_USER_ONLY
+    dc->magic_ramloc= magic;
 #endif
 }
 
@@ -463,11 +465,17 @@ static bool z80_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
 static bool z80_pre_translate_insn(DisasContext *dc)
 {
 #ifdef CONFIG_USER_ONLY
-#if 1	/* WmT - BAIL */
-;DPRINTF("Z80 translate.c is incomplete (%s() PARTIAL)\n", __func__);
+    if (dc->base.pc_next == dc->magic_ramloc)
+    {
+#if 1  /* WmT - TRACE */
+;DPRINTF("Reached %s(): BAIL - magic_ramloc hit; should generate KERNEL_TRAP\n", __func__);
 ;exit(1);
 #endif
+        /* ... return true; */
+    }
 #endif
+
+    return false;
 }
 
 static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
