@@ -17,6 +17,10 @@
 #include "exec/translator.h"
 #include "tcg/tcg-op.h"
 
+#ifdef CONFIG_USER_ONLY
+#include "qemu.h"       /* bblbrx wants TaskState struct */
+#endif
+
 
 #define EMIT_DEBUG 1
 #define DPRINTF(fmt, ...) \
@@ -59,6 +63,9 @@ typedef struct DisasContext {
     bool cc_op_dirty;
 #endif
     uint32_t        flags; /* all execution flags */
+#ifdef CONFIG_USER_ONLY
+    target_ulong    magic_ramloc;
+#endif
 } DisasContext;
 
 
@@ -315,19 +322,21 @@ void tcg_z80_init(void)
 static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
                                       int max_insns)
 {
-#if 0   /* WmT - PARTIAL */
+    DisasContext *dc = container_of(dcbase, DisasContext, base);
+//    CPUX86State *env = cpu->env_ptr;
+#ifdef CONFIG_USER_ONLY
+    TaskState       *ts = cpu->opaque;
+    target_ulong    magic= ts->bprm->magic_ramloc;
+#endif
+#if 1   /* WmT - PARTIAL */
 ;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
-#else   /* unported */
-;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
+#endif
 /* TODO: v2 sets:
     ...dc->mem_index to 0, or cpu_mmu_index() result [CONFIG_SOFTMMU]
     ...dc->flags
     ...dc->jmp_opt, based on singlestepping configuration
     ...initialisation of relevant 'static TCGv's
  */
-    DisasContext *dc = container_of(dcbase, DisasContext, base);
-//    CPUX86State *env = cpu->env_ptr;
     uint32_t flags = dc->base.tb->flags;
 //    target_ulong cs_base = dc->base.tb->cs_base;
 //
@@ -397,8 +406,11 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    cpu_ptr1 = tcg_temp_new_ptr();
 //    cpu_cc_srcT = tcg_temp_local_new();
 
-    return max_insns;
+#ifdef CONFIG_USER_ONLY
+    dc->magic_ramloc= magic;
 #endif
+
+    return max_insns;
 }
 
 static void z80_tr_tb_start(DisasContextBase *db, CPUState *cpu)
@@ -449,16 +461,33 @@ static bool z80_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
 #endif
 }
 
+static bool z80_pre_translate_insn(DisasContext *dc)
+{
+#ifdef CONFIG_USER_ONLY
+    if (dc->base.pc_next == dc->magic_ramloc)
+    {
+#if 1	/* WmT - BAIL */
+;DPRINTF("%s() PARTIAL - magic_ramloc hit -> need KERNEL_TRAP\n", __func__);
+;exit(1);
+#else   /* FIXME: implement */
+        gen_exception(dc, EXCP_KERNEL_TRAP, dc->base.pc_next);
+        /* ... return true; // "handled" */
+#endif
+    }
+#endif
+
+    return false;
+}
+
 static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 {
     DisasContext *dc = container_of(dcbase, DisasContext, base);
     target_ulong pc_next;
 
-    /* TODO: for magic ramtop detect:
-     * 1a. consult z80_pre_translate_insn();
-     * 1b. return if result true [because KERNEL_TRAP was triggered]
-     * 2. call disas_insn() otherwise
-     */
+    if (z80_pre_translate_insn(dc)) {
+        return;
+    }
+
     pc_next = disas_insn(dc, cpu);
 
 #if 1   /* WmT - TRACE */
