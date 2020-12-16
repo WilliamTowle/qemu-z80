@@ -33,32 +33,22 @@ void cpu_loop(CPUZ80State *env)
         case EXCP_ILLOP:
             /* instruction parser is incomplete - bailing is normal */
             printf("%s() encountered EXCP_ILLOP (trapnr=%d) - aborting emulation\n", __func__, trapnr);
-            break;      /* to exit() beyond switch */
+            break;      /* to loop-exit 'break' */
         case EXCP_KERNEL_TRAP:
             /* "magic ramtop" reached - exit and show CPU state */
-            printf("cpu_exec() encountered EXCP_KERNEL_TRAP (trapnr=%d) - stopping emulation\n", trapnr);
-            break;
+            printf("Program exit. Register dump follows:\n");
+            break;      /* to loop-exit 'break' */
         default:
-            printf("cpu_exec() exited abnormally (with unexpected trapnr=%d) - aborting emulation\n", trapnr);
+            printf("qemu: cpu_exec() returned unhandled exception 0x%x at PC=0x%04x - aborting emulation\n", trapnr, env->pc);
+            abort();
         }
 
-        /* PARTIAL:
-         * For a system that can generate interrupts and signals
-         * them here, process_pending_signals() is required here,
-         * and we should restart the loop. Abnormal exit drops here
-         */
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: %s(): got 'trapnr' %d from cpu_exec() - state dump (env at %p) follows:\n", __func__, trapnr, env);
-        /* TODO:
-         * 'trapnr' tells us why translation has stopped. Our key
-         * exception cases are EXCP_ILLOP (bad/unsupported
-         * instruction) and KERNEL_TRAP (end of usermode program).
-         */
+#if 0	/* target-i386: loop continues */
+        process_pending_signals(env);
+#else	/* z80: ILLOP (incomplete parser) or KERNEL_TRAP */
         //cpu_dump_state(cs, stderr, fprintf, 0);
         cpu_dump_state(cs, stderr, 0);
-;exit(1);
-#else   /* TODO: as per target-i386? */
-        process_pending_signals(env);
+        break;	/* exit loop */
 #endif
     }
 }
