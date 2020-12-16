@@ -467,11 +467,9 @@ static bool z80_pre_translate_insn(DisasContext *dc)
 #ifdef CONFIG_USER_ONLY
     if (dc->base.pc_next == dc->magic_ramloc)
     {
-#if 1  /* WmT - TRACE */
-;DPRINTF("Reached %s(): BAIL - magic_ramloc hit; should generate KERNEL_TRAP\n", __func__);
-;exit(1);
-#endif
-        /* ... return true; */
+        gen_exception(dc, EXCP_KERNEL_TRAP, dc->pc_start - dc->cs_base);
+        dc->base.is_jmp = DISAS_NORETURN;
+        return true; /* "handled" */
     }
 #endif
 
