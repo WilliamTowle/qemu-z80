@@ -302,7 +302,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
                     default:    /* PARTIAL: switch(p) incomplete */
 #if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled p case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
                         goto unknown_op;
                     }
@@ -310,7 +310,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
                 default:    /* PARTIAL: switch(q) incomplete */
 #if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled q case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
                     goto unknown_op;
                 }
@@ -320,7 +320,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
             default:    /* PARTIAL: switch(z) incomplete */
 #if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled z case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled z case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
                 goto unknown_op;
             }
@@ -328,7 +328,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
         default:    /* PARTIAL: switch(x) incomplete */
 #if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled x case\n", __FILE__, __LINE__, b, x, y,p,q, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled x case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
             goto unknown_op;
         }   /* switch(x) ends */
