@@ -86,7 +86,9 @@ static int parse_args(int argc, char **argv)
         {
             handle_arg_cpu(argv[optind++]);
         }
-        /* TODO: support "singlestep" option */
+        else if (strcmp(r, "-singlestep") == 0) {
+            singlestep = 1;
+        }
         else
         {
             fprintf(stderr, "Unexpected option '%s'\n", &r[1]);
