@@ -32,7 +32,16 @@
     do { if (EMIT_INSNS) printf(fmt , ## __VA_ARGS__); } while(0)
 
 
-/* Placeholder for prefixes and parsing mode defines */
+/* Prefixes and parsing mode defines */
+
+#define PREFIX_CB   0x01
+#define PREFIX_DD   0x02
+#define PREFIX_ED   0x04
+#define PREFIX_FD   0x08
+
+#define MODE_NORMAL 0
+#define MODE_DD     1
+#define MODE_FD     2
 
 
 /* global register indexes */
@@ -54,6 +63,7 @@ typedef struct DisasContext {
      */
 
     /* current insn context */
+    int                 prefix;
     target_ulong pc;
     //int model;
 
@@ -259,14 +269,28 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     CPUZ80State *env = cpu->env_ptr;
     target_ulong pc_start = s->base.pc_next;
     unsigned int b;     /* instruction byte */
+    int         prefixes, m;
 
     //s->pc_start = s->pc = pc_start;
     s->pc = pc_start;
+    prefixes= 0;
 
-    /* TODO: zprintf() of PC/insns and tracking of prefixes */
+    zprintf("PC = %04x: ", s->pc);
+    /* TODO: later prefix handling will jump here to keep track
+     * of prefixes seen in state
+//next_byte:
+     */
+    s->prefix= prefixes;
+    if (prefixes & PREFIX_DD) {
+        m = MODE_DD;
+    } else if (prefixes & PREFIX_FD) {
+        m = MODE_FD;
+    } else {
+        m = MODE_NORMAL;
+    }
 
-    /* This first block will handle DD/FD/plain insns without CB/ED */
-    {
+    if ((prefixes & (PREFIX_CB | PREFIX_ED)) == 0) {
+        /* DD/FD/plain insns without CB/ED */
         unsigned int x, y, z, p, q;
 
         b= z80_ldub_code(env, s);
@@ -334,10 +358,13 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             goto unknown_op;
         }   /* switch(x) ends */
     }
-    /* TODO: missing else cases:
-     * - for "cb mode" (bit manipulation) instructions
-     * - for "ed mode" (miscellaneous) instructions
-     */
+    else /* TODO: differentiate "cb mode" and "ed mode" cases */
+    {
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - CB- or ED-prefixed opcode unhandled [prefixes=0x%x, mode=%x]\n", __FILE__, __LINE__, prefixes, m);
+#endif
+        goto unknown_op;
+    }
 
     /* For Z80, there are no "illegal" instructions to signal here.
      * After parsing either we have acted on a fetch; we saw a 'nop'
@@ -345,6 +372,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
      * [by not acting further]. In the last case, the fetch is allowed
      * to have side effects on internal state/interrupt configuration
      */
+    prefixes= 0;
+
 #if 1   /* WmT - TRACE */
 ;DPRINTF("** EXIT %s() - OK - retval from s->pc 0x%04x **\n", __func__, s->pc);
 #endif
