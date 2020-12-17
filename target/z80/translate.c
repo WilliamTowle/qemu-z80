@@ -260,8 +260,19 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
         switch (x)
         {
+        case 0:      /* insn pattern 00yyyzzz */
+            switch (z) {
+            /* TODO: case(s) for z=0 to z=7 */
+
+            default:    /* PARTIAL: switch(z) incomplete */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) unhandled z case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                goto unknown_op;
+#endif
+            }
+            break;
+
         /* PARTIAL: missing cases for
-         * - x=0 - insn pattern 00yyyzzz case
          * - x=1 - insn pattern 01yyyzzz case
          * - x=2 - insn pattern 10yyyzzz case
          */
