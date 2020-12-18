@@ -544,7 +544,7 @@ static target_ulong advance_pc(CPUZ80State *env, DisasContext *s, int num_bytes)
     return pc;
 }
 
-/* Helpers for physical memory read (TODO: lduw also needed) */
+/* Helpers for physical memory read */
 
 static inline int8_t z80_ldsb_code(CPUZ80State *env, DisasContext *s)
 {
@@ -554,6 +554,11 @@ static inline int8_t z80_ldsb_code(CPUZ80State *env, DisasContext *s)
 static inline uint8_t z80_ldub_code(CPUZ80State *env, DisasContext *s)
 {
     return cpu_ldub_code(env, advance_pc(env, s, 1));
+}
+
+static inline uint16_t z80_lduw_code(CPUZ80State *env, DisasContext *s)
+{
+    return cpu_lduw_code(env, advance_pc(env, s, 2));
 }
 
 
