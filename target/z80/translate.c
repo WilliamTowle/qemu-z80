@@ -589,6 +589,11 @@ static inline uint8_t z80_ldub_code(CPUZ80State *env, DisasContext *s)
     return translator_ldub(env, advance_pc(env, s, 1));
 }
 
+static inline uint16_t z80_lduw_code(CPUZ80State *env, DisasContext *s)
+{
+    return translator_lduw(env, advance_pc(env, s, 2));
+}
+
 
 /* Convert one instruction and return the next PC value */
 static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
