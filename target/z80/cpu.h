@@ -45,7 +45,24 @@
  * has not been written
  */
 enum {
-    R_SP= 0,    /* repo.or.cz original has idx=7 (REGISTERS > 1) */
+    R_A     = 0,
+    R_F     = 1,
+
+    R_BC    = 2,
+    R_DE    = 3,
+    R_HL    = 4,
+    R_IX    = 5,
+    R_IY    = 6,
+    R_SP    = 7,
+
+    R_I     = 8,
+    R_R     = 9,
+
+    R_AX    = 10,
+    R_FX    = 11,
+    R_BCX   = 12,
+    R_DEX   = 13,
+    R_HLX   = 14
 };
 
 
@@ -68,7 +85,7 @@ enum {
 
 /* TODO: interrupt defines */
 
-#define CPU_NB_REGS 1
+#define CPU_NB_REGS 15
 
 //#define NB_MMU_MODES 1
 
