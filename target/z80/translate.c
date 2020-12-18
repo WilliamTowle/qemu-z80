@@ -483,6 +483,24 @@ static inline void gen_movw_reg_v(int regpair, TCGv v)
 }
 
 
+static inline int regpairmap(int regpair, int m)
+{
+    switch (regpair) {
+    case OR2_HL:
+        switch (m) {
+        case MODE_DD:
+            return OR2_IX;
+        case MODE_FD:
+            return OR2_IY;
+        case MODE_NORMAL:
+        default:
+            return OR2_HL;
+        }
+    default:
+        return regpair;
+    }
+}
+
 static const int regpair[4]= {
     /* register pairs featuring SP */
     OR2_BC,
