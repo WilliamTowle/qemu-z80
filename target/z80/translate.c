@@ -241,6 +241,22 @@ typedef void (gen_mov_func)(TCGv v);
 typedef void (gen_mov_func_idx)(TCGv v, uint16_t ofs);
 
 
+static inline void gen_movb_v_HLmem(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_HL(addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_HLmem_v(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_HL(addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
 static inline void gen_movb_v_IXmem(TCGv v, uint16_t ofs)
 {
     TCGv addr = tcg_temp_new();
