@@ -423,6 +423,41 @@ static const int reg[8] = {
     OR_A
 };
 
+
+enum {
+    /* 16-bit registers and register pairs */
+    OR2_AF,
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+
+    OR2_IX,
+    OR2_IY,
+    OR2_SP,
+
+    OR2_AFX,
+    OR2_BCX,
+    OR2_DEX,
+    OR2_HLX,
+};
+
+static const char *const regpairnames[]= {
+    [OR2_AF]    = "af",
+    [OR2_BC]    = "bc",
+    [OR2_DE]    = "de",
+    [OR2_HL]    = "hl",
+
+    [OR2_IX]    = "ix",
+    [OR2_IY]    = "iy",
+    [OR2_SP]    = "sp",
+
+    [OR2_AFX]   = "afx",
+    [OR2_BCX]   = "bcx",
+    [OR2_DEX]   = "dex",
+    [OR2_HLX]   = "hlx"
+};
+
+
 static const int regpair[4]= {
     OR2_BC,
     OR2_DE,
