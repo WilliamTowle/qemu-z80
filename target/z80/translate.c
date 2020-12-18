@@ -79,6 +79,53 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+enum {
+    /* 8-bit registers */
+    OR_B,
+    OR_C,
+    OR_D,
+    OR_E,
+    OR_H,
+    OR_L,
+    OR_HLmem,
+    OR_A,
+
+    OR_IXh,
+    OR_IXl,
+
+    OR_IYh,
+    OR_IYl,
+
+    OR_IXmem,
+    OR_IYmem
+};
+
+static const char *regnames[]= {
+    [OR_B]     = "b",
+    [OR_C]     = "c",
+    [OR_D]     = "d",
+    [OR_E]     = "e",
+    [OR_H]     = "h",
+    [OR_L]     = "l",
+    [OR_HLmem] = "(hl)",
+    [OR_A]     = "a",
+
+    [OR_IXh]   = "ixh",
+    [OR_IXl]   = "ixl",
+
+    [OR_IYh]   = "iyh",
+    [OR_IYl]   = "iyl",
+
+    [OR_IXmem] = "(ix+d)",
+    [OR_IYmem] = "(iy+d)",
+};
+
+static const char *const idxnames[]= {
+    [OR_IXmem] = "ix",
+    [OR_IYmem] = "iy",
+};
+
+
 /* Register accessor functions */
 
 #if defined(HOST_WORDS_BIGENDIAN)
@@ -123,6 +170,19 @@ static inline void gen_jmp_im(target_ulong pc)
 {
     gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
 }
+
+
+static const int reg[8] = {
+    OR_B,
+    OR_C,
+    OR_D,
+    OR_E,
+    OR_H,
+    OR_L,
+    OR_HLmem,
+    OR_A
+};
+
 
 static void gen_eob(DisasContext *s)
 {
