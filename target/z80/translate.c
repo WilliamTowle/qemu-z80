@@ -125,6 +125,10 @@ static const char *const idxnames[]= {
 };
 
 
+/* signed hex byte value for printf */
+#define shexb(val) (val < 0 ? '-' : '+'), (abs(val))
+
+
 /* Register accessor functions */
 
 #if defined(WORDS_BIGENDIAN)
@@ -199,6 +203,15 @@ static inline int regmap(int reg, int m)
     case MODE_NORMAL:
     default:
         return reg;
+    }
+}
+
+static inline int is_indexed(int reg)
+{
+    if (reg == OR_IXmem || reg == OR_IYmem) {
+        return 1;
+    } else {
+        return 0;
     }
 }
 
