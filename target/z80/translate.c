@@ -140,6 +140,85 @@ static const char *const idxnames[]= {
 #define BYTE_OFFSET(type, num) UNIT_OFFSET(type, 1, num)
 #define WORD_OFFSET(type, num) UNIT_OFFSET(type, 2, num)
 
+#define REGPAIR AF
+#define REGHIGH A
+#define REGLOW  F
+#include "genreg_template_af.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR BC
+#define REGHIGH B
+#define REGLOW  C
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR DE
+#define REGHIGH D
+#define REGLOW  E
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR HL
+#define REGHIGH H
+#define REGLOW  L
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR IX
+#define REGHIGH IXh
+#define REGLOW  IXl
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR IY
+#define REGHIGH IYh
+#define REGLOW  IYl
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR AFX
+#define REGHIGH AX
+#define REGLOW  FX
+#include "genreg_template_af.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR BCX
+#define REGHIGH BX
+#define REGLOW  CX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR DEX
+#define REGHIGH DX
+#define REGLOW  EX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
+
+#define REGPAIR HLX
+#define REGHIGH HX
+#define REGLOW  LX
+#include "genreg_template.h"
+#undef REGPAIR
+#undef REGHIGH
+#undef REGLOW
 
 #define REGPAIR SP
 #include "genreg_template.h"
