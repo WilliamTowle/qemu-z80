@@ -47,6 +47,20 @@ enum {
 
 #define CPU_NB_REGS 1
 
+#if 0   /* repo.or.cz does not use */
+/* Instead of computing the condition codes after each x86 instruction,
+ * QEMU just stores one operand (called CC_SRC), the result
+ * (called CC_DST) and the type of operation (called CC_OP). When the
+ * condition codes are needed, the condition codes can be calculated
+ * using this information. Condition codes are not generated if they
+ * are only needed for conditional branches.
+ */
+typedef enum {
+    CC_OP_DYNAMIC, /* must use dynamic code to get cc_op */
+    /* ... */
+} CCOp;
+#endif
+
 
 /* CPUZ80State */
 

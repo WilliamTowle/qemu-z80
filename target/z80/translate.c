@@ -26,6 +26,11 @@
 /* Placeholder for prefixes and parsing mode defines */
 
 
+/* global register indexes */
+#if 0   /* overkill? feature unused for z80 */
+static TCGv_i32 cpu_cc_op;
+#endif
+
 typedef struct DisasContext {
     DisasContextBase base;
     /* [WmT] repo.or.cz omits or does not use:
@@ -37,9 +42,14 @@ typedef struct DisasContext {
 
     /* current insn context */
     target_ulong        pc;
+#if 0   /* overkill? feature unused for z80 */
+    CCOp cc_op;  /* current CC operation */
+    bool cc_op_dirty;
+#endif
 } DisasContext;
 
 
+#if 0   /* overkill? feature unused for z80 */
 static void gen_update_cc_op(DisasContext *s)
 {
     if (s->cc_op_dirty) {
@@ -47,6 +57,7 @@ static void gen_update_cc_op(DisasContext *s)
         s->cc_op_dirty = false;
     }
 }
+#endif
 
 
 static inline void gen_jmp_im(target_ulong pc)
