@@ -253,8 +253,47 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
         switch (x)
         {
+        case 0:      /* insn pattern 00yyyzzz */
+            switch (z) {
+            /* TODO: case(s) for z=0 to z=5 */
+
+            case 6: /* 8-bit load immediate */
+#if 1
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else   /* TODO: enable, test! */
+                r1 = regmap(reg[y], m);
+                if (is_indexed(r1)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                }
+                n = ldub_code(s->pc);
+                s->pc++;
+                tcg_gen_movi_tl(cpu_T[0], n);
+                if (is_indexed(r1)) {
+                    gen_movb_idx_v(r1, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("ld (%s%c$%02x),$%02x\n", idxnames[r1], shexb(d), n);
+                } else {
+                    zprintf("ld %s,$%02x\n", regnames[r1], n);
+                }
+                break;
+#endif
+
+            /* TODO: case for z=7 */
+
+            default:    /* PARTIAL: switch(z) incomplete */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) unhandled z case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+                goto unknown_op;
+#endif
+            }
+            break;
+
         /* PARTIAL: missing cases for
-         * - x=0 - insn pattern 00yyyzzz case
          * - x=1 - insn pattern 01yyyzzz case
          * - x=2 - insn pattern 10yyyzzz case
          */
