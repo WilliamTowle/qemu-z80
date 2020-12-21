@@ -731,7 +731,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
         /* DD/FD/plain insns without CB/ED */
         unsigned int x, y, z, p, q;
         int n, d;           /* immediate 'n', displacement 'd' */
-        int r1;             /* register number */
+        int r1, r2;         /* register number */
 
         b= z80_ldub_code(env, s);
         //s->pc++;
@@ -807,10 +807,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             break;
 
         case 1: /* insn pattern 01yyyzzz */
-#if 1	/* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
             if (z == 6 && y == 6) {
                 gen_jmp_im(s, s->pc);
                 gen_helper_halt();
@@ -848,7 +844,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
                 }
             }
-#endif
             break;
 
         case 2: /* insn pattern 10yyyzzz - arithmetic/logic */
