@@ -743,9 +743,52 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             }
             break;
 
-        /* PARTIAL: missing cases for
-         * - x=1 - insn pattern 01yyyzzz case
-         */
+        case 1: /* insn pattern 01yyyzzz */
+#if 1	/* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+            if (z == 6 && y == 6) {
+                /* Exception [replaces LD (HL),(HL)] */
+                gen_jmp_im(s, s->pc);
+                gen_helper_halt();
+                zprintf("halt\n");
+            } else {
+                /* 8-bit loading */
+                if (z == 6) {
+                    r1 = regmap(reg[z], m);
+                    r2 = regmap(reg[y], 0);
+                } else if (y == 6) {
+                    r1 = regmap(reg[z], 0);
+                    r2 = regmap(reg[y], m);
+                } else {
+                    r1 = regmap(reg[z], m);
+                    r2 = regmap(reg[y], m);
+                }
+                if (is_indexed(r1) || is_indexed(r2)) {
+                    d = ldsb_code(s->pc);
+                    s->pc++;
+                }
+                if (is_indexed(r1)) {
+                    gen_movb_v_idx(cpu_T[0], r1, d);
+                } else {
+                    gen_movb_v_reg(cpu_T[0], r1);
+                }
+                if (is_indexed(r2)) {
+                    gen_movb_idx_v(r2, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("ld %s,(%s%c$%02x)\n", regnames[r2], idxnames[r1], shexb(d));
+                } else if (is_indexed(r2)) {
+                    zprintf("ld (%s%c$%02x),%s\n", idxnames[r2], shexb(d), regnames[r1]);
+                } else {
+                    zprintf("ld %s,%s\n", regnames[r2], regnames[r1]);
+                }
+            }
+#endif
+            break;
 
         case 2: /* insn pattern 10yyyzzz - arithmetic/logic */
             /* operate on accumulator and register/memory location */
