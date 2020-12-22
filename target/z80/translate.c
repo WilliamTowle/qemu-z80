@@ -174,6 +174,37 @@ static inline void gen_jmp_im(target_ulong pc)
 }
 
 
+static inline int regmap(int reg, int m)
+{
+    switch (m) {
+    case MODE_DD:
+        switch (reg) {
+        case OR_H:
+            return OR_IXh;
+        case OR_L:
+            return OR_IXl;
+        case OR_HLmem:
+            return OR_IXmem;
+        default:
+            return reg;
+        }
+    case MODE_FD:
+        switch (reg) {
+        case OR_H:
+            return OR_IYh;
+        case OR_L:
+            return OR_IYl;
+        case OR_HLmem:
+            return OR_IYmem;
+        default:
+            return reg;
+        }
+    case MODE_NORMAL:
+    default:
+        return reg;
+    }
+}
+
 static inline int is_indexed(int reg)
 {
     if (reg == OR_IXmem || reg == OR_IYmem) {
@@ -193,6 +224,7 @@ static const int reg[8] = {
     OR_HLmem,
     OR_A
 };
+
 
 
 
