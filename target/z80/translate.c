@@ -756,8 +756,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
         case 1: /* insn pattern 01yyyzzz */
             if (z == 6 && y == 6) {
                 /* Exception [replaces LD (HL),(HL)] */
-                gen_jmp_im(s, s->pc);
-                gen_helper_halt();
+                gen_jmp_im(s->pc);
+                gen_helper_halt(cpu_env);	/* FIXME: set DISAS_NORETURN */
                 zprintf("halt\n");
             } else {
                 /* 8-bit loading */
