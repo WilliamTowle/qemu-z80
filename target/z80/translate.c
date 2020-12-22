@@ -158,6 +158,51 @@ static void gen_update_cc_op(DisasContext *s)
 #endif
 
 
+typedef void (gen_mov_func)(TCGv v);
+typedef void (gen_mov_func_idx)(TCGv v, uint16_t ofs);
+
+
+static inline void gen_movb_v_IXmem(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IX(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_v_IYmem(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IY(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_ld8u(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_IXmem_v(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IX(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+static inline void gen_movb_IYmem_v(TCGv v, uint16_t ofs)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_IY(addr);
+    tcg_gen_addi_tl(addr, addr, ofs);
+    tcg_gen_ext16u_tl(addr, addr);
+    tcg_gen_qemu_st8(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
+
 static inline void gen_popw(TCGv v)
 {
     TCGv addr = tcg_temp_new();
@@ -169,12 +214,69 @@ static inline void gen_popw(TCGv v)
     tcg_temp_free(addr);
 }
 
+static gen_mov_func *const gen_movb_v_reg_tbl[] = {
+    [OR_B]     = gen_movb_v_B,
+    [OR_C]     = gen_movb_v_C,
+    [OR_D]     = gen_movb_v_D,
+    [OR_E]     = gen_movb_v_E,
+    [OR_H]     = gen_movb_v_H,
+    [OR_L]     = gen_movb_v_L,
+    [OR_HLmem] = gen_movb_v_HLmem,
+    [OR_A]     = gen_movb_v_A,
 
-static inline void gen_jmp_im(target_ulong pc)
+    [OR_IXh]   = gen_movb_v_IXh,
+    [OR_IXl]   = gen_movb_v_IXl,
+
+    [OR_IYh]   = gen_movb_v_IYh,
+    [OR_IYl]   = gen_movb_v_IYl,
+};
+
+static inline void gen_movb_v_reg(TCGv v, int reg)
 {
-    gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
+    gen_movb_v_reg_tbl[reg](v);
 }
 
+static gen_mov_func_idx *const gen_movb_v_idx_tbl[] = {
+    [OR_IXmem] = gen_movb_v_IXmem,
+    [OR_IYmem] = gen_movb_v_IYmem,
+};
+
+static inline void gen_movb_v_idx(TCGv v, int idx, int ofs)
+{
+    gen_movb_v_idx_tbl[idx](v, ofs);
+}
+
+static gen_mov_func *const gen_movb_reg_v_tbl[] = {
+    [OR_B]     = gen_movb_B_v,
+    [OR_C]     = gen_movb_C_v,
+    [OR_D]     = gen_movb_D_v,
+    [OR_E]     = gen_movb_E_v,
+    [OR_H]     = gen_movb_H_v,
+    [OR_L]     = gen_movb_L_v,
+    [OR_HLmem] = gen_movb_HLmem_v,
+    [OR_A]     = gen_movb_A_v,
+
+    [OR_IXh]   = gen_movb_IXh_v,
+    [OR_IXl]   = gen_movb_IXl_v,
+
+    [OR_IYh]   = gen_movb_IYh_v,
+    [OR_IYl]   = gen_movb_IYl_v,
+};
+
+static inline void gen_movb_reg_v(int reg, TCGv v)
+{
+    gen_movb_reg_v_tbl[reg](v);
+}
+
+static gen_mov_func_idx *const gen_movb_idx_v_tbl[] = {
+    [OR_IXmem] = gen_movb_IXmem_v,
+    [OR_IYmem] = gen_movb_IYmem_v,
+};
+
+static inline void gen_movb_idx_v(int idx, TCGv v, int ofs)
+{
+    gen_movb_idx_v_tbl[idx](v, ofs);
+}
 
 static inline int regmap(int reg, int m)
 {
@@ -227,6 +329,11 @@ static const int reg[8] = {
     OR_A
 };
 
+
+static inline void gen_jmp_im(target_ulong pc)
+{
+    gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
+}
 
 static void gen_eob(DisasContext *s)
 {
