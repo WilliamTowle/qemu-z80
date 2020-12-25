@@ -505,11 +505,39 @@ static const int regpair[4]= {
     OR2_SP,
 };
 
-
 static inline void gen_jmp_im(target_ulong pc)
 {
     gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
 }
+
+
+/* Arithmetic/logic operations */
+
+static const char *const alu[8]= {
+    "add a,",
+    "adc a,",
+    "sub ",
+    "sbc a,",
+    "and ",
+    "xor ",
+    "or ",
+    "cp ",
+};
+
+
+typedef void (alu_helper_func)(TCGv_ptr cpu_env);
+
+static alu_helper_func *const gen_alu[8] = {
+    gen_helper_add_cc,
+    gen_helper_adc_cc,
+    gen_helper_sub_cc,
+    gen_helper_sbc_cc,
+    gen_helper_and_cc,
+    gen_helper_xor_cc,
+    gen_helper_or_cc,
+    gen_helper_cp_cc,
+};
+
 
 /* Generate an end of block. Trace exception is also generated if needed.
    If INHIBIT, set HF_INHIBIT_IRQ_MASK if it isn't already set.
