@@ -513,6 +513,36 @@ static inline void gen_jmp_im(target_ulong pc)
     gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
 }
 
+
+/* Arithmetic/logic operations */
+
+static const char *const alu[8]= {
+    "add a,",
+    "adc a,",
+    "sub ",
+    "sbc a,",
+    "and ",
+    "xor ",
+    "or ",
+    "cp ",
+};
+
+//typedef void (alu_helper_func)(void);
+/* [QEmu v2+] to suit helpers with CPUZ80State* parameter */
+typedef void (alu_helper_func)(TCGv_env cpu_env);
+
+static alu_helper_func *const gen_alu[8] = {
+    gen_helper_add_cc,
+    gen_helper_adc_cc,
+    gen_helper_sub_cc,
+    gen_helper_sbc_cc,
+    gen_helper_and_cc,
+    gen_helper_xor_cc,
+    gen_helper_or_cc,
+    gen_helper_cp_cc,
+};
+
+
 static void gen_eob(DisasContext *s)
 {
     if (s->base.tb->flags & HF_INHIBIT_IRQ_MASK) {
