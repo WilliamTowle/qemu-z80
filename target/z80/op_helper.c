@@ -86,7 +86,97 @@ void helper_jmp_T0(CPUZ80State *env)
     PC = T0;
 }
 
-//void HELPER(xor_cc)(void)
+
+/* Arithmetic/logic operations */
+
+#define signed_overflow_add(op1, op2, res, size) \
+    (!!((~(op1 ^ op2) & (op1 ^ res)) >> (size - 1)))
+
+#define signed_overflow_sub(op1, op2, res, size) \
+    (!!(((op1 ^ op2) & (op1 ^ res)) >> (size - 1)))
+
+
+/* 8-bit arithmetic ops */
+
+void helper_add_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A + T0);
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
+
+void helper_adc_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A + T0 + !!(F & CC_C));
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
+
+void helper_sub_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A - T0);
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (~tmp & T0) | (~(tmp ^ T0) & A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void helper_sbc_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)(A - T0 - !!(F & CC_C));
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (~tmp & T0) | (~(tmp ^ T0) & A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void helper_and_cc(CPUZ80State *env)
+{
+    int sf, zf, pf;
+    A = (uint8_t)(A & T0);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)A];
+    F = sf | zf | CC_H | pf;
+}
+
 void helper_xor_cc(CPUZ80State *env)
 {
     int sf, zf, pf;
@@ -96,4 +186,32 @@ void helper_xor_cc(CPUZ80State *env)
     zf = A ? 0 : CC_Z;
     pf = parity_table[(uint8_t)A];
     F = sf | zf | pf;
+}
+
+void helper_or_cc(CPUZ80State *env)
+{
+    int sf, zf, pf;
+    A = (uint8_t)(A | T0);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)A];
+    F = sf | zf | pf;
+}
+
+void helper_cp_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int res, carry;
+
+    res = (uint8_t)(A - T0);
+    sf = (res & 0x80) ? CC_S : 0;
+    zf = res ? 0 : CC_Z;
+    carry = (~A & T0) | (~(A ^ T0) & res);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(A, T0, res, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+//  CC_DST = (uint8_t)(A - T0);
 }
