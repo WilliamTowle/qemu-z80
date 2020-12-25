@@ -715,8 +715,30 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
         /* PARTIAL: missing cases for
          * - x=1 - insn pattern 01yyyzzz case
-         * - x=2 - insn pattern 10yyyzzz case
          */
+
+        case 2: /* insn pattern 10yyyzzz - arithmetic/logic */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+            /* operate on accumulator and register/memory location */
+            r1 = regmap(reg[z], m);
+            if (is_indexed(r1)) {
+                d = z80_ldsb_code(env, s);
+                //s->pc++;
+                gen_movb_v_idx(cpu_T[0], r1, d);
+            } else {
+                gen_movb_v_reg(cpu_T[0], r1);
+            }
+            gen_alu[y](cpu_env); /* places output in A */
+            if (is_indexed(r1)) {
+                zprintf("%s(%s%c$%02x)\n", alu[y], idxnames[r1], shexb(d));
+            } else {
+                zprintf("%s%s\n", alu[y], regnames[r1]);
+            }
+            break;
+#endif
 
         case 3: /* insn pattern 11yyyzzz */
             switch (z) {
@@ -757,7 +779,22 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case(s) for z=2 to z=7 */
+            /* TODO: case(s) for z=2 to z=5 */
+
+            case 6: /* Operate on accumulator and immediate operand */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                n = z80_ldub_code(env, s);
+                //s->pc++;
+                tcg_gen_movi_tl(cpu_T[0], n);
+                gen_alu[y](cpu_env); /* places output in A */
+                zprintf("%s$%02x\n", alu[y], n);
+#endif
+                break;
+
+            /* TODO: case for z=7 */
 
             default:    /* PARTIAL: switch(z) incomplete */
 #if 1   /* WmT - TRACE */
