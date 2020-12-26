@@ -16,6 +16,7 @@ DEF_HELPER_2(movl_pc_im, void, env, i32)
 /* Misc */
 
 DEF_HELPER_1(jmp_T0, void, env)
+DEF_HELPER_3(djnz, void, env, i32, i32)
 
 
 /* 8-bit arithmetic */
