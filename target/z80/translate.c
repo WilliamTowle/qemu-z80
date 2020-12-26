@@ -870,8 +870,17 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 1:
                 switch (q)
                 {
-                /* TODO: case for q=0 */
-
+                case 0:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                    r1 = regpairmap(regpair2[p], m);
+                    gen_popw(cpu_T[0]);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("pop %s\n", regpairnames[r1]);
+#endif
+                    break;
                 case 1:
                     switch (p)
                     {
@@ -902,7 +911,35 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case(s) for z=2 to z=5 */
+            /* TODO: case(s) for z=2-4 */
+
+            case 5:
+                switch (q)
+                {
+                case 0:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                    r1 = regpairmap(regpair2[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_pushw(cpu_T[0]);
+                    zprintf("push %s\n", regpairnames[r1]);
+#endif
+                    break;
+
+                /* TODO: missing q=1 case covers:
+                 *  - 'call's where p=0 (MISSING)
+                 *  - use of dd/ed/fd prefixes
+                 */
+
+                default:    /* FIXME: switch(q) incomplete */
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+#endif
+                    goto unknown_op;
+                }
+                break;
 
             case 6:
                 n = z80_ldub_code(env, s);
