@@ -864,16 +864,11 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             /* TODO: case(s) for z=2 to z=5 */
 
             case 6:
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                 n = z80_ldub_code(env, s);
                 //s->pc++;
                 tcg_gen_movi_tl(cpu_T[0], n);
                 gen_alu[y](cpu_env); /* places output in A */
                 zprintf("%s$%02x\n", alu[y], n);
-#endif
                 break;
 
             /* TODO: case for z=7 */
