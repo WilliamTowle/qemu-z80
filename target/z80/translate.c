@@ -814,7 +814,36 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case(s) for z=2 to z=5 */
+            /* TODO: case(s) for z=2 to z=3 */
+
+            case 4:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                r1 = regmap(reg[y], m);
+                if (is_indexed(r1)) {
+                    d = z80_ldsb_code(env, s);
+                    //s->pc++;
+                    gen_movb_v_idx(cpu_T[0], r1, d);
+                } else {
+                    gen_movb_v_reg(cpu_T[0], r1);
+                }
+                gen_helper_incb_T0_cc(cpu_env);
+                if (is_indexed(r1)) {
+                    gen_movb_idx_v(r1, cpu_T[0], d);
+                } else {
+                    gen_movb_reg_v(r1, cpu_T[0]);
+                }
+                if (is_indexed(r1)) {
+                    zprintf("inc (%s%c$%02x)\n", idxnames[r1], shexb(d));
+                } else {
+                    zprintf("inc %s\n", regnames[r1]);
+                }
+#endif
+                break;
+
+            /* TODO: case for z=5 (implements "dec") */
 
             case 6: /* 0x3e */
                 r1 = regmap(reg[y], m);
