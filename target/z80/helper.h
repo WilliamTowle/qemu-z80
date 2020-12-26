@@ -28,3 +28,7 @@ DEF_HELPER_1(and_cc, void, env)
 DEF_HELPER_1(xor_cc, void, env)
 DEF_HELPER_1(or_cc, void, env)
 DEF_HELPER_1(cp_cc, void, env)
+
+/* 16-bit arithmetic */
+
+DEF_HELPER_1(incb_T0_cc, void, env)
