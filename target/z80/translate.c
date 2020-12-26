@@ -792,7 +792,16 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
         case 0:      /* insn pattern 00yyyzzz */
             switch (z)
             {
-            /* TODO: case for z=0 */
+            case 0:
+                switch (y)
+                {
+                default:    /* FIXME: switch(y) incomplete */
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+#endif
+                    goto unknown_op;
+                }
+                break;
             case 1:
                 switch (q) {
                 case 0:	/* 0x21 */
