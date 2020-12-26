@@ -297,6 +297,17 @@ static inline void gen_movb_IYmem_v(TCGv v, uint16_t ofs)
 }
 
 
+static inline void gen_pushw(TCGv v)
+{
+    TCGv addr = tcg_temp_new();
+    gen_movw_v_SP(addr);
+    tcg_gen_subi_i32(addr, addr, 2);
+    tcg_gen_ext16u_i32(addr, addr);
+    gen_movw_SP_v(addr);
+    tcg_gen_qemu_st16(v, addr, MEM_INDEX);
+    tcg_temp_free(addr);
+}
+
 static inline void gen_popw(TCGv v)
 {
     TCGv addr = tcg_temp_new();
@@ -458,6 +469,28 @@ static const char *const regpairnames[]= {
 };
 
 
+static gen_mov_func *const gen_movw_v_reg_tbl[]= {
+    [OR2_AF]  = gen_movw_v_AF,
+    [OR2_BC]  = gen_movw_v_BC,
+    [OR2_DE]  = gen_movw_v_DE,
+    [OR2_HL]  = gen_movw_v_HL,
+
+    [OR2_IX]  = gen_movw_v_IX,
+    [OR2_IY]  = gen_movw_v_IY,
+    [OR2_SP]  = gen_movw_v_SP,
+
+    [OR2_AFX] = gen_movw_v_AFX,
+    [OR2_BCX] = gen_movw_v_BCX,
+    [OR2_DEX] = gen_movw_v_DEX,
+    [OR2_HLX] = gen_movw_v_HLX,
+};
+
+static inline void gen_movw_v_reg(TCGv v, int regpair)
+{
+    gen_movw_v_reg_tbl[regpair](v);
+}
+
+
 static gen_mov_func *const gen_movw_reg_v_tbl[]= {
     [OR2_AF]    = gen_movw_AF_v,
     [OR2_BC]    = gen_movw_BC_v,
@@ -504,6 +537,14 @@ static const int regpair[4]= {
     OR2_HL,
     OR2_SP,
 };
+
+static const int regpair2[4]= {
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+    OR2_AF,
+};
+
 
 static inline void gen_jmp_im(target_ulong pc)
 {
@@ -871,15 +912,10 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 switch (q)
                 {
                 case 0:
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                     r1 = regpairmap(regpair2[p], m);
                     gen_popw(cpu_T[0]);
                     gen_movw_reg_v(r1, cpu_T[0]);
                     zprintf("pop %s\n", regpairnames[r1]);
-#endif
                     break;
                 case 1:
                     switch (p)
@@ -917,15 +953,10 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 switch (q)
                 {
                 case 0:
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                     r1 = regpairmap(regpair2[p], m);
                     gen_movw_v_reg(cpu_T[0], r1);
                     gen_pushw(cpu_T[0]);
                     zprintf("push %s\n", regpairnames[r1]);
-#endif
                     break;
 
                 /* TODO: missing q=1 case covers:
