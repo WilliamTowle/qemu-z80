@@ -195,3 +195,24 @@ void helper_cp_cc(CPUZ80State *env)
     F = sf | zf | hf | pf | CC_N | cf;
 //  CC_DST = (uint8_t)(A - T0);
 }
+
+
+/* 16-bit arithmetic */
+
+void helper_incb_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf;
+    int tmp;
+    int carry;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 + 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+
+    carry = (tmp & 1) | ((tmp | 1) & ~T0);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, 1, T0, 8) ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | hf | pf;
+}
