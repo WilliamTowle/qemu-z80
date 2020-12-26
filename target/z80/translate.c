@@ -812,10 +812,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             /* TODO: case(s) for z=2 to z=3 */
 
             case 4:
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
                     d = z80_ldsb_code(env, s);
@@ -835,7 +831,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 } else {
                     zprintf("inc %s\n", regnames[r1]);
                 }
-#endif
                 break;
 
             /* TODO: case for z=5 (implements "dec") */
