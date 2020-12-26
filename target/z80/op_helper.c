@@ -109,6 +109,16 @@ void helper_jmp_T0(CPUZ80State *env)
     PC = T0;
 }
 
+void helper_djnz(CPUZ80State *env, int pc1, int pc2)
+{
+    BC = (uint16_t)(BC - 0x0100);
+    if (BC & 0xff00) {
+        PC = (uint16_t)pc1;
+    } else {
+        PC = (uint16_t)pc2;
+    }
+}
+
 
 /* Arithmetic/logic operations */
 

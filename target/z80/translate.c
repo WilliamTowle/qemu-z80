@@ -557,6 +557,26 @@ static inline void gen_jmp_im(target_ulong pc)
 }
 
 
+/* Conditions */
+
+static const char *const cc[8] = {
+    "nz",
+    "z",
+    "nc",
+    "c",
+    "po",
+    "pe",
+    "p",
+    "m",
+};
+
+static const int cc_flags[4] = {
+    CC_Z,
+    CC_C,
+    CC_P,
+    CC_S,
+};
+
 
 /* Arithmetic/logic operations */
 
@@ -587,13 +607,43 @@ static alu_helper_func *const gen_alu[8] = {
 };
 
 
-/* TODO: routines for program flow control:
- * gen_goto_tb()
- * gen_cond_jump()
- * gen_jcc()
- * gen_callcc()
- * gen_retcc()
- */
+static void gen_eob(DisasContext *s);
+
+static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong pc)
+{
+    gen_jmp_im(pc);
+    gen_eob(s);
+}
+
+static inline void gen_cond_jump(int cc, TCGLabel *l1)
+{
+    gen_movb_v_F(cpu_T[0]);
+
+    tcg_gen_andi_tl(cpu_T[0], cpu_T[0], cc_flags[cc >> 1]);
+
+    tcg_gen_brcondi_tl((cc & 1) ? TCG_COND_NE : TCG_COND_EQ, cpu_T[0], 0, l1);
+}
+
+static inline void gen_jcc(DisasContext *s, int cc,
+                                target_ulong val, target_ulong next_pc)
+{
+    //TranslationBlock *tb;     /* as repo.or.cz: "set but unused" */
+    TCGLabel *l1;
+
+    //tb = s->tb;
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    gen_goto_tb(s, 1, val);
+
+#if QEMU_VERSION_MAJOR < 2  /* gen_eob() does this for us */
+    s->base.is_jmp = DISAS_NORETURN;
+#endif
+}
+
 
 static void gen_eob(DisasContext *s)
 {
@@ -742,18 +792,12 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 {
                 /* TODO: case(s) for y=0, y=1 */
                 case 2:
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
-
                     n= z80_ldsb_code(env, s);
                     //s->pc++;
                     gen_helper_djnz(cpu_env, tcg_const_i32(s->pc + n), tcg_const_i32(s->pc));
                     gen_eob(s);
                     s->base.is_jmp = DISAS_NORETURN;
                     zprintf("djnz $%02x\n", n);
-#endif
                     break;
 
                 case 3:
@@ -769,15 +813,10 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 case 5:
                 case 6:
                 case 7:
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                     n= z80_ldsb_code(env, s);
                     //s->pc++;
                     gen_jcc(s, y-4, s->pc + n, s->pc);
                     zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
-#endif
                     break;
 
                 default:    /* PARTIAL: switch(y) incomplete */
@@ -977,16 +1016,11 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 break;
 
             case 2: /* Conditional jump */
-#if 1  /* WmT - UNTESTED */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                 n= z80_lduw_code(env, s);
                 //s->pc += 2;
                 gen_jcc(s, y, n, s->pc);
                 zprintf("jp %s,$%04x\n", cc[y], n);
                 /* TODO: gen_eob() w/ DISAS_NORETURN missing? */
-#endif
                 break;
 
             case 3: /* Assorted operations */
