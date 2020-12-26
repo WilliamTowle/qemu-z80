@@ -790,7 +790,47 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 0:
                 switch (y)
                 {
-                default:    /* FIXME: switch(y) incomplete */
+                /* TODO: case(s) for y=0, y=1 */
+                case 2:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+
+                    n = z80_ldsb_code(env, s);
+                    //s->pc++;
+                    gen_helper_djnz(cpu_env, tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
+                    gen_eob(s);
+                    s->base.is_jmp = DISAS_NORETURN;
+                    zprintf("djnz $%02x\n", n);
+#endif
+                    break;
+
+                case 3:
+                    n = z80_ldsb_code(env, s);
+                    //s->pc++;
+                    gen_jmp_im(s->pc + n);
+                    gen_eob(s);
+                    s->base.is_jmp = DISAS_NORETURN;
+                    zprintf("jr $%02x\n", n);
+                    break;
+
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                    n = z80_ldsb_code(env, s);
+                    //s->pc++;
+                    gen_jcc(s, y-4, s->pc + n, s->pc);
+                    zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
+#endif
+                    break;
+
+                default:	/* PARTIAL: switch(y) incomplete */
 #if 1   /* WmT - PARTIAL */
 ;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
@@ -936,6 +976,11 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             switch (z) {
             /* TODO: z=0 case covers conditional 'ret' */
 
+            //case 0:
+            //    gen_retcc(s, y, s->pc);
+            //    zprintf("ret %s\n", cc[y]);
+            //    break;
+
             case 1:
                 switch (q)
                 {
@@ -975,7 +1020,48 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case(s) for z=2 to z=4 */
+            case 2:
+#if 1  /* WmT - UNTESTED */
+;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
+;exit(1);
+#else
+                n = z80_lduw_code(env, s);
+                //s->pc += 2;
+                gen_jcc(s, y, n, s->pc);
+                zprintf("jp %s,$%04x\n", cc[y], n);
+                /* TODO: gen_eob() w/ DISAS_NORETURN missing? */
+#endif
+                break;
+
+            case 3:
+                switch (y)
+                {
+                case 0:
+                    n = z80_lduw_code(env, s);
+                    //s->pc += 2;
+                    gen_jmp_im(n);
+                    zprintf("jp $%04x\n", n);
+                    gen_eob(s);
+                    s->base.is_jmp = DISAS_NORETURN;
+                    break;
+
+                /* TODO: case(s) for y=1 to y=7 */
+
+                default:    /* PARTIAL: switch(y) incomplete */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+#endif
+                    goto unknown_op;
+                }
+                break;
+
+            /* TODO: z=4 covers conditional 'call' (MISSING) */
+            //case 4:
+            //    n= z80_lduw_code(env, s):
+            //    //s->pc += 2;
+            //    gen_callcc(s, y, n, s->pc);
+            //    zprintf("call %s,$%04x\n", cc[y], n);
+            //    break;
 
             case 5:
                 switch (q)
