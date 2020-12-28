@@ -123,8 +123,8 @@ static void z80_cpu_reset(CPUState *s)
     //env->iff1= 0;
     //env->iff2= 0;
     //env->imode= 0;
-    //env->regs[R_A]= 0xff;
-    //env->regs[R_F]= 0xff;
+    env->regs[R_A]= 0xff;
+    env->regs[R_F]= 0xff;
     env->regs[R_SP]= 0xffff;
 
     env->hflags= 0;
