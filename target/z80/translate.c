@@ -678,6 +678,47 @@ static inline void gen_jcc(DisasContext *s, int cc,
 #endif
 }
 
+static inline void gen_callcc(DisasContext *s, int cc,
+                                      target_ulong val, target_ulong next_pc)
+{
+    //TranslationBlock *tb;     /* as repo.or.cz: "set but unused" */
+    TCGLabel *l1;
+
+    //tb = s->tb;
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    tcg_gen_movi_tl(cpu_T[0], next_pc);
+    gen_pushw(cpu_T[0]);
+    gen_goto_tb(s, 1, val);
+#if QEMU_VERSION_MAJOR < 2  /* gen_eob() does this for us */
+    s->base.is_jmp = DISAS_NORETURN;
+#endif
+}
+
+static inline void gen_retcc(DisasContext *s, int cc,
+                                     target_ulong next_pc)
+{
+    //TranslationBlock *tb;     /* as repo.or.cz: "set but unused" */
+    TCGLabel *l1;
+
+    //tb = s->tb;
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+    gen_goto_tb(s, 0, next_pc);
+    gen_set_label(l1);
+    gen_popw(cpu_T[0]);
+    gen_helper_jmp_T0(cpu_env);
+    gen_eob(s);
+#if QEMU_VERSION_MAJOR < 2  /* gen_eob() does this for us */
+    s->base.is_jmp = DISAS_NORETURN;
+#endif
+}
+
 
 static void gen_eob(DisasContext *s)
 {
