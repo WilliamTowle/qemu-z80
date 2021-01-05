@@ -1051,12 +1051,10 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 
         case 3: /* insn pattern 11yyyzzz */
             switch (z) {
-            /* TODO: z=0 case covers conditional 'ret' */
-
-            //case 0:
-            //    gen_retcc(s, y, s->pc);
-            //    zprintf("ret %s\n", cc[y]);
-            //    break;
+            case 0:
+                gen_retcc(s, y, s->pc);
+                zprintf("ret %s\n", cc[y]);
+                break;
 
             case 1:
                 switch (q)
@@ -1127,13 +1125,12 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: z=4 covers conditional 'call' (MISSING) */
-            //case 4:
-            //    n= z80_lduw_code(env, s):
-            //    //s->pc += 2;
-            //    gen_callcc(s, y, n, s->pc);
-            //    zprintf("call %s,$%04x\n", cc[y], n);
-            //    break;
+            case 4:
+                n = z80_lduw_code(env, s);
+                //s->pc += 2;
+                gen_callcc(s, y, n, s->pc);
+                zprintf("call %s,$%04x\n", cc[y], n);
+                break;
 
             case 5:
                 switch (q)
@@ -1144,17 +1141,16 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     gen_pushw(cpu_T[0]);
                     zprintf("push %s\n", regpairnames[r1]);
                     break;
-
-                /* TODO: missing q=1 case covers:
-                 *  - 'call's where p=0 (MISSING)
-                 *  - use of dd/ed/fd prefixes
-                 */
-
-                default:    /* FIXME: switch(q) incomplete */
+                case 1:
+                    switch (p)
+                    {
+                    /* TODO: case(s) for p=0 to p=3 */
+                    default:    /* FIXME: switch(p) incomplete */
 #if 1   /* WmT - PARTIAL */
 ;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
-                    goto unknown_op;
+                        goto unknown_op;
+                    }
                 }
                 break;
 
