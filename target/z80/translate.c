@@ -663,6 +663,44 @@ static inline void gen_jcc(DisasContext *s, int cc,
     s->base.is_jmp = DISAS_NORETURN;
 }
 
+static inline void gen_callcc(DisasContext *s, int cc,
+                                      target_ulong val, target_ulong next_pc)
+{
+    //TranslationBlock *tb;     /* as repo.or.cz: "set but unused" */
+    TCGLabel *l1;
+
+    //tb = s->tb;
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+    gen_goto_tb(s, 0, next_pc);
+
+    gen_set_label(l1);
+    tcg_gen_movi_tl(cpu_T[0], next_pc);
+    gen_pushw(cpu_T[0]);
+    gen_goto_tb(s, 1, val);
+    s->base.is_jmp = DISAS_NORETURN;
+}
+
+static inline void gen_retcc(DisasContext *s, int cc,
+                                     target_ulong next_pc)
+{
+    //TranslationBlock *tb;     /* as repo.or.cz: "set but unused" */
+    TCGLabel *l1;
+
+    //tb = s->tb;
+    l1 = gen_new_label();
+
+    gen_cond_jump(cc, l1);
+    gen_goto_tb(s, 0, next_pc);
+    gen_set_label(l1);
+    gen_popw(cpu_T[0]);
+    gen_helper_jmp_T0(cpu_env);
+    gen_eob(s);
+    s->base.is_jmp = DISAS_NORETURN;
+}
+
+
 /* Generate an end of block. Trace exception is also generated if needed.
    If INHIBIT, set HF_INHIBIT_IRQ_MASK if it isn't already set.
    If RECHECK_TF, emit a rechecking helper for #DB, ignoring the state of
