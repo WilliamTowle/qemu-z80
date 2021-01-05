@@ -1098,14 +1098,14 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 break;
 
             case 4: /* Conditional call */
-                n= z80_lduw_code(env, s);
+                n = z80_lduw_code(env, s);
                 //s->pc += 2;
                 gen_callcc(s, y, n, s->pc);
                 zprintf("call %s,$%04x\n", cc[y], n);
                 break;
 
             case 5: /* PUSH and various ops */
-                switch(q)
+                switch (q)
                 {
                 case 0:
                     r1 = regpairmap(regpair2[p], m);
@@ -1116,8 +1116,18 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 case 1:
                     switch (p)
                     {
-                    /* TODO: case(s) for p=0 to p=3 */
-                    default:    /* FIXME: switch(p) incomplete */
+                    case 0:
+                        n= z80_lduw_code(env, s);
+                        //s->pc += 2;
+                        tcg_gen_movi_tl(cpu_T[0], s->pc);
+                        gen_pushw(cpu_T[0]);
+                        gen_jmp_im(n);
+                        zprintf("call $%04x\n", n);
+                        gen_eob(s);
+                        s->base.is_jmp = DISAS_NORETURN;
+                        break;
+
+                    /* TODO: case(s) for p=1 to p=3 */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
