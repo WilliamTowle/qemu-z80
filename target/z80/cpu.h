@@ -78,6 +78,13 @@ enum {
     R_HLX   = 14
 };
 
+/* hidden flags (internal to QEmu) */
+/* true if soft mmu is being used */
+#define HF_SOFTMMU_SHIFT     2
+
+#define HF_SOFTMMU_MASK      (1 << HF_SOFTMMU_SHIFT)
+
+
 /* flags masks */
 #define  CC_C   0x0001
 #define  CC_N   0x0002
