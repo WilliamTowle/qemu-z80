@@ -985,8 +985,27 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case(s) for z=2 to z=3 */
+            /* TODO: case for z=2 */
 
+            case 3:
+                switch (q)
+                {
+                case 0:
+                    r1 = regpairmap(regpair[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_addi_tl(cpu_T[0], cpu_T[0], 1);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("inc %s\n", regpairnames[r1]);
+                    break;
+                case 1:
+                    r1 = regpairmap(regpair[p], m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_subi_tl(cpu_T[0], cpu_T[0], 1);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("dec %s\n", regpairnames[r1]);
+                    break;
+                }
+                break;
             case 4:
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
