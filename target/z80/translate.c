@@ -916,7 +916,11 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 0:
                 switch (y)
                 {
-                /* TODO: case(s) for y=0 to y=1 */
+                /* TODO: case for y=0 */
+                case 1:
+                    gen_ex(OR2_AF, OR2_AFX);
+                    zprintf("ex af,af'\n");
+                    break;
                 case 2:
                     n = z80_ldsb_code(env, s);
                     //s->pc++;
@@ -1114,6 +1118,12 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                         s->base.is_jmp = DISAS_NORETURN;
 //                      s->is_ei = 1;
                         break;
+                    case 1:
+                        gen_ex(OR2_BC, OR2_BCX);
+                        gen_ex(OR2_DE, OR2_DEX);
+                        gen_ex(OR2_HL, OR2_HLX);
+                        zprintf("exx\n");
+                        break;
                     case 2:
                         r1 = regpairmap(OR2_HL, m);
                         gen_movw_v_reg(cpu_T[0], r1);
@@ -1123,7 +1133,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                         s->base.is_jmp = DISAS_NORETURN;
                         break;
 
-                    /* TODO: case(s) for p=1 to p=3 */
+                    /* TODO: case for p=3 */
 
                     default:    /* PARTIAL: switch(p) incomplete */
 #if 1   /* WmT - TRACE */
@@ -1161,7 +1171,22 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     s->base.is_jmp = DISAS_NORETURN;
                     break;
 
-                /* TODO: case(s) for y=1 to y=7 */
+                /* TODO: case(s) for y=1 to y=3 */
+
+                case 4:
+                    r1 = regpairmap(OR2_HL, m);
+                    gen_popw(cpu_T[1]);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_pushw(cpu_T[0]);
+                    gen_movw_reg_v(r1, cpu_T[1]);
+                    zprintf("ex (sp),%s\n", regpairnames[r1]);
+                    break;
+                case 5:
+                    gen_ex(OR2_DE, OR2_HL);
+                    zprintf("ex de,hl\n");
+                    break;
+
+                /* TODO: case(s) for y=6 to y=7 */
 
                 default:    /* FIXME: switch(y) incomplete */
 #if 1   /* WmT - PARTIAL */
