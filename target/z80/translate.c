@@ -701,6 +701,20 @@ static inline void gen_retcc(DisasContext *s, int cc,
 }
 
 
+static inline void gen_ex(int regpair1, int regpair2)
+{
+    TCGv tmp1 = tcg_temp_new();
+    TCGv tmp2 = tcg_temp_new();
+
+    gen_movw_v_reg(tmp1, regpair1);
+    gen_movw_v_reg(tmp2, regpair2);
+    gen_movw_reg_v(regpair2, tmp1);
+    gen_movw_reg_v(regpair1, tmp2);
+    tcg_temp_free(tmp1);
+    tcg_temp_free(tmp2);
+}
+
+
 /* Generate an end of block. Trace exception is also generated if needed.
    If INHIBIT, set HF_INHIBIT_IRQ_MASK if it isn't already set.
    If RECHECK_TF, emit a rechecking helper for #DB, ignoring the state of
