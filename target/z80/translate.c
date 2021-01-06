@@ -1108,6 +1108,14 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                         s->base.is_jmp = DISAS_NORETURN;
 //                      s->is_ei = 1;
                         break;
+                    case 2:
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_helper_jmp_T0(cpu_env);
+                        zprintf("jp %s\n", regpairnames[r1]);
+                        gen_eob(s);
+                        s->base.is_jmp = DISAS_NORETURN;
+                        break;
 
                     /* TODO: case(s) for p=1 to p=3 */
 
@@ -1174,7 +1182,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     zprintf("push %s\n", regpairnames[r1]);
                     break;
                 case 1:
-
                     switch (p)
                     {
                     case 0:
