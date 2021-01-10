@@ -140,7 +140,6 @@ static bool z80_cpu_has_work(CPUState *cs)
 /* TODO:
  * z80_cpu_do_interrupt() [helper.c]
  * z80_cpu_exec_interrupt() [helper.c]
- * z80_cpu_dump_state() [translate.c]
  */
 
 
