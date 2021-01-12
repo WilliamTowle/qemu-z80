@@ -45,7 +45,21 @@ DEF_HELPER_1(xor_cc, void, env)
 DEF_HELPER_1(or_cc, void, env)
 DEF_HELPER_1(cp_cc, void, env)
 
+
+/* Misc */
+
+DEF_HELPER_1(rlca_cc, void, env)
+DEF_HELPER_1(rrca_cc, void, env)
+DEF_HELPER_1(rla_cc, void, env)
+DEF_HELPER_1(rra_cc, void, env)
+DEF_HELPER_1(daa_cc, void, env)
+DEF_HELPER_1(cpl_cc, void, env)
+DEF_HELPER_1(scf_cc, void, env)
+DEF_HELPER_1(ccf_cc, void, env)
+
+
 /* 16-bit arithmetic */
 
 DEF_HELPER_1(incb_T0_cc, void, env)
 DEF_HELPER_1(decb_T0_cc, void, env)
+
