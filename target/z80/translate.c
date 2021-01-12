@@ -1138,14 +1138,43 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     zprintf("ld %s,$%02x\n", regnames[r1], n);
                 }
                 break;
-
-            /* TODO: case for z=7 */
-
-            default:    /* PARTIAL: switch(z) incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) unhandled z case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-                goto unknown_op;
-#endif
+            case 7:
+                switch (y)
+                {
+                case 0:
+                    gen_helper_rlca_cc(cpu_env);
+                    zprintf("rlca\n");
+                    break;
+                case 1:
+                    gen_helper_rrca_cc(cpu_env);
+                    zprintf("rrca\n");
+                    break;
+                case 2:
+                    gen_helper_rla_cc(cpu_env);
+                    zprintf("rla\n");
+                    break;
+                case 3:
+                    gen_helper_rra_cc(cpu_env);
+                    zprintf("rra\n");
+                    break;
+                case 4:
+                    gen_helper_daa_cc(cpu_env);
+                    zprintf("daa\n");
+                    break;
+                case 5:
+                    gen_helper_cpl_cc(cpu_env);
+                    zprintf("cpl\n");
+                    break;
+                case 6:
+                    gen_helper_scf_cc(cpu_env);
+                    zprintf("scf\n");
+                    break;
+                case 7:
+                    gen_helper_ccf_cc(cpu_env);
+                    zprintf("ccf\n");
+                    break;
+                }
+                break;
             }
             break;
 

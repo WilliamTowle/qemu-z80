@@ -221,6 +221,104 @@ void helper_cp_cc(CPUZ80State *env)
 }
 
 
+/* Misc */
+
+void helper_rlca_cc(CPUZ80State *env)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (uint8_t)((A << 1) | !!(tmp & 0x80));
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void helper_rrca_cc(CPUZ80State *env)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (A >> 1) | ((tmp & 0x01) ? 0x80 : 0);
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void helper_rla_cc(CPUZ80State *env)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (uint8_t)((A << 1) | !!(F & CC_C));
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void helper_rra_cc(CPUZ80State *env)
+{
+    int cf;
+    int tmp;
+
+    tmp = A;
+    A = (A >> 1) | ((F & CC_C) ? 0x80 : 0);
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = (F & (CC_S | CC_Z | CC_P)) | cf;
+}
+
+void helper_daa_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int cor = 0;
+    int tmp = A;
+
+    if (A > 0x99 || (F & CC_C)) {
+        cor |= 0x60;
+        cf = CC_C;
+    } else {
+        cf = 0;
+    }
+
+    if ((A & 0x0f) > 0x09 || (F & CC_H)) {
+        cor |= 0x06;
+    }
+
+    if (!(F & CC_N)) {
+        A = (uint8_t)(A + cor);
+    } else {
+        A = (uint8_t)(A - cor);
+    }
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    hf = ((tmp ^ A) & 0x10) ? CC_H : 0;
+    pf = parity_table[(uint8_t)A];
+
+    F = (F & CC_N) | sf | zf | hf | pf | cf;
+}
+
+void helper_cpl_cc(CPUZ80State *env)
+{
+    A = (uint8_t)~A;
+    F |= CC_H | CC_N;
+}
+
+void helper_scf_cc(CPUZ80State *env)
+{
+    F = (F & (CC_S | CC_Z | CC_P)) | CC_C;
+}
+
+void helper_ccf_cc(CPUZ80State *env)
+{
+    int hf, cf;
+
+    hf = (F & CC_C) ? CC_H : 0;
+    cf = (F & CC_C) ^ CC_C;
+    F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
+}
+
+
 /* 16-bit arithmetic */
 
 void helper_incb_T0_cc(CPUZ80State *env)
