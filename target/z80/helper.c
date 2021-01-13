@@ -37,7 +37,7 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
     cpu_fprintf(f, "AF =%04x BC =%04x DE =%04x HL =%04x IX=%04x\n"
                     "AF'=%04x BC'=%04x DE'=%04x HL'=%04x IY=%04x\n"
                     "PC =%04x SP =%04x F=[%c%c%c%c%c%c%c%c]\n"
-                    "[PARTIAL - IM/IFF1/IFF2/I/R HERE]\n",
+                    "IFF1=%i IFF2=%i [PARTIAL - IM/I/R ALSO HERE]\n",
 
                     (env->regs[R_A] << 8) | env->regs[R_F],
                     env->regs[R_BC], env->regs[R_DE],
@@ -55,7 +55,8 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                     fl & 0x08 ? 'X' : '-',
                     fl & 0x04 ? 'P' : '-',
                     fl & 0x02 ? 'N' : '-',
-                    fl & 0x01 ? 'C' : '-'
+                    fl & 0x01 ? 'C' : '-',
+                    env->iff1, env->iff2
                     );
 #else   /* final repo.or.cz implementation */
     int fl = env->regs[R_F];
