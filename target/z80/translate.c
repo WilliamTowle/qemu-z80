@@ -1329,8 +1329,16 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     gen_ex(OR2_DE, OR2_HL);
                     zprintf("ex de,hl\n");
                     break;
-
-                /* TODO: case(s) for y=6 to y=7 */
+                case 6:
+                    gen_helper_di();
+                    zprintf("di\n");
+                    break;
+                case 7:
+                    gen_helper_ei();
+                    zprintf("ei\n");
+//                  gen_eob(s);
+//                  s->is_ei = 1;
+                    break;
 
                 default:    /* PARTIAL: switch(y) incomplete */
 #if 1   /* WmT - TRACE */
