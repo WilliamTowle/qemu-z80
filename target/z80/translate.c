@@ -1400,7 +1400,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 gen_jmp_im(y*8);
                 zprintf("rst $%02x\n", y*8);
                 gen_eob(s);
-                s->is_jmp = 3;
+                s->base.is_jmp = DISAS_NORETURN;
                 break;
             }
             break;
