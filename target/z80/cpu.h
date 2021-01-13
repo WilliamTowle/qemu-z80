@@ -121,7 +121,7 @@ typedef struct CPUZ80State {
     uint32_t        regs[CPU_NB_REGS];
     target_ulong    pc;
 
-    /* TODO: full CPU reset needs imode, iff<n> */
+    int             iff1, iff2; /* TODO: also 'imode' */
 
     /* emulator internal flags handling */
     uint32_t hflags;    /* hidden flags, see HF_xxx constants */
