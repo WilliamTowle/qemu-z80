@@ -1422,10 +1422,21 @@ next_byte:
     }
     else /* TODO: differentiate "cb mode" and "ed mode" cases */
     {
+        unsigned int x, y, z; /* also p, q? */
+        //int8_t d;
+        //int r1, r2;
+
         b = z80_ldub_code(env, s);
         //s->pc++;
+
+        x= (b >> 6) & 0x03;     /* isolate bits 7, 6 */
+        y= (b >> 3) & 0x07;     /* isolate bits 5, 4, 3 */
+        z= b & 0x07;            /* isolate bits 2, 1, 0 */
+        //p = y >> 1;
+        //q = y & 0x01;
+
 #if 1   /* WmT - PARTIAL */
-;DPRINTF("[%s:%d] FALLTHROUGH - CB or ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x]\n", __FILE__, __LINE__, prefixes, m, b);
+;DPRINTF("[%s:%d] FALLTHROUGH - CB or ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x with x=%d, y=%d, z=%d]\n", __FILE__, __LINE__, prefixes, m, b, x, y, z);
 #endif
         goto unknown_op;
     }
