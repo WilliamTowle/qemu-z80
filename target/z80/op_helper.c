@@ -75,6 +75,18 @@ void helper_movl_pc_im(CPUZ80State *env, uint32_t new_pc)
 }
 
 
+/* Misc */
+
+void helper_bit_T0(CPUZ80State *env, uint32_t val)
+{
+    int sf, zf, pf;
+
+    sf = (T0 & val & 0x80) ? CC_S : 0;
+    zf = (T0 & val) ? 0 : CC_Z;
+    pf = (T0 & val) ? 0 : CC_P;
+    F = (F & CC_C) | sf | zf | CC_H | pf;
+}
+
 void helper_jmp_T0(CPUZ80State *env)
 {
     PC = T0;
