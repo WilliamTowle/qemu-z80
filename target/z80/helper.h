@@ -30,6 +30,7 @@ DEF_HELPER_2(movl_pc_im, void, env, i32)
 
 /* Misc */
 
+DEF_HELPER_2(bit_T0, void, env, i32)
 DEF_HELPER_1(jmp_T0, void, env)
 DEF_HELPER_3(djnz, void, env, i32, i32)
 
@@ -46,6 +47,18 @@ DEF_HELPER_1(or_cc, void, env)
 DEF_HELPER_1(cp_cc, void, env)
 
 
+/* Rotation/shifts */
+
+DEF_HELPER_1(rlc_T0_cc, void, env)
+DEF_HELPER_1(rrc_T0_cc, void, env)
+DEF_HELPER_1(rl_T0_cc, void, env)
+DEF_HELPER_1(rr_T0_cc, void, env)
+DEF_HELPER_1(sla_T0_cc, void, env)
+DEF_HELPER_1(sra_T0_cc, void, env)
+DEF_HELPER_1(sll_T0_cc, void, env)
+DEF_HELPER_1(srl_T0_cc, void, env)
+DEF_HELPER_1(rld_cc, void, env)
+DEF_HELPER_1(rrd_cc, void, env)
 
 /* Misc */
 

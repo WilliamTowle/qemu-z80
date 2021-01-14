@@ -75,6 +75,18 @@ void helper_movl_pc_im(CPUZ80State *env, uint32_t new_pc)
 }
 
 
+/* Bit manipulation/rotation/shifts */
+
+void helper_bit_T0(CPUZ80State *env, uint32_t val)
+{
+    int sf, zf, pf;
+
+    sf = (T0 & val & 0x80) ? CC_S : 0;
+    zf = (T0 & val) ? 0 : CC_Z;
+    pf = (T0 & val) ? 0 : CC_P;
+    F = (F & CC_C) | sf | zf | CC_H | pf;
+}
+
 void helper_jmp_T0(CPUZ80State *env)
 {
     PC = T0;
@@ -221,7 +233,148 @@ void helper_cp_cc(CPUZ80State *env)
 }
 
 
-/* Misc */
+void helper_rlc_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | !!(T0 & 0x80));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_rrc_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | ((tmp & 0x01) ? 0x80 : 0));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_rl_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | !!(F & CC_C));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_rr_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | ((F & CC_C) ? 0x80 : 0));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_sla_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 << 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_sra_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 >> 1) | (T0 & 0x80));
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+/* Z80-specific: R800 has tst instruction */
+void helper_sll_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)((T0 << 1) | 1); /* Yes -- bit 0 is *set* */
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x80) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_srl_T0_cc(CPUZ80State *env)
+{
+    int sf, zf, pf, cf;
+    int tmp;
+
+    tmp = T0;
+    T0 = (uint8_t)(T0 >> 1);
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[T0];
+    cf = (tmp & 0x01) ? CC_C : 0;
+    F = sf | zf | pf | cf;
+}
+
+void helper_rld_cc(CPUZ80State *env)
+{
+    int sf, zf, pf;
+    int tmp = A & 0x0f;
+
+    A = (A & 0xf0) | ((T0 >> 4) & 0x0f);
+    T0 = ((T0 << 4) & 0xf0) | tmp;
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[A];
+
+    F = (F & CC_C) | sf | zf | pf;
+}
+
+void helper_rrd_cc(CPUZ80State *env)
+{
+    int sf, zf, pf;
+    int tmp = A & 0x0f;
+
+    A = (A & 0xf0) | (T0 & 0x0f);
+    T0 = (T0 >> 4) | (tmp << 4);
+
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = parity_table[A];
+
+    F = (F & CC_C) | sf | zf | pf;
+}
 
 void helper_rlca_cc(CPUZ80State *env)
 {
