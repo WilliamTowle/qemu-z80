@@ -929,7 +929,9 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 0:
                 switch (y)
                 {
-                /* TODO: case for y=0 */
+                case 0:
+                    zprintf("nop\n");
+                    break;
                 case 1:
                     gen_ex(OR2_AF, OR2_AFX);
                     zprintf("ex af,af'\n");
@@ -961,13 +963,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     gen_jcc(s, y-4, s->pc + n, s->pc);
                     zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
                     break;
-
-                default:	/* FIXME: switch(y) incomplete */
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled y case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
-                    goto unknown_op;
-                }
+                }   /* end z=0 switch(y) */
                 break;
             case 1:
                 switch (q) {
