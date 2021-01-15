@@ -1474,6 +1474,11 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
+#ifdef __GNUC__     /* gcc didn't complain above!! */
+#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+                    r2 = regmap(reg[z], 0);
+#endif
+#endif
                     gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
@@ -1486,6 +1491,11 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
+#ifdef __GNUC__     /* gcc didn't complain above!! */
+#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+                    r2 = regmap(reg[z], 0);
+#endif
+#endif
                     gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
