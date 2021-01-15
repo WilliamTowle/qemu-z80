@@ -1520,6 +1520,9 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
+#ifdef __GNUC__ /* ffs gcc, you didn't complain above!! [bug in v8.3.0] */
+                    r2 = regmap(reg[z], 0);
+#endif
                     gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
@@ -1532,6 +1535,9 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
+#ifdef __GNUC__ /* ffs gcc, you didn't complain above!! [bug in v8.3.0] */
+                    r2 = regmap(reg[z], 0);
+#endif
                     gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
