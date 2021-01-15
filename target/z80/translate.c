@@ -1361,13 +1361,26 @@ next_byte:
                         gen_eob(s);
                         s->base.is_jmp = DISAS_NORETURN;
                         break;
+                    case 1:
+                        zprintf("dd prefix\n");
+                        prefixes |= PREFIX_DD;
+                        goto next_byte;
+                        break;
 
-                    /* TODO: case(s) for p=1 to p=3 */
+                    /* TODO: case for p=2 */
+
+                    case 3:
+                        zprintf("fd prefix\n");
+                        prefixes |= PREFIX_FD;
+                        goto next_byte;
+                        break;
+
+                    default:    /* FIXME: switch(p) incomplete */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
 #endif
                         goto unknown_op;
-                    }
+                    }   /* switch(p) ends */
                 }
                 break;
 
@@ -1447,7 +1460,8 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
-                    gen_movb_reg_v(r2, cpu_T[0]);
+                    /* 'r2' may be used uninitialized in this function [-Werror=maybe-uninitialized] */
+                    //gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
                 gen_movb_reg_v(r1, cpu_T[0]);
@@ -1459,7 +1473,8 @@ next_byte:
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
-                    gen_movb_reg_v(r2, cpu_T[0]);
+                    /* 'r2' may be used uninitialized in this function [-Werror=maybe-uninitialized] */
+                    //gen_movb_reg_v(r2, cpu_T[0]);
                 }
             } else {
                 gen_movb_reg_v(r1, cpu_T[0]);
