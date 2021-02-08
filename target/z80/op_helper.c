@@ -568,6 +568,18 @@ void helper_decb_T0_cc(CPUZ80State *env)
 
 /* Interrupt handling / IR registers */
 
+/* value on data bus is 0xff for speccy */
+/* IM0 = execute data on bus (rst $38 on speccy) */
+/* IM1 = execute rst $38 (ROM uses this)*/
+/* IM2 = indirect jump -- address is held at (I << 8) | DATA */
+
+/* when an interrupt occurs, iff1 and iff2 are reset, disabling interrupts */
+/* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
+
+void helper_imode(CPUZ80State *env, uint32_t imode)
+{
+    env->imode = imode;
+}
 
 /* enable interrupts */
 void helper_ei(CPUZ80State *env)
@@ -581,4 +593,44 @@ void helper_di(CPUZ80State *env)
 {
     env->iff1 = 0;
     env->iff2 = 0;
+}
+
+/* reenable interrupts if enabled */
+void helper_ri(CPUZ80State *env)
+{
+    env->iff1 = env->iff2;
+}
+
+void helper_ld_R_A(CPUZ80State *env)
+{
+    R = A;
+}
+
+void helper_ld_I_A(CPUZ80State *env)
+{
+    I = A;
+}
+
+void helper_ld_A_R(CPUZ80State *env)
+{
+    int sf, zf, pf;
+
+    A = R;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = env->iff2 ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | pf;
+}
+
+void helper_ld_A_I(CPUZ80State *env)
+{
+    int sf, zf, pf;
+
+    A = I;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    pf = env->iff2 ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | pf;
 }
