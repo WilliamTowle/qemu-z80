@@ -379,6 +379,127 @@ void helper_rrd_cc(CPUZ80State *env)
 }
 
 
+/* Block instructions */
+
+void helper_bli_ld_inc_cc(CPUZ80State *env)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    DE = (uint16_t)(DE + 1);
+    HL = (uint16_t)(HL + 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & (CC_S | CC_Z | CC_C)) | pf;
+}
+
+void helper_bli_ld_dec_cc(CPUZ80State *env)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    DE = (uint16_t)(DE - 1);
+    HL = (uint16_t)(HL - 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & (CC_S | CC_Z | CC_C)) | pf;
+}
+
+void helper_bli_ld_rep(CPUZ80State *env, uint32_t next_pc)
+{
+    if (BC) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
+
+void helper_bli_cp_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf;
+    int res, carry;
+
+    res = (uint8_t)(A - T0);
+    sf = (res & 0x80) ? CC_S : 0;
+    zf = res ? 0 : CC_Z;
+    carry = (~A & T0) | (~(A ^ T0) & res);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = BC ? CC_P : 0;
+
+    F = (F & CC_C) | sf | zf | hf | pf | CC_N;
+}
+
+void helper_bli_cp_inc_cc(CPUZ80State *env)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    HL = (uint16_t)(HL + 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & ~CC_P) | pf;
+}
+
+void helper_bli_cp_dec_cc(CPUZ80State *env)
+{
+    int pf;
+
+    BC = (uint16_t)(BC - 1);
+    HL = (uint16_t)(HL - 1);
+
+    pf = BC ? CC_P : 0;
+    F = (F & ~CC_P) | pf;
+}
+
+void helper_bli_cp_rep(CPUZ80State *env, uint32_t next_pc)
+{
+    if (BC && T0 != A) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
+
+void helper_bli_io_T0_inc(CPUZ80State *env, uint32_t out)
+{
+    HL = (uint16_t)(HL + 1);
+    BC = (uint16_t)(BC - 0x0100);
+    /* TODO: update X & Y flags */
+
+    uint32_t ff = out ? (HL & 0xff) : (((F & CC_C) + 1) & 0xff);
+
+    F = ((BC & 0x8000) ? CC_S : 0) |
+        ((BC & 0xff00) ? 0 : CC_Z) |
+        ((T0 + ff) > 0xff ? (CC_C | CC_H) : 0) |
+        parity_table[(((T0 + ff) & 0x07) ^ (BC >> 8)) & 0xff] |
+        ((T0 & 0x80) ? CC_N : 0);
+}
+
+void helper_bli_io_T0_dec(CPUZ80State *env, uint32_t out)
+{
+    HL = (uint16_t)(HL - 1);
+    BC = (uint16_t)(BC - 0x0100);
+    /* TODO: update X & Y flags */
+
+    uint32_t ff = out ? (HL & 0xff) : (((F & CC_C) - 1) & 0xff);
+
+    F = ((BC & 0x8000) ? CC_S : 0) |
+        ((BC & 0xff00) ? 0 : CC_Z) |
+        ((T0 + ff) > 0xff ? (CC_C | CC_H) : 0) |
+        parity_table[(((T0 + ff) & 0x07) ^ (BC >> 8)) & 0xff] |
+        ((T0 & 0x80) ? CC_N : 0);
+}
+
+void helper_bli_io_rep(CPUZ80State *env, uint32_t next_pc)
+{
+    if (F & CC_Z) {
+        PC = (uint16_t)(next_pc - 2);
+    } else {
+        PC = next_pc;
+    }
+}
+
+
 /* Misc */
 
 void helper_rlca_cc(CPUZ80State *env)
@@ -474,6 +595,26 @@ void helper_ccf_cc(CPUZ80State *env)
     hf = (F & CC_C) ? CC_H : 0;
     cf = (F & CC_C) ^ CC_C;
     F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
+}
+
+
+/* misc */
+
+void helper_neg_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = A;
+    int carry;
+
+    A = (uint8_t)-A;
+    sf = (A & 0x80) ? CC_S : 0;
+    zf = A ? 0 : CC_Z;
+    carry = (tmp & T0) | ((tmp | T0) & ~A);
+    hf = (carry & 0x08) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T0, A, 8) ? CC_P : 0;
+    cf = (carry & 0x80) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
 }
 
 
