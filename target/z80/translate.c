@@ -1430,21 +1430,18 @@ next_byte:
                         prefixes |= PREFIX_DD;
                         goto next_byte;
                         break;
-
-                    /* TODO: case for p=2 */
-
+                    case 2:
+                        zprintf("ed prefix\n");
+                        prefixes |= PREFIX_ED;
+                        goto next_byte;
+                        break;
                     case 3:
                         zprintf("fd prefix\n");
                         prefixes |= PREFIX_FD;
                         goto next_byte;
                         break;
-
-                    default:    /* FIXME: switch(p) incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) - unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
-                        goto unknown_op;
                     }   /* switch(p) ends */
+                    break;
                 }
                 break;
 
