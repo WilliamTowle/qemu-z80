@@ -654,6 +654,10 @@ static rot_helper_func *const gen_rot_T0[8] = {
     gen_helper_srl_T0_cc,
 };
 
+static const int imode[8] = {
+    0, 0, 1, 2, 0, 0, 1, 2,
+};
+
 
 static void gen_eob(DisasContext *s);
 
@@ -990,8 +994,8 @@ next_byte:
                 case 7:
                     n = z80_ldsb_code(env, s);
                     //s->pc++;
-                    gen_jcc(s, y-4, s->pc + n, s->pc);
                     zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
+                    gen_jcc(s, y-4, s->pc + n, s->pc);
                     break;
                 }   /* end z=0 switch(y) */
                 break;
@@ -1552,9 +1556,9 @@ next_byte:
     }
     else if (prefixes & PREFIX_ED)
     {	/* ed mode: */
-        unsigned int x, y, z; /* also p, q? */
-        //int8_t d;
-        //int r1, r2;
+        unsigned int x, y, z, p, q;
+        int n;              /* immediate 'n' */
+        int r1, r2;         /* register number */
 
         b = z80_ldub_code(env, s);
         //s->pc++;
@@ -1562,13 +1566,186 @@ next_byte:
         x= (b >> 6) & 0x03;     /* isolate bits 7, 6 */
         y= (b >> 3) & 0x07;     /* isolate bits 5, 4, 3 */
         z= b & 0x07;            /* isolate bits 2, 1, 0 */
-        //p = y >> 1;
-        //q = y & 0x01;
+        p = y >> 1;
+        q = y & 0x01;
 
+        switch (x)
+        {
+        case 0:
+            zprintf("nop\n");
+            break;
+        case 3: /* NB. follows x=0 due to fallthrough between x=1,x=2 */
+            /* PARTIAL: incomplete for R800 here
+             * z=1: mulub
+             * z=3: muluw
+             */
+            zprintf("nop\n");
+            break;
+        case 1:
+            switch (z)
+            {
+            /* TODO: missing z={0,1} */
+            case 2:
+                r1 = regpairmap(OR2_HL, m);
+                r2 = regpairmap(regpair[p], m);
+                gen_movw_v_reg(cpu_T[0], r1);
+                gen_movw_v_reg(cpu_T[1], r2);
+                if (q == 0) {
+                    zprintf("sbc %s,%s\n", regpairnames[r1], regpairnames[r2]);
+                    gen_helper_sbcw_T0_T1_cc();
+                } else {
+                    zprintf("adc %s,%s\n", regpairnames[r1], regpairnames[r2]);
+                    gen_helper_adcw_T0_T1_cc();
+                }
+                gen_movw_reg_v(r1, cpu_T[0]);
+                break;
+            case 3:
+                n = z80_lduw_code(env, s);
+                //s->pc += 2;
+                r1 = regpairmap(regpair[p], m);
+                if (q == 0) {
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    tcg_gen_movi_i32(cpu_A0, n);
+                    tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
+                    zprintf("ld ($%02x),%s\n", n, regpairnames[r1]);
+                } else {
+                    tcg_gen_movi_i32(cpu_A0, n);
+                    tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("ld %s,($%02x)\n", regpairnames[r1], n);
+                }
+                break;
+            case 4:
+                zprintf("neg\n");
+                gen_helper_neg_cc();
+                break;
+            case 5:
+                /* FIXME [WmT: why?] */
+                gen_popw(cpu_T[0]);
+                gen_helper_jmp_T0(cpu_env);
+                gen_helper_ri(cpu_env);
+                if (q == 0) {
+                    zprintf("retn\n");
+                } else {
+                    zprintf("reti\n");
+                }
+                gen_eob(s);
+                s->base.is_jmp = DISAS_NORETURN;
+//              s->is_ei = 1;
+                break;
+            case 6:
+                gen_helper_imode(tcg_const_tl(imode[y]));
+                zprintf("im im[%i]\n", imode[y]);
+//              gen_eob(s);
+//              s->is_ei = 1;
+                break;
+            case 7:
+                switch (y)
+                {
+                case 0:
+                    gen_helper_ld_I_A();
+                    zprintf("ld i,a\n");
+                    break;
+                case 1:
+                    gen_helper_ld_R_A();
+                    zprintf("ld r,a\n");
+                    break;
+                case 2:
+                    gen_helper_ld_A_I();
+                    zprintf("ld a,i\n");
+                    break;
+                case 3:
+                    gen_helper_ld_A_R();
+                    zprintf("ld a,r\n");
+                    break;
+                case 4:
+                    gen_movb_v_HLmem(cpu_T[0]);
+                    gen_helper_rrd_cc();
+                    gen_movb_HLmem_v(cpu_T[0]);
+                    zprintf("rrd\n");
+                    break;
+                case 5:
+                    gen_movb_v_HLmem(cpu_T[0]);
+                    gen_helper_rld_cc();
+                    gen_movb_HLmem_v(cpu_T[0]);
+                    zprintf("rld\n");
+                    break;
+                case 6:
+                case 7:
+                    zprintf("nop2\n");
+                    /* nop */
+                    break;
+                }
+                break;
+            default:    /* FIXME: incomplete due to missing z={0,2} */
 #if 1   /* WmT - PARTIAL */
-;DPRINTF("[%s:%d] FALLTHROUGH - ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x with x=%d, y=%d, z=%d]\n", __FILE__, __LINE__, prefixes, m, b, x, y, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d) unhandled z case [mode=%d]\n", __FILE__, __LINE__, b, x, y, z, m);
 #endif
-        goto unknown_op;
+                goto unknown_op;
+            }
+            break;
+
+        case 2:
+            /* FIXME [WmT: upstream comment ...unclear why] */
+            if (y >= 4) {
+                switch (z)
+                {
+                case 0: /* ldi/ldd/ldir/lddr */
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_movw_v_DE(cpu_A0);
+                    tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+
+                    if (!(y & 1)) {
+                        gen_helper_bli_ld_inc_cc();
+                    } else {
+                        gen_helper_bli_ld_dec_cc();
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_ld_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->base.is_jmp = DISAS_NORETURN;
+                    }
+                    break;
+
+                case 1: /* cpi/cpd/cpir/cpdr */
+                    gen_movw_v_HL(cpu_A0);
+                    tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                    gen_helper_bli_cp_cc();
+
+                    if (!(y & 1)) {
+                        gen_helper_bli_cp_inc_cc();
+                    } else {
+                        gen_helper_bli_cp_dec_cc();
+                    }
+                    if ((y & 2)) {
+                        gen_helper_bli_cp_rep(tcg_const_tl(s->pc));
+                        gen_eob(s);
+                        s->base.is_jmp = DISAS_NORETURN;
+                    }
+                    break;
+
+                /* TODO: missing 'z' cases for:
+                 * - case 2: ini/ind/inir/indr
+                 * - case 3: outi/outd/otir/otdr
+                 */
+
+                default:    /* FIXME: incomplete due to missing z={0,2} */
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d) unhandled z case [mode=%d]\n", __FILE__, __LINE__, b, x, y, z, m);
+#endif
+                    goto unknown_op;
+                }   /* switch(z) ends */
+                zprintf("%s\n", bli[y-4][z]);
+                break;
+            }  /* case 2 y>=4 end - falls through for y=0..3 */
+
+        default:    /* FIXME: incomplete due to missing x={0,2} */
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d) unhandled x case [mode=%d]\n", __FILE__, __LINE__, b, x, y, z, m);
+#endif
+            goto unknown_op;
+        }   /* switch(x) ends */
     }
 
     /* For Z80, there are no "illegal" instructions to signal here.
