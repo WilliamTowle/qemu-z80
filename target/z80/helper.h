@@ -60,6 +60,21 @@ DEF_HELPER_1(srl_T0_cc, void, env)
 DEF_HELPER_1(rld_cc, void, env)
 DEF_HELPER_1(rrd_cc, void, env)
 
+
+/* Block instructions */
+
+DEF_HELPER_1(bli_ld_inc_cc, void, env)
+DEF_HELPER_1(bli_ld_dec_cc, void, env)
+DEF_HELPER_2(bli_ld_rep, void, env, i32)
+DEF_HELPER_1(bli_cp_cc, void, env)
+DEF_HELPER_1(bli_cp_inc_cc, void, env)
+DEF_HELPER_1(bli_cp_dec_cc, void, env)
+DEF_HELPER_2(bli_cp_rep, void, env, i32)
+DEF_HELPER_2(bli_io_T0_inc, void, env, i32)
+DEF_HELPER_2(bli_io_T0_dec, void, env, i32)
+DEF_HELPER_2(bli_io_rep, void, env, i32)
+
+
 /* Misc */
 
 DEF_HELPER_1(rlca_cc, void, env)
@@ -70,6 +85,7 @@ DEF_HELPER_1(daa_cc, void, env)
 DEF_HELPER_1(cpl_cc, void, env)
 DEF_HELPER_1(scf_cc, void, env)
 DEF_HELPER_1(ccf_cc, void, env)
+DEF_HELPER_1(neg_cc, void, env)
 
 
 /* 16-bit arithmetic */
