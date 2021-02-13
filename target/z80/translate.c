@@ -1451,7 +1451,7 @@ void tcg_z80_init(void)
 ;DPRINTF("DEBUG: %s() tcg_global_mem_new_i32() for cpu_T[0]...\n", __func__);
 #endif
     cpu_T[0] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t0), "T0");
-    /* PARTIAL: also create cpu_T[1] */
+    cpu_T[1] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t1), "T1");
     cpu_A0= tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, a0), "A0");
 }
 
