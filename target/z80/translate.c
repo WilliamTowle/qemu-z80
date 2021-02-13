@@ -1392,7 +1392,7 @@ void tcg_z80_init(void)
 
 #define Z80_REG_OFFS(x) offsetof(CPUZ80State, x)
     cpu_T[0]= tcg_global_mem_new_i32(cpu_env, Z80_REG_OFFS(t0), "T0");
-    /* PARTIAL: also declare/init cpu_T[1] */
+    cpu_T[1]= tcg_global_mem_new_i32(cpu_env, Z80_REG_OFFS(t1), "T1");
     cpu_A0= tcg_global_mem_new_i32(cpu_env, Z80_REG_OFFS(a0), "A0");
 }
 
