@@ -319,7 +319,56 @@ void helper_ccf_cc(CPUZ80State *env)
 }
 
 
-/* 16-bit arithmetic */
+/* word operations -- HL only? */
+
+void helper_sbcw_T0_T1_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 - T1 - !!(F & CC_C));
+    sf = (T0 & 0x8000) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    carry = (~tmp & T1) | (~(tmp ^ T1) & T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    pf = signed_overflow_sub(tmp, T1, T0, 16) ? CC_P : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | CC_N | cf;
+}
+
+void helper_addw_T0_T1_cc(CPUZ80State *env)
+{
+    int hf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 + T1);
+    carry = (tmp & T1) | ((tmp | T1) & ~T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
+}
+
+
+void helper_adcw_T0_T1_cc(CPUZ80State *env)
+{
+    int sf, zf, hf, pf, cf;
+    int tmp = T0;
+    int carry;
+
+    T0 = (uint16_t)(T0 + T1 + !!(F & CC_C));
+    sf = (T0 & 0x8000) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    carry = (tmp & T1) | ((tmp | T1) & ~T0);
+    hf = (carry & 0x0800) ? CC_H : 0;
+    pf = signed_overflow_add(tmp, T1, T0, 8) ? CC_P : 0;
+    cf = (carry & 0x8000) ? CC_C : 0;
+
+    F = sf | zf | hf | pf | cf;
+}
 
 void helper_incb_T0_cc(CPUZ80State *env)
 {

@@ -981,7 +981,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     r2 = regpairmap(OR2_HL, m);
                     gen_movw_v_reg(cpu_T[0], r1);
                     gen_movw_v_reg(cpu_T[1], r2);
-                    gen_helper_addw_T0_T1_cc();
+                    gen_helper_addw_T0_T1_cc(cpu_env);
                     gen_movw_reg_v(r2, cpu_T[0]);
                     zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
                     break;
@@ -1456,7 +1456,7 @@ void tcg_z80_init(void)
 ;DPRINTF("DEBUG: %s() tcg_global_mem_new_i32() for cpu_T[0]...\n", __func__);
 #endif
     cpu_T[0] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t0), "T0");
-    //cpu_T[1] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t1), "T1");
+    cpu_T[1] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t1), "T1");
     cpu_A0= tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, a0), "A0");
 }
 

@@ -61,6 +61,9 @@ DEF_HELPER_1(ccf_cc, void, env)
 
 /* 16-bit arithmetic */
 
+DEF_HELPER_1(sbcw_T0_T1_cc, void, env)
+DEF_HELPER_1(addw_T0_T1_cc, void, env)
+DEF_HELPER_1(adcw_T0_T1_cc, void, env)
 DEF_HELPER_1(incb_T0_cc, void, env)
 DEF_HELPER_1(decb_T0_cc, void, env)
 
