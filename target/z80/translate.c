@@ -1590,10 +1590,10 @@ next_byte:
                 gen_movw_v_reg(cpu_T[1], r2);
                 if (q == 0) {
                     zprintf("sbc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-                    gen_helper_sbcw_T0_T1_cc();
+                    gen_helper_sbcw_T0_T1_cc(cpu_env);
                 } else {
                     zprintf("adc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-                    gen_helper_adcw_T0_T1_cc();
+                    gen_helper_adcw_T0_T1_cc(cpu_env);
                 }
                 gen_movw_reg_v(r1, cpu_T[0]);
                 break;
@@ -1615,7 +1615,7 @@ next_byte:
                 break;
             case 4:
                 zprintf("neg\n");
-                gen_helper_neg_cc();
+                gen_helper_neg_cc(cpu_env);
                 break;
             case 5:
                 /* FIXME [WmT: upstream comment ...unclear why] */
