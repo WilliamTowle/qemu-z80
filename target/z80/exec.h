@@ -26,7 +26,7 @@
 /* Access to registers/emulator temporary values */
 
 #define T0 (env->t0)
-//#define T1 (env->t1)
+#define T1 (env->t1)
 #define A   (env->regs[R_A])
 #define F   (env->regs[R_F])
 #define BC  (env->regs[R_BC])
