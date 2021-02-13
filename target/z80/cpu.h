@@ -118,7 +118,7 @@ enum {
 /* CPUZ80State */
 
 typedef struct CPUZ80State {
-    target_ulong    t0 /*, t1 */;
+    target_ulong    t0, t1;	/* TODO: moves to DisasContext? */
     target_ulong    a0;
     target_ulong    regs[CPU_NB_REGS];
     target_ulong    pc;
