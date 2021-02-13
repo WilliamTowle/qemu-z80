@@ -1539,10 +1539,10 @@ next_byte:
                 gen_movw_v_reg(cpu_T[1], r2);
                 if (q == 0) {
                     zprintf("sbc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-                    gen_helper_sbcw_T0_T1_cc();
+                    gen_helper_sbcw_T0_T1_cc(cpu_env);
                 } else {
                     zprintf("adc %s,%s\n", regpairnames[r1], regpairnames[r2]);
-                    gen_helper_adcw_T0_T1_cc();
+                    gen_helper_adcw_T0_T1_cc(cpu_env);
                 }
                 gen_movw_reg_v(r1, cpu_T[0]);
                 break;
@@ -1564,13 +1564,13 @@ next_byte:
                 break;
             case 4: /* Negate accumulator */
                 zprintf("neg\n");
-                gen_helper_neg_cc();
+                gen_helper_neg_cc(cpu_env);
                 break;
             case 5: /* Return from interrupt */
                 /* FIXME [WmT: upstream comment ...unclear why] */
                 gen_popw(cpu_T[0]);
-                gen_helper_jmp_T0();
-                gen_helper_ri();
+                gen_helper_jmp_T0(cpu_env);
+                gen_helper_ri(cpu_env);
                 if (q == 0) {
                     zprintf("retn\n");
                 } else {
