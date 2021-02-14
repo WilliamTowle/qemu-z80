@@ -132,9 +132,9 @@ static void z80_cpu_reset(CPUState *s)
     /* init to reset state */
     memset(env->regs, 0, sizeof(env->regs));
     env->pc= 0x0000;
-    //env->iff1= 0;
-    //env->iff2= 0;
-    //env->imode= 0;
+    env->iff1= 0;
+    env->iff2= 0;
+    env->imode= 0;
     env->regs[R_A]= 0xff;
     env->regs[R_F]= 0xff;
     env->regs[R_SP]= 0xffff;
