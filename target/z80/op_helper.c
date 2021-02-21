@@ -27,6 +27,9 @@
 #include "qemu/error-report.h"
 #include "exec/helper-proto.h"
 #include "exec.h"
+#include "exec/ioport.h"
+#include "exec/address-spaces.h"
+
 
 #define EMIT_DEBUG 0
 #define DPRINTF(fmt, ...) \
@@ -77,16 +80,50 @@ void helper_movl_pc_im(CPUZ80State *env, uint32_t new_pc)
 
 /* In / Out */
 
+static
+void z80_cpu_outb(CPUZ80State *env, uint16_t port, uint8_t data)
+{
+#ifdef CONFIG_USER_ONLY
+//;DPRINTF("outb: port=0x%04x, data=0x%02x\n", port, data);
+#else	/* follows target/i386 helper_outb() */
+//;DPRINTF("%s(): called with port=0x%04x, data=0x%02x\n", __func__, port, data);
+    /* A7-A0 selects one of the 256 possible ports; A8-15 is ignored */
+    address_space_stb(&address_space_io, port & 0xff, data,
+                      cpu_get_mem_attrs(env), NULL);
+#endif
+}
+
+static
+uint8_t z80_cpu_inb(CPUZ80State *env, uint16_t port)
+{
+#ifdef CONFIG_USER_ONLY
+//;DPRINTF("inb: port=0x%04x\n", port);
+    return 0;
+#else   /* follows target/i386 helper_inb() */
+//;DPRINTF("%s(): called with port=0x%04x\n", __func__, port);
+    /* A7-A0 selects one of the 256 possible ports; A8-15 is ignored */
+    return address_space_ldub(&address_space_io, port & 0xff,
+                              cpu_get_mem_attrs(env), NULL);
+#endif
+}
+
+
 void helper_in_T0_im(CPUZ80State *env, uint32_t val)
 {
-    T0 = cpu_inb(env, (A << 8) | val);
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
+    //    T0 = cpu_inb(env, (A << 8) | val);
+    T0 = cpu_inb(env, val);
+#else   /* QEmu v2.x: wrapper function is 16-bit safe */
+    T0 = z80_cpu_inb(env, (A << 8) | val);
+#endif
 }
 
 void helper_in_T0_bc_cc(CPUZ80State *env)
 {
     int sf, zf, pf;
 
-    T0 = cpu_inb(env, BC);
+    //T0 = cpu_inb(env, BC);
+    T0 = z80_cpu_inb(env, BC);
 
     sf = (T0 & 0x80) ? CC_S : 0;
     zf = T0 ? 0 : CC_Z;
@@ -96,12 +133,18 @@ void helper_in_T0_bc_cc(CPUZ80State *env)
 
 void helper_out_T0_im(CPUZ80State *env, uint32_t val)
 {
-    cpu_outb(env, (A << 8) | val, T0);
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
+    //    cpu_outb(env, (A << 8) | val, T0);
+    cpu_outb(env, val, T0);
+#else   /* QEmu v2.x: wrapper function is 16-bit safe */
+    z80_cpu_outb(env, (A << 8) | val, T0);
+#endif
 }
 
 void helper_out_T0_bc(CPUZ80State *env)
 {
-    cpu_outb(env, BC, T0);
+    //cpu_outb(env, BC, T0);
+    z80_cpu_outb(env, BC, T0);
 }
 
 
