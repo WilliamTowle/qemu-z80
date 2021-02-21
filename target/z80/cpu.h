@@ -214,4 +214,15 @@ static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
 /* excp_helper.c */
 void QEMU_NORETURN raise_exception(CPUZ80State *env, int exception_index);
 
+
+/* used by z80_cpu_{in|out}b() - FIXME: overkill? */
+static inline MemTxAttrs cpu_get_mem_attrs(CPUZ80State *env)
+{
+#if defined(TARGET_Z80)
+    return ((MemTxAttrs) { });
+#else	/* verbatim from i386 */
+    return ((MemTxAttrs) { .secure = (env->hflags & HF_SMM_MASK) != 0 });
+#endif
+}
+
 #endif /* Z80_CPU_H */
