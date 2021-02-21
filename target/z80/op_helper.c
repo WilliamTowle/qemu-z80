@@ -75,6 +75,36 @@ void helper_movl_pc_im(CPUZ80State *env, uint32_t new_pc)
 }
 
 
+/* In / Out */
+
+void helper_in_T0_im(CPUZ80State *env, uint32_t val)
+{
+    T0 = cpu_inb(env, (A << 8) | val);
+}
+
+void helper_in_T0_bc_cc(CPUZ80State *env)
+{
+    int sf, zf, pf;
+
+    T0 = cpu_inb(env, BC);
+
+    sf = (T0 & 0x80) ? CC_S : 0;
+    zf = T0 ? 0 : CC_Z;
+    pf = parity_table[(uint8_t)T0];
+    F = (F & CC_C) | sf | zf | pf;
+}
+
+void helper_out_T0_im(CPUZ80State *env, uint32_t val)
+{
+    cpu_outb(env, (A << 8) | val, T0);
+}
+
+void helper_out_T0_bc(CPUZ80State *env)
+{
+    cpu_outb(env, BC, T0);
+}
+
+
 /* Misc */
 
 void helper_bit_T0(CPUZ80State *env, uint32_t val)
