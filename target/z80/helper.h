@@ -37,9 +37,9 @@ DEF_HELPER_2(movl_pc_im, void, env, int)
 
 /* In/Out */
 
-DEF_HELPER_2(in_T0_im, void, env, i32)
+DEF_HELPER_2(in_T0_im, void, env, int)
 DEF_HELPER_1(in_T0_bc_cc, void, env)
-DEF_HELPER_2(out_T0_im, void, env, i32)
+DEF_HELPER_2(out_T0_im, void, env, int)
 DEF_HELPER_1(out_T0_bc, void, env)
 
 
