@@ -1832,13 +1832,7 @@ next_byte:
                 zprintf("%s\n", bli[y-4][z]);
                 break;
             }  /* case 2 y>=4 end - falls through for y=0..3 */
-
-        default:    /* FIXME: incomplete due to missing x={0,2} */
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("[%s:%d] FALLTHROUGH - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d) unhandled x case [mode=%d]\n", __FILE__, __LINE__, b, x, y, z, m);
-#endif
-            goto unknown_op;
-        }   /* switch(x) ends */
+        }	/* switch(x) ends */
     }
 
     /* For Z80, there are no "illegal" instructions to signal here.
