@@ -27,6 +27,8 @@
 #include "qemu/error-report.h"
 #include "exec/helper-proto.h"
 #include "exec.h"
+#include "exec/ioport.h"
+#include "exec/address-spaces.h"
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 0
@@ -119,16 +121,42 @@ void helper_movl_pc_im(CPUZ80State *env, int new_pc)
 
 /* In / Out */
 
+static void z80_cpu_outb(CPUZ80State *env, uint32_t port, uint32_t data)
+{
+#ifdef CONFIG_USER_ONLY
+//;DPRINTF("outb: port=0x%04x, data=0x%02x\n", port, data);
+#else	/* FIXME? follows i386 misc_helper.c */
+;DPRINTF("[INCOMPLETE] outb: port=0x%04x, data=0x%02x\n", port, data);
+    address_space_stb(&address_space_io, port, data,
+                      cpu_get_mem_attrs(env), NULL);
+#endif
+}
+
+static target_ulong z80_cpu_inb(CPUZ80State *env, uint32_t port)
+{
+#ifdef CONFIG_USER_ONLY
+//;DPRINTF("inb: port=0x%04x\n", port);
+    return 0;
+#else	/* FIXME? follows i386 misc_helper.c */
+;DPRINTF("[INCOMPLETE] inb: port=0x%04x\n", port);
+    return address_space_ldub(&address_space_io, port,
+                              cpu_get_mem_attrs(env), NULL);
+#endif
+}
+
+
 void helper_in_T0_im(CPUZ80State *env, int val)
 {
-    T0 = cpu_inb(env, (A << 8) | val);
+    //T0 = cpu_inb(env, (A << 8) | val);
+    T0 = z80_cpu_inb(env, (A << 8) | val);
 }
 
 void helper_in_T0_bc_cc(CPUZ80State *env)
 {
     int sf, zf, pf;
 
-    T0 = cpu_inb(env, BC);
+    //T0 = cpu_inb(env, BC);
+    T0 = z80_cpu_inb(env, BC);
 
     sf = (T0 & 0x80) ? CC_S : 0;
     zf = T0 ? 0 : CC_Z;
@@ -138,12 +166,14 @@ void helper_in_T0_bc_cc(CPUZ80State *env)
 
 void helper_out_T0_im(CPUZ80State *env, int val)
 {
-    cpu_outb(env, (A << 8) | val, T0);
+    //cpu_outb(env, (A << 8) | val, T0);
+    z80_cpu_outb(env, (A << 8) | val, T0);
 }
 
 void helper_out_T0_bc(CPUZ80State *env)
 {
-    cpu_outb(env, BC, T0);
+    //cpu_outb(env, BC, T0);
+    z80_cpu_outb(env, BC, T0);
 }
 
 
