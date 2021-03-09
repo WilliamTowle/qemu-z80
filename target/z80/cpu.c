@@ -217,13 +217,12 @@ static void z80_cpu_set_pc(CPUState *cs, vaddr value)
     cpu->env.pc = value;
 }
 
-//static void z80_cpu_disas_set_info(CPUState *cs, disassemble_info *info)
-//{
-//;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
-//    /* TODO: switch to bfd_mach_z80_r800 where applicable */
-//    info->mach = bfd_mach_z80_z80;
-//    info->print_insn = print_insn_z80;
-//}
+static void z80_disas_set_info(CPUState *cs, disassemble_info *info)
+{
+    /* TODO: switch to bfd_mach_z80_r800 where applicable */
+    info->mach = bfd_mach_z80_z80;
+    info->print_insn = print_insn_z80;
+}
 
 static void z80_cpu_synchronize_from_tb(CPUState *cs, TranslationBlock *tb)
 {
@@ -275,7 +274,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     cc->tcg_initialize = tcg_z80_init;
     cc->tlb_fill = z80_cpu_tlb_fill;
 #endif
-//    cc->disas_set_info = z80_cpu_disas_set_info;
+    cc->disas_set_info = z80_disas_set_info;
 
     /* NB. user_creatable relates to instantiation in the monitor */
     //dc->user_creatable = true;
