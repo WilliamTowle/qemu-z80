@@ -216,13 +216,13 @@ static void z80_cpu_set_pc(CPUState *cs, vaddr value)
     cpu->env.pc = value;
 }
 
-//static void z80_cpu_disas_set_info(CPUState *cpu, disassemble_info *info)
-//{
-//;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
-///* TODO: where to clarify Z80A/R800 with bfd_mach_FOO? */
-//    info->mach = bfd_arch_z80;
-//    info->print_insn = z80_print_insn;
-//}
+static void z80_disas_set_info(CPUState *cpu, disassemble_info *info)
+{
+    /* TODO: switch to bfd_mach_z80_r800 where applicable */
+    info->mach = bfd_mach_z80_z80;
+    info->print_insn = print_insn_z80;
+}
+    /* TODO: also set info.endian to BFD_ENDIAN_BIG (default _LITTLE)? */
 
 static void z80_cpu_synchronize_from_tb(CPUState *cs, TranslationBlock *tb)
 {
@@ -278,7 +278,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
 #ifdef CONFIG_TCG
     cc->tcg_initialize = tcg_z80_init;
 #endif
-//    cc->disas_set_info = z80_cpu_disas_set_info;
+    cc->disas_set_info = z80_disas_set_info;
 }
 
 static const TypeInfo z80_cpu_type_info = {
