@@ -262,8 +262,9 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
 //    cc->gdb_write_register = z80_cpu_gdb_write_register;
 //    cc->gdb_num_core_regs = 35;	/* NUMBER_OF_CPU_REGISTERS? */
 //    cc->gdb_core_xml_file = "z80-cpu.xml";
-    /* TODO: set get_phys_page_debug if !CONFIG_USER_ONLY */
-//    cc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
+#if !defined(CONFIG_USER_ONLY)
+    cc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
+#endif
 //    cc->vmsd = &vmstate_z80_cpu;
     /* TODO? i386 adjusts CPU eflags with:
      * cc->cpu_exec_enter

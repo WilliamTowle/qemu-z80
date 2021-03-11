@@ -57,3 +57,10 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                     fl & 0x01 ? 'C' : '-',
                     env->imode, env->iff1, env->iff2, env->regs[R_I], env->regs[R_R]);
 }
+
+#if !defined(CONFIG_USER_ONLY)
+hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr)
+{
+    return addr; /* assumes 1:1 address correspondance */
+}
+#endif

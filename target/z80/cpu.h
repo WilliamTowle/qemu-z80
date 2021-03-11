@@ -148,6 +148,12 @@ struct Z80CPU {
 };
 
 
+/* helper.c */
+#if !defined(CONFIG_USER_ONLY)
+hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
+#endif
+
+
 static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 {
     return container_of(env, Z80CPU, env);
