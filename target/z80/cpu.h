@@ -158,6 +158,11 @@ struct Z80CPU {
 /* helper.c */
 void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 
+#if !defined(CONFIG_USER_ONLY)
+hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
+#endif
+
+
 void z80_cpu_list(void);
 
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
