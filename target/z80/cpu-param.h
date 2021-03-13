@@ -31,9 +31,15 @@
 /* TODO: MMU inclusion is optional; size of pages may vary between
  * devices (eg. 8 * 16k banks for 128K spectrum)
  */
+#if 0   /* as repo.or.cz/matches i386 */
 #define TARGET_PHYS_ADDR_SPACE_BITS 24
 #define TARGET_VIRT_ADDR_SPACE_BITS 24
-#define TARGET_PAGE_BITS 8
+#define TARGET_PAGE_BITS 12     /* 4KiB pages */
+#else
+#define TARGET_PHYS_ADDR_SPACE_BITS 28  /* ? */
+#define TARGET_VIRT_ADDR_SPACE_BITS 28  /* ? */
+#define TARGET_PAGE_BITS 14     /* 16KiB pages */
+#endif
 #define NB_MMU_MODES 1
 
 #endif /* !defined Z80_CPU_PARAM_H */
