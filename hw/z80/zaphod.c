@@ -126,11 +126,13 @@ static void zaphod_board_init(MachineState *ms)
 
 /* Machine class initialisation: zaphod_machine_class_init() */
 
-static void zaphod_machine_class_init(MachineClass *mc)
+static void zaphod_machine_class_init(ObjectClass *oc, void *data)
 {
+    MachineClass *mc = MACHINE_CLASS(oc);
+
     /* Set description, init function, default CPU */
 
-    mc->desc= "Zaphod sample board";
+    mc->desc= "Zaphod development board";
     mc->init= zaphod_board_init;
     //mc->alias= "zaphod";
     mc->is_default= 1;
@@ -150,7 +152,25 @@ static void zaphod_machine_class_init(MachineClass *mc)
     mc->no_sdcard= 1;
 }
 
-/* Register class init function.
- * TODO: use TypeInfo, and support board variants
- */
-DEFINE_MACHINE("zaphod", zaphod_machine_class_init)
+
+static const TypeInfo zaphod_machine_type_generic = {
+    /* Provide a "generic" board definition. Use of
+     * TYPE_ZAPHOD_MACHINE means this board name is "zaphod"
+     * TODO: expand to support board variants when the relevant
+     * peripheral types are available
+     */
+    .name           = TYPE_ZAPHOD_MACHINE,
+    .parent         = TYPE_MACHINE,
+    .abstract       = false,
+    .class_init     = zaphod_machine_class_init,
+    .class_size     = sizeof(ZaphodMachineClass),
+    //[v2] .instance_init  = zaphod_machine_state_init,
+    .instance_size  = sizeof(ZaphodMachineState)
+};
+
+static void zaphod_machine_register_types(void)
+{
+    type_register_static(&zaphod_machine_type_generic);
+}
+
+type_init(zaphod_machine_register_types)
