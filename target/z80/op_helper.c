@@ -121,25 +121,29 @@ void helper_movl_pc_im(CPUZ80State *env, int new_pc)
 
 /* In / Out */
 
-static void z80_cpu_outb(CPUZ80State *env, uint32_t port, uint32_t data)
+static
+void z80_cpu_outb(CPUZ80State *env, uint16_t port, uint8_t data)
 {
 #ifdef CONFIG_USER_ONLY
 //;DPRINTF("outb: port=0x%04x, data=0x%02x\n", port, data);
-#else	/* FIXME? follows i386 misc_helper.c */
-;DPRINTF("[INCOMPLETE] outb: port=0x%04x, data=0x%02x\n", port, data);
-    address_space_stb(&address_space_io, port, data,
+#else	/* follows target/i386 helper_outb() */
+//;DPRINTF("%s(): called with port=0x%04x, data=0x%02x\n", __func__, port, data);
+    /* A7-A0 selects one of the 256 possible ports; A8-15 is ignored */
+    address_space_stb(&address_space_io, port & 0xff, data,
                       cpu_get_mem_attrs(env), NULL);
 #endif
 }
 
-static target_ulong z80_cpu_inb(CPUZ80State *env, uint32_t port)
+static
+uint8_t z80_cpu_inb(CPUZ80State *env, uint16_t port)
 {
 #ifdef CONFIG_USER_ONLY
 //;DPRINTF("inb: port=0x%04x\n", port);
     return 0;
-#else	/* FIXME? follows i386 misc_helper.c */
-;DPRINTF("[INCOMPLETE] inb: port=0x%04x\n", port);
-    return address_space_ldub(&address_space_io, port,
+#else   /* follows target/i386 helper_inb() */
+//;DPRINTF("%s(): called with port=0x%04x\n", __func__, port);
+    /* A7-A0 selects one of the 256 possible ports; A8-15 is ignored */
+    return address_space_ldub(&address_space_io, port & 0xff,
                               cpu_get_mem_attrs(env), NULL);
 #endif
 }
