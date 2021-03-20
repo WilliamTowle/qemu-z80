@@ -22,6 +22,10 @@
 typedef struct {
     CPUState        *cpu;
     MemoryRegion    *ram;
+    PortioList      *ports;
+
+    CharDriverState *sercon;            /* QEmu serial0 console */
+    uint8_t         inkey;
 } ZaphodState;
 
 #endif	/*  _ZAPHOD_H_  */

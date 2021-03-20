@@ -11,7 +11,8 @@
 
 #include "boards.h"
 #include "hw/loader.h"
-
+#include "qemu-char.h"
+#include "sysemu.h"         /* for serial_hds[] */
 
 /* ZAPHOD_RAM_SIZE:
  * Ensure Zaphod boards have 64KiB RAM
@@ -56,6 +57,87 @@ static MemoryRegion *zaphod_init_ram(void)
     return ram;
 }
 
+
+static
+int zaphod_inkey_can_receive(void *opaque)
+{
+    /* We can always store in zcs->inkey :) */
+    /* Maybe implement a FIFO queue? */
+    return 1;
+}
+
+static
+void zaphod_inkey_receive(void *opaque, const uint8_t *buf, int len)
+{
+  ZaphodState    *zs= (ZaphodState *)opaque;
+    zs->inkey= buf[0];
+}
+
+static void zaphod_sercon_putchar(ZaphodState *zs, const unsigned char ch)
+{
+    zs->sercon->chr_write(zs->sercon, &ch, 1);
+}
+
+static void zaphod_putchar(ZaphodState *zs, const unsigned char ch)
+{
+    zaphod_sercon_putchar(zs, ch);
+    /* TODO: passthrough for any other supported devices */
+}
+
+static uint32_t zaphod_stdio_read(void *opaque, uint32_t addr)
+{
+    ZaphodState	*zs= (ZaphodState *)opaque;
+    int		value;
+
+	switch (addr)
+	{
+	case 0x00:		/* stdin */
+		value= zs->inkey;
+		zs->inkey= 0;
+		return value;
+	default:
+;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
+		return 0x00;
+	}
+}
+
+static void zaphod_stdio_write(void *opaque, uint32_t addr, uint32_t val)
+{
+    ZaphodState	*zs= (ZaphodState *)opaque;
+
+    switch (addr)
+    {
+    case 0x01:        /* stdout */
+        zaphod_putchar(zs, val);
+        break;
+    default:
+;DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, val);
+        break;
+    }
+}
+
+/* Callbacks for stdin/stdout (port 0x00, 0x01) */
+static const MemoryRegionPortio zaphod_stdio_portlist[] = {
+    { 0x00, 1, 1, .read = zaphod_stdio_read },
+    { 0x01, 1, 1, .write = zaphod_stdio_write, },
+    PORTIO_END_OF_LIST(),
+};
+
+static void zaphod_init_sercon(ZaphodState *zs, CharDriverState* sercon)
+{
+    if ((zs->sercon= sercon) != NULL)
+    {
+        zs->ports= g_new(PortioList, 1);
+
+        portio_list_init(zs->ports, zaphod_stdio_portlist, zs, "zaphod.stdio");
+        portio_list_add(zs->ports, get_system_io(), 0x00);
+
+        qemu_chr_add_handlers(zs->sercon,
+                zaphod_inkey_can_receive, zaphod_inkey_receive,
+                NULL, zs);
+    }
+}
+
 static void zaphod_load_kernel(const char *filename)
 {
     if (!filename || !filename[0])
@@ -96,6 +178,7 @@ static void zaphod_init_dev_machine(ram_addr_t ram_size,
      * - basic "stdio" I/O mechanism, with 'inkey' state variable
      * - hardware emulation and machine "features" bitmap
      */
+    zaphod_init_sercon(zs, serial_hds[0]);
 }
 
 static QEMUMachine zaphod_machine= {
