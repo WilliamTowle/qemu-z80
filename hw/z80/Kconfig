@@ -3,6 +3,10 @@ config ZAPHOD
     # Sample machine inspired by Phil Brown's Amiga Z80 system emulator
     select ZAPHOD_HAS_IOCORE
     select ZAPHOD_HAS_UART
+    select ZAPHOD_HAS_SCREEN
+
+config ZAPHOD_HAS_SCREEN
+    # Enable screen emulation
 
 config ZAPHOD_HAS_IOCORE
     # IOCORE (Zaphod board I/O subsystem) support
