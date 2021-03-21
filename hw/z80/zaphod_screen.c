@@ -9,19 +9,78 @@
 #include "qemu/osdep.h"
 #include "zaphod.h"
 
+#include "ui/console.h"
+
+
+/* Implements a monochrome display at 25x80 text resolution (Phil
+ * Brown calls his Amiga emulator screen "medium-res two-colour
+ * 24x80" [Amiga is usually 25x80 at 640x200 for NTSC and 32x80 at
+ * 640x256 for PAL]).
+ * Skeleton support for Grant Searle's ATmega328 per-line attributes
+ * (normally bold/size/graphics) is present. For graphics, each byte
+ * of the line maps to a 2x4 pixel subgroup of all 160x100 pixels
+ */
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
-//#define EMIT_DEBUG 0
-//#define DPRINTF(fmt, ...) \
-//    do { if (EMIT_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
+#define EMIT_DEBUG 0
+#define DPRINTF(fmt, ...) \
+    do { if (EMIT_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
 
 
-#if 0   /* TODO: implement */
+#if 0   /* FIXME: implement? */
+#include "vgafont.h"           /* vgafont16 - 16x8 */
+#endif
+#define FONT_HEIGHT    16
+#define FONT_WIDTH     8
+
+
+/* TODO: palette with black and amber/green [foreground] options */
+
+
+static void zaphod_screen_invalidate_display(void *opaque)
+{
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
+#endif
+    /* TODO: trigger full redraw of the window by setting state
+     * appropriately here - marking all cell locations as dirty
+     */
+}
+
+static void zaphod_screen_update_display(void *opaque)
+{
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
+#endif
+    /* align QEmu window content with the simulated display */
+}
+
+static const GraphicHwOps zaphod_screen_ops= {
+    .invalidate     = zaphod_screen_invalidate_display,
+    .gfx_update     = zaphod_screen_update_display,
+};
+
+
+/* TODO: zaphod_screen_reset() */
+
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
-    /* ... */
+    ZaphodScreenState *zss= ZAPHOD_SCREEN(dev);
+
+    /* NB. our text mode is essentially VGA-like; is QEmu's
+     * common display code useful?
+     */
+    zss->display= graphic_console_init(
+                        NULL,   /* no ISA bus to emulate */
+                        0, &zaphod_screen_ops, zss);
+
+    qemu_console_resize(zss->display,
+                        FONT_WIDTH * ZAPHOD_TEXT_COLS,
+                        FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
+
+    /* TODO: register reset function */
 }
-#endif
+
 
 /* TODO: zaphod_screen_properties[] */
 
@@ -30,10 +89,8 @@ static void zaphod_screen_class_init(ObjectClass *oc, void *data)
     DeviceClass *dc= DEVICE_CLASS(oc);
 
     dc->desc= "Zaphod screen device";
-#if 0   /* TODO: implement init support */
     dc->realize= zaphod_screen_realizefn;
     /* TODO: set properties */
-#endif
     set_bit(DEVICE_CATEGORY_DISPLAY, dc->categories);
 }
 
