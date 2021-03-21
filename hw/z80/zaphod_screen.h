@@ -10,6 +10,9 @@
 
 #include "zaphod.h"
 
+#define ZAPHOD_TEXT_ROWS	25
+#define ZAPHOD_TEXT_COLS	80
+
 typedef DeviceClass ZaphodScreenClass;
 
 
@@ -17,6 +20,8 @@ typedef DeviceClass ZaphodScreenClass;
 
 typedef struct {
     DeviceState     parent;
+
+    QemuConsole     *display;
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
