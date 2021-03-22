@@ -38,6 +38,8 @@ typedef struct {
 #ifdef ZAPHOD_HAS_SCREEN
 typedef struct {
     DisplayState    *ds;
+    bool            curs_visible;
+    int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
 #endif
 
