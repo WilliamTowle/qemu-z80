@@ -28,6 +28,8 @@
     do { if (EMIT_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
 
 
+#define ZAPHOD_TEXT_CURSOR_PERIOD_MS       (1000 * 2 * 16 / 60)
+
 #if 0   /* FIXME: implement? */
 #include "vgafont.h"           /* vgafont16 - 16x8 */
 #endif
@@ -35,7 +37,14 @@
 #define FONT_WIDTH     8
 
 
-/* TODO: palette with black and amber/green [foreground] options */
+uint8_t zaphod_rgb_palette[][3]= {
+    { 0x00, 0x00, 0x00 },   /* background - black */
+#if 1   /* select green or amber screen (TODO: make machine-specific) */
+    { 0x05, 0xf3, 0x05 }    /* foreground - green */
+#else
+    { 0xff, 0x91, 0x00 }    /* foreground - amber */
+#endif
+};
 
 
 static void zaphod_screen_invalidate_display(void *opaque)
@@ -48,8 +57,52 @@ static void zaphod_screen_invalidate_display(void *opaque)
 
 static void zaphod_screen_update_display(void *opaque)
 {
-;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
+    ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+    int64_t now;
+
     /* align QEmu window content with the simulated display */
+
+    /* ... */
+
+    /* Handle cursor blink if its timer expired */
+
+    //now = qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL);
+    now = qemu_clock_get_ms(QEMU_CLOCK_REALTIME);
+
+    if (now >= zss->cursor_blink_time)
+    {
+        zss->cursor_blink_time= now + ZAPHOD_TEXT_CURSOR_PERIOD_MS / 2;
+        zss->cursor_visible= !zss->cursor_visible;
+;DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
+
+        /* effect "blink" step (toggle cursor visibility) */
+        {
+            DisplaySurface *ds = qemu_console_surface(zss->display);
+            int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
+            uint8_t *dmem;
+            int ix, iy;
+
+            dmem= surface_data(ds);
+            /* TODO: adjust dmem pointer according to cursor position */
+
+            for (ix= 0; ix < FONT_HEIGHT; ix++)
+            {
+                /* for bypp = 4 */
+                for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
+                {
+                    *(dmem + iy)^= zaphod_rgb_palette[0][2] ^ zaphod_rgb_palette[1][2];
+                    *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
+                    *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
+                }
+                dmem+= surface_stride(ds);
+            }
+
+            /* redraw cursor in its present location */
+            dpy_gfx_update(zss->display,
+                    0, 0,                       /* ulx, uly */
+                    FONT_WIDTH, FONT_HEIGHT);   /* xsz, ysz */
+        }
+    }
 }
 
 static const GraphicHwOps zaphod_screen_ops= {
@@ -76,6 +129,9 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
     zss->display= graphic_console_init(
                         NULL,   /* no ISA bus to emulate */
                         0, &zaphod_screen_ops, zss);
+
+    zss->cursor_visible= 0;
+    zss->cursor_blink_time= 0;
 
     qemu_console_resize(zss->display,
                         FONT_WIDTH * ZAPHOD_TEXT_COLS,
