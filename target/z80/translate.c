@@ -627,6 +627,33 @@ static alu_helper_func *const gen_alu[8] = {
 };
 
 
+/* Rotation/shift operations */
+
+static const char *const rot[8] = {
+    "rlc",
+    "rrc",
+    "rl",
+    "rr",
+    "sla",
+    "sra",
+    "sll",
+    "srl",
+};
+
+
+typedef void (rot_helper_func)(TCGv_ptr cpu_env);
+
+static rot_helper_func *const gen_rot_T0[8] = {
+    gen_helper_rlc_T0_cc,
+    gen_helper_rrc_T0_cc,
+    gen_helper_rl_T0_cc,
+    gen_helper_rr_T0_cc,
+    gen_helper_sla_T0_cc,
+    gen_helper_sra_T0_cc,
+    gen_helper_sll_T0_cc,
+    gen_helper_srl_T0_cc,
+};
+
 
 static void gen_eob(DisasContext *s);
 
@@ -888,6 +915,9 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     s->pc = pc_start;
     prefixes= 0;
 
+    /* prefix handling jumps here to keep track
+     * of prefixes seen in state
+     */
     zprintf("PC = %04x: ", s->pc);
 next_byte:
     //s->prefix= prefixes;
@@ -1420,7 +1450,85 @@ next_byte:
             break;
         }   /* switch(x) ends */
     }
-    else /* TODO: differentiate "cb mode" and "ed mode" cases */
+    else if (prefixes & PREFIX_CB)
+    {	/* cb mode: */
+        unsigned int x, y, z;
+        //unsigned int p, q;
+        int d;              /* displacement 'd' */
+        int r1, r2;         /* register number */
+
+        if (m != MODE_NORMAL) {
+            /* 0xDD 0xCB DISP OP or 0xFD 0xCB DISP OP cases */
+            d = z80_ldsb_code(env, s);
+            //s->pc++;
+        }
+
+        b = z80_ldub_code(env, s);
+        //s->pc++;
+
+        x= (b >> 6) & 0x03;     /* isolate bits 7, 6 */
+        y= (b >> 3) & 0x07;     /* isolate bits 5, 4, 3 */
+        z= b & 0x07;            /* isolate bits 2, 1, 0 */
+        //p = y >> 1;
+        //q = y & 0x01;
+
+        if (m != MODE_NORMAL) {
+            r1 = regmap(OR_HLmem, m);
+            gen_movb_v_idx(cpu_T[0], r1, d);
+            if (z != 6) {
+                r2 = regmap(reg[z], 0);
+            }
+        } else {
+            r1 = regmap(reg[z], m);
+            gen_movb_v_reg(cpu_T[0], r1);
+        }
+
+        switch (x)
+        {
+        case 0:
+            /* TODO: TST instead of SLL for R800 */
+            gen_rot_T0[y](cpu_env);
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("%s %s\n", rot[y], regnames[r1]);
+            break;
+        case 1:
+            gen_helper_bit_T0(cpu_env, tcg_const_tl(1 << y));
+            zprintf("bit %i,%s\n", y, regnames[r1]);
+            break;
+        case 2:
+            tcg_gen_andi_tl(cpu_T[0], cpu_T[0], ~(1 << y));
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("res %i,%s\n", y, regnames[r1]);
+            break;
+        case 3:
+            tcg_gen_ori_tl(cpu_T[0], cpu_T[0], 1 << y);
+            if (m != MODE_NORMAL) {
+                gen_movb_idx_v(r1, cpu_T[0], d);
+                if (z != 6) {
+                    gen_movb_reg_v(r2, cpu_T[0]);
+                }
+            } else {
+                gen_movb_reg_v(r1, cpu_T[0]);
+            }
+            zprintf("set %i,%s\n", y, regnames[r1]);
+            break;
+        }
+    }
+    else    /* TODO: PREFIX_ED cases */
     {
         unsigned int x, y, z; /* also p, q? */
         //int8_t d;
