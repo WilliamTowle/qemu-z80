@@ -889,11 +889,11 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     prefixes= 0;
 
     zprintf("PC = %04x: ", s->pc);
-    /* TODO: later prefix handling will jump here to keep track
-     * of prefixes seen in state
-//next_byte:
-     */
-    s->prefix= prefixes;
+next_byte:
+    //s->prefix= prefixes;
+
+/* START */
+
     if (prefixes & PREFIX_DD) {
         m = MODE_DD;
     } else if (prefixes & PREFIX_FD) {
@@ -1323,8 +1323,13 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     gen_eob(s);
                     s->base.is_jmp = DISAS_NORETURN;
                     break;
+                case 1:
+                    zprintf("cb prefix\n");
+                    prefixes |= PREFIX_CB;
+                    goto next_byte;
+                    break;
 
-                /* TODO: case(s) for y=1 to y=3 */
+                /* TODO: case(s) for y=2 to y=3 */
 
                 case 4:
                     r1 = regpairmap(OR2_HL, m);
