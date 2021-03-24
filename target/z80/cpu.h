@@ -123,7 +123,8 @@ typedef struct CPUZ80State {
     target_ulong    regs[CPU_NB_REGS];
     target_ulong    pc;
 
-    int             iff1, iff2; /* TODO: also 'imode' */
+    int             imode;
+    int             iff1, iff2;
 
     /* emulator internal flags handling */
     uint32_t hflags;    /* hidden flags, see HF_xxx constants */
