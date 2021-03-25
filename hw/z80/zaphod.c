@@ -141,7 +141,10 @@ static void zaphod_class_init(ObjectClass *oc, void *data)
     mc->max_cpus = mc->default_cpus;
     //mc->default_ram_size = ZAPHOD_RAM_SIZE;
 
+#ifndef ZAPHOD_HAS_MACHINE_SELECTION
     mc->is_default= 1;
+#endif
+
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
     mc->no_parallel= 1;
@@ -163,7 +166,11 @@ static const TypeInfo zaphod_machine_type_generic = {
      */
     .name           = TYPE_ZAPHOD_MACHINE,
     .parent         = TYPE_MACHINE,
+#ifdef ZAPHOD_HAS_MACHINE_SELECTION
+    .abstract       = true,
+#else
     .abstract       = false,
+#endif
     .class_init     = zaphod_class_init,
     .class_size     = sizeof(ZaphodMachineClass),
     .instance_init  = zaphod_generic_instance_init,
@@ -176,3 +183,38 @@ static void zaphod_machine_register_types(void)
 }
 
 type_init(zaphod_machine_register_types)
+#ifdef ZAPHOD_HAS_MACHINE_SELECTION
+/* TYPE_ZAPHOD_MACHINE is abstract; set up child machine types:
+ * - "zaphod-pb" machine (Phil Brown "Zaphod" emulator)
+ * - "zaphod-gs" machine (Grant Searle SBC)
+ */
+#define DEFINE_ZAPHOD_BOARD(board_id, desc_str, make_default) \
+        static void zaphod_##board_id##_class_init(ObjectClass *oc, void *data) \
+        { \
+            MachineClass *mc= MACHINE_CLASS(oc); \
+            /* options call not implemented */ \
+            mc->desc= desc_str; \
+            if (make_default) { \
+                mc->is_default= 1; \
+                mc->alias= "zaphod"; \
+            } \
+        } \
+        static const TypeInfo zaphod_##board_id##_info= { \
+            .name= MACHINE_TYPE_NAME("zaphod-" # board_id), \
+            .parent= TYPE_ZAPHOD_MACHINE, \
+            .class_init= zaphod_##board_id##_class_init, \
+        }; \
+        static void zaphod_##board_id##_init(void) \
+        { \
+            type_register_static(&zaphod_##board_id##_info); \
+        } \
+        type_init(zaphod_##board_id##_init);
+
+#define DEFINE_ZAPHOD_MACHINE_OPTION(board_id, desc_str) \
+        DEFINE_ZAPHOD_BOARD(board_id, desc_str, false)
+#define DEFINE_ZAPHOD_MACHINE_DEFAULT(board_id, desc_str) \
+        DEFINE_ZAPHOD_BOARD(board_id, desc_str, true)
+
+DEFINE_ZAPHOD_MACHINE_OPTION(pb, "Zaphod 1 (Phil Brown emulator)")
+DEFINE_ZAPHOD_MACHINE_DEFAULT(gs, "Zaphod 2 (Grant Searle SBC)")
+#endif
