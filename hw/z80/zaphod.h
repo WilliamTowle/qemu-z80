@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board/machine family
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -16,6 +16,9 @@
 
 /* Config-related defines - see also z80-softmmu.mak */
 
+#if 1	/* not fully implemented */
+#define ZAPHOD_HAS_MACHINE_SELECTION
+#endif
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
 #define CONFIG_ZAPHOD_HAS_SCREEN
