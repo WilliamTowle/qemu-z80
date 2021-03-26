@@ -182,17 +182,36 @@ static void zaphod_machine_register_types(void)
     type_register_static(&zaphod_machine_type_generic);
 }
 
+static void zaphod_pb_options(MachineClass *mc)
+{
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
+    DPRINTF("INFO: Reached %s(), got zmc=%p\n", __func__, zmc);
+;exit(1);
+
+    /* TODO: has simple screen */
+}
+
+static void zaphod_dev_options(MachineClass *mc)
+{
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
+    DPRINTF("INFO: Reached %s(), got zmc=%p\n", __func__, zmc);
+;exit(1);
+
+	/* TODO: has ACIA interrupt */
+}
+
 type_init(zaphod_machine_register_types)
 #ifdef ZAPHOD_HAS_MACHINE_SELECTION
-/* TYPE_ZAPHOD_MACHINE is abstract; set up child machine types:
+/* TYPE_ZAPHOD_MACHINE is abstract; child machine types will encompass:
  * - "zaphod-pb" machine (Phil Brown "Zaphod" emulator)
  * - "zaphod-gs" machine (Grant Searle SBC)
+ * - "zaphod-dev" machine (includes development features)
  */
 #define DEFINE_ZAPHOD_BOARD(board_id, desc_str, make_default) \
         static void zaphod_##board_id##_class_init(ObjectClass *oc, void *data) \
         { \
             MachineClass *mc= MACHINE_CLASS(oc); \
-            /* options call not implemented */ \
+            zaphod_##board_id##_options(mc); \
             mc->desc= desc_str; \
             if (make_default) { \
                 mc->is_default= 1; \
@@ -216,5 +235,6 @@ type_init(zaphod_machine_register_types)
         DEFINE_ZAPHOD_BOARD(board_id, desc_str, true)
 
 DEFINE_ZAPHOD_MACHINE_OPTION(pb, "Zaphod 1 (Phil Brown emulator)")
-DEFINE_ZAPHOD_MACHINE_DEFAULT(gs, "Zaphod 2 (Grant Searle SBC)")
+//DEFINE_ZAPHOD_MACHINE_DEFAULT(gs, "Zaphod 2 (Grant Searle SBC)")
+DEFINE_ZAPHOD_MACHINE_DEFAULT(dev, "Zaphod Development")
 #endif

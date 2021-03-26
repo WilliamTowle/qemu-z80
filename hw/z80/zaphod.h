@@ -79,6 +79,8 @@ struct ZaphodMachineState {
     MACHINE_TYPE_NAME("zaphod")
 #define ZAPHOD_MACHINE(obj) \
     OBJECT_CHECK(ZaphodMachineState, (obj), TYPE_ZAPHOD_MACHINE)
+#define ZAPHOD_MACHINE_CLASS(oc) \
+	OBJECT_CLASS_CHECK(ZaphodMachineClass, oc, TYPE_ZAPHOD_MACHINE)
 #define ZAPHOD_MACHINE_GET_CLASS(obj) \
     OBJECT_GET_CLASS(ZaphodMachineClass, (obj), TYPE_ZAPHOD_MACHINE)
 
