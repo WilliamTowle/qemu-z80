@@ -185,19 +185,15 @@ static void zaphod_machine_register_types(void)
 static void zaphod_pb_options(MachineClass *mc)
 {
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
-    DPRINTF("INFO: Reached %s(), got zmc=%p\n", __func__, zmc);
-;exit(1);
 
-    /* TODO: has simple screen */
+    zmc->has_simple_screen= true;
 }
 
 static void zaphod_dev_options(MachineClass *mc)
 {
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
-    DPRINTF("INFO: Reached %s(), got zmc=%p\n", __func__, zmc);
-;exit(1);
 
-	/* TODO: has ACIA interrupt */
+    zmc->has_simple_screen= false;
 }
 
 type_init(zaphod_machine_register_types)
