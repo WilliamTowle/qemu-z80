@@ -53,7 +53,9 @@ typedef struct {
     MachineClass parent;
 
     /*< public >*/
-    /* TODO: board configuration here */
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    bool has_simple_screen;
+#endif
 } ZaphodMachineClass;
 #endif
 
