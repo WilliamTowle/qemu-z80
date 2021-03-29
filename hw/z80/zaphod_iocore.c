@@ -112,8 +112,7 @@ void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
             zaphod_uart_putchar(zis->board->uart_stdio, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-        /* mux to screen (TODO: not if ACIA set? make configurable?) */
-        zaphod_screen_putchar(zis->screen, ch);
+    zaphod_screen_putchar(zis->screen, ch);
 #endif
 }
 
@@ -199,8 +198,7 @@ void zaphod_iocore_putchar_acia(ZaphodIOCoreState *zis, const unsigned char ch)
             zaphod_uart_putchar(zis->board->uart_acia, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-        /* mux to screen (TODO: make configurable) */
-        zaphod_screen_putchar(zis->screen, ch);
+    zaphod_screen_putchar(zis->screen, ch);
 #endif
 }
 
