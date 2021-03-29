@@ -29,9 +29,7 @@
 
 #define ZAPHOD_TEXT_CURSOR_PERIOD_MS       (1000 * 2 * 16 / 60)
 
-#if 0   /* FIXME: implement? */
-#include "vgafont.h"           /* vgafont16 - 16x8 */
-#endif
+#include "ui/vgafont.h"           /* vgafont16 - 16x8 */
 #define FONT_HEIGHT    16
 #define FONT_WIDTH     8
 
@@ -40,6 +38,112 @@ uint8_t zaphod_rgb_palette[][3]= {
     { 0x05, 0xf3, 0x05 },   /* foreground - green */
     { 0xff, 0x91, 0x00 }    /* foreground - amber */
 };
+
+
+static
+void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
+{
+    //ZaphodMachineState  *zms= (ZaphodMachineState *)opaque;
+    ZaphodScreenState   *zss= ZAPHOD_SCREEN(opaque);
+    DisplaySurface      *ds = qemu_console_surface(zss->display);
+    int                 bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+    const uint8_t       *font_ptr;
+
+    /* Grant Searle has per-line text attributes as follows:
+     * - 0x04: double height (internally, top half/bottom half)
+     * - 0x02: bold
+     * - 0x01: use 80 chars (40 otherwise)
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * surface_stride(ds);
+
+    dmem_start= surface_data(ds);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+    font_ptr= vgafont16 + FONT_HEIGHT * ch;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t bitmask;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - sets BGR+A */
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        font_ptr++;
+        dmem_start+= surface_stride(ds);
+    }
+
+    /* TODO: mark updated coords as dirty and update in callback? */
+    dpy_gfx_update(zss->display,
+                    col*FONT_WIDTH, row*FONT_HEIGHT,
+                    FONT_WIDTH, FONT_HEIGHT);
+}
+
+static
+void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
+{
+    //ZaphodMachineState  *zms= (ZaphodMachineState *)opaque;
+    ZaphodScreenState   *zss= ZAPHOD_SCREEN(opaque);
+    DisplaySurface      *ds = qemu_console_surface(zss->display);
+    int                 bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+
+    /* Grant Searle uses attribute 0x80 for a line of graphics, where
+     * each "character" represents 2x4 pixel blocks (in which bit 0 is
+     * top left and bit 7 bottom right)
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * surface_stride(ds);
+
+    dmem_start= surface_data(ds);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t line;
+        uint8_t bitmask;
+
+        line= (data & 0x01)? 0xf0 : 0x00;
+        line+= (data & 0x02)? 0x0f : 0x00;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - assumes BGR+A */
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        dmem_start+= surface_stride(ds);
+        if ((ix & 0x03) == 3) data>>= 2;
+    }
+
+    /* TODO: mark updated coords as dirty and update in callback? */
+    dpy_gfx_update(zss->display,
+                    col*FONT_WIDTH, row*FONT_HEIGHT,
+                    FONT_WIDTH, FONT_HEIGHT);
+}
 
 
 static void zaphod_screen_invalidate_display(void *opaque)
@@ -108,6 +212,7 @@ static void zaphod_screen_update_display(void *opaque)
                         *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
                         *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
                     }
+
                     dmem+= surface_stride(ds);
                 }
 
@@ -127,12 +232,38 @@ static const GraphicHwOps zaphod_screen_ops= {
 };
 
 
+/* character processing */
+
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
-    /* TODO: implement */
-;DPRINTF("*** INFO: zaphod_screen_putchar() - ch 0x%02x ***\n", ch);
-}
+    /* this 'opaque' is the MachineState from zaphod_io_write() */
+    ZaphodMachineState *zms= ZAPHOD_MACHINE(opaque);
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
 
+#if 1	/* HACK enabling write/test of basic rendering routines:
+         * For each character, display corresponding hex nybbles
+         * and the corresponding graphic mode "character"
+         */
+    uint8_t nyb_hi, nyb_lo;
+
+    nyb_hi= (ch & 0xf0) >> 4;
+    nyb_lo= ch & 0x0f;
+    nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+    nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+
+    zaphod_screen_draw_char(zms->screen, 0,0, nyb_hi);
+    zaphod_screen_draw_char(zms->screen, 0,1, nyb_lo);
+
+    if (zmc->has_simple_screen)
+    {   /* show requested character */
+        zaphod_screen_draw_char(zms->screen, 0,1, nyb_lo);
+    }
+    else
+    {   /* show requested graphics glyph */
+        zaphod_screen_draw_graphic(zms->screen, 0,2, ch);
+    }
+#endif
+}
 
 DeviceState *zaphod_screen_new(void)
 {
