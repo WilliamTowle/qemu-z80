@@ -235,21 +235,26 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 ;DPRINTF("INFO: Byte read at pc_start 0x%04x got value 0x%02x - has x %o, y %o [p=%o/q=%o], z %o\n", pc_start, b, x, y,p,q, z);
 #endif
 
-        switch (b)
+        switch (x)
         {
-        case 0xc9:  /* unconditional 'ret' */
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
-#endif
-            gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
-            break;
+        /* PARTIAL: missing cases for
+         * - x=0 - insn pattern 00yyyzzz case
+         * - x=1 - insn pattern 01yyyzzz case
+         * - x=2 - insn pattern 10yyyzzz case
+         */
 
-        default:    /* other op */
+        case 3: /* insn pattern 11yyyzzz */
 #if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH BAIL - byte 0x%02x unhandled\n", __FILE__, __LINE__, b);
+;DPRINTF("GETTING HERE? possible 'ret' insn - op 0x%02x (x=%o)...\n", b, x);
+;exit(1);   /* TODO: differentiate unconditional 'ret'/other here */
+#endif
+
+        default:    /* PARTIAL: switch(x) cases incomplete */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - op 0x%02x (has x %o, y %o [p=%o/q=%o], z %o) read - unhandled x case\n", __FILE__, __LINE__, b, x, y,p,q, z);
 #endif
             goto unknown_op;
-        }
+        }   /* switch(x) ends */
     }
     /* TODO: missing else cases:
      * - for "cb mode" (bit manipulation) instructions
@@ -426,9 +431,10 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
     DisasContext *dc = container_of(dcbase, DisasContext, base);
     target_ulong pc_next;
 
-    /* TODO: consult pre_translate_insn() to see if we hit our
-     * "magic ramtop" address - without a ROM to return to there
-     * is no more code to translate
+    /* TODO: for magic ramtop detect:
+     * 1a. consult z80_pre_translate_insn();
+     * 1b. return if result true [because KERNEL_TRAP was triggered]
+     * 2. call disas_insn() otherwise
      */
     pc_next = disas_insn(dc, cpu);
 
