@@ -24,6 +24,14 @@
 #include "qemu/osdep.h"
 #include "cpu.h"
 
+#include "qemu/error-report.h"
+#include "exec/cpu_ldst.h"
+
+
+#define EMIT_DEBUG 1
+#define DPRINTF(fmt, ...) \
+    do { if (EMIT_DEBUG) error_printf("Z80 helper: " fmt , ## __VA_ARGS__); } while(0)
+
 
 void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                         int flags)
@@ -64,3 +72,180 @@ hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr)
     return addr; /* assumes 1:1 address correspondance */
 }
 #endif
+
+
+/* Plain load/store to physical RAM */
+static inline uint16_t z80_lduw_kernel(CPUZ80State *env, uint16_t addr)
+{
+    return cpu_lduw_data(env, addr);
+}
+
+static inline void z80_stuw_kernel(CPUZ80State *env, uint16_t addr, uint16_t v)
+{
+    cpu_stw_data(env, addr, v);
+}
+
+/*
+ * Begin execution of an interruption. Matches target-i386 [code now
+ * in seg_helper.c] but without parameters for CPU register control
+ */
+static void do_interrupt_all(Z80CPU *cpu, int intno)
+{
+    CPUZ80State *env= &cpu->env;
+//;DPRINTF("z80: do_interrupt()\n");
+;DPRINTF("DEBUG: Reached %s() OK; IFF %s...\n", __func__, env->iff1?"value non-zero":"will bail");
+
+    /* NB: target-i386 do_interrupt_all() starts with logging */
+
+    /* Verbatim from repo.or.cz do_interrupt() [op_helper.c]
+     * Interrupt the CPU. For the usermode case QEmu exits the
+     * execution loop (returning the exception number) later
+     */
+    if (!env->iff1) {
+        return;
+    }
+
+    env->iff1 = 0;
+    env->iff2 = 0; /* XXX: Unchanged for NMI */
+
+    {
+        target_ulong sp;
+        sp = (uint16_t)(env->regs[R_SP] - 2);
+        env->regs[R_SP] = sp;
+#if 0	/* stw_kernel() missing without MMU modes */
+        stw_kernel(sp, env->pc);
+#else
+        z80_stuw_kernel(env, sp, env->pc);
+#endif
+    }
+
+    /* IM0 = execute data on bus (0xff == rst $38) */
+    /* IM1 = execute rst $38 (ROM uses this)*/
+    /* IM2 = indirect jump -- address is held at (I << 8) | DATA */
+
+    /* value on data bus is 0xff for the zx spectrum */
+
+    /* when an interrupt occurs, iff1 and iff2 are reset, disabling interrupts */
+    /* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
+
+    uint8_t d;
+    switch (env->imode) {
+    case 0:
+        /* XXX: assuming 0xff on data bus */
+    case 1:
+        env->pc = 0x0038;
+        break;
+    case 2:
+        /* XXX: assuming 0xff on data bus */
+        d = 0xff;
+#if 0	/* stw_kernel() missing without MMU modes */
+        env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
+#else
+        env->pc = z80_lduw_kernel(env, (env->regs[R_I] << 8) | d);
+#endif
+        break;
+    }
+}
+
+void z80_cpu_do_interrupt(CPUState *cs)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
+
+    /* Handle the ILLOP exception as thrown by disas_insn() by
+     * bailing cleanly. For z80-bblbrx-user there are no I/O
+     * interrupts
+     */
+    if (cs->exception_index == EXCP_ILLOP)
+    {
+        cpu_abort(cs, "EXCP_ILLOP at pc=0x%04x", env->pc);
+    }
+
+
+#if defined(CONFIG_USER_ONLY)
+    /* target-i386 has do_interrupt_user() to simulate a fake
+     * exception for handling outside the CPU execution loop. Our
+     * magic_ramloc test handles this elsewhere
+     */
+//    do_interrupt_user(env, cs->exception_index,
+//                      env->exception_is_int,
+//                      env->error_code /*,
+//                      env->exception_next_eip */);
+//#if 0	/* i386-specific */
+//    /* successfully delivered */
+//    env->old_exception = -1;
+//#endif
+#else
+#if 0	/* codes above EXCP_VMEXIT are produced by i386 svm_helper.c */
+    if (cs->exception_index >= EXCP_VMEXIT) {
+        assert(env->old_exception == -1);
+        do_vmexit(env, cs->exception_index - EXCP_VMEXIT, env->error_code);
+    } else {
+#endif
+#if 0	/* i386 style do_interrupt_all() */
+        do_interrupt_all(cpu, cs->exception_index,
+                         env->exception_is_int,
+                         env->error_code /*,
+                         env->exception_next_eip, 0 */);
+        /* successfully delivered */
+        env->old_exception = -1;
+#else
+        do_interrupt_all(cpu, cs->exception_index);
+#endif
+    //}
+#endif
+}
+
+
+#if 0   /* overkill? */
+static void do_interrupt_z80_hardirq(CPUState *cs, int intno)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+
+#if 0	/* i386 style do_interrupt_all() */
+    do_interrupt_all(env_archcpu(env), intno, 0, 0, 0, is_hw);
+#else
+    do_interrupt_all(cpu, intno);
+#endif
+}
+#endif
+
+bool z80_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
+{
+    /* NB: i386 checks interrupt request for
+     * - CPU_INTERRUPT_POLL if !CONFIG_USER_ONLY (not applicable)
+     * - CPU_INTERRUPT_SIPI (not applicable)
+     * - CPU_INTERRUPT_{SMI|NMI|MCE} (not applicable/not implemented)
+     * - CPU_INTERRUPT_HARD
+     * - CPU_INTERRUPT_VIRQ (not applicable)
+     */
+
+    //Z80CPU *cpu = Z80_CPU(cs);
+    //CPUZ80State *env = &cpu->env;
+    bool ret = false;
+
+    /* NB: implement NMI? i386 signals EXCP02_NMI */
+    if (interrupt_request & CPU_INTERRUPT_HARD)
+    {
+#if 0   /* i386 verbatim */
+        cpu_svm_check_intercept_param(env, SVM_EXIT_INTR, 0, 0);
+        cs->interrupt_request &= ~(CPU_INTERRUPT_HARD |
+                                   CPU_INTERRUPT_VIRQ);
+        intno = cpu_get_pic_interrupt(env);
+        qemu_log_mask(CPU_LOG_TB_IN_ASM,
+                      "Servicing hardware INT=0x%02x\n", intno);
+        do_interrupt_x86_hardirq(env, intno, 1);
+#else
+        {   /* NB. i386 passes an 'intno' value via a handler wrapper;
+             * it will be -1 (in usermode) or >= 0
+             */
+            Z80CPU *cpu = Z80_CPU(cs);
+            do_interrupt_all(cpu, 0 /* intno */);
+        }
+        cs->interrupt_request &= ~CPU_INTERRUPT_HARD;
+        ret= true;
+    }
+#endif
+
+    return ret;
+}

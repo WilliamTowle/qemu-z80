@@ -160,6 +160,11 @@ struct Z80CPU {
 
 
 /* helper.c */
+void z80_cpu_do_interrupt(CPUState *cpu);
+bool z80_cpu_exec_interrupt(CPUState *cpu, int int_req);
+
+
+/* helper.c */
 #if !defined(CONFIG_USER_ONLY)
 hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
 #endif

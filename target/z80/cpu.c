@@ -224,11 +224,6 @@ static bool z80_cpu_has_work(CPUState *cs)
 #endif
 }
 
-/* TODO:
- * z80_cpu_do_interrupt() [helper.c]
- * z80_cpu_exec_interrupt() [helper.c]
- */
-
 
 static void z80_cpu_set_pc(CPUState *cs, vaddr value)
 {
@@ -271,10 +266,10 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     cc->class_by_name = z80_cpu_class_by_name;
 
     cc->has_work = z80_cpu_has_work;
-//#ifdef CONFIG_TCG
-//    cc->do_interrupt = z80_cpu_do_interrupt;
-//    cc->cpu_exec_interrupt = z80_cpu_exec_interrupt;
-//#endif
+#ifdef CONFIG_TCG
+    cc->do_interrupt = z80_cpu_do_interrupt;
+    cc->cpu_exec_interrupt = z80_cpu_exec_interrupt;
+#endif
     cc->dump_state = z80_cpu_dump_state;
     /* TODO: cc->get_crash_info() useful? or x86-specific? */
     cc->set_pc = z80_cpu_set_pc;
