@@ -156,6 +156,9 @@ struct Z80CPU {
 
 
 /* helper.c */
+void z80_cpu_do_interrupt(CPUState *cpu);
+bool z80_cpu_exec_interrupt(CPUState *cpu, int int_req);
+
 void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 
 #if !defined(CONFIG_USER_ONLY)
