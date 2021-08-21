@@ -1334,22 +1334,14 @@ next_byte:
                         gen_eob(s);
                         s->base.is_jmp = DISAS_NORETURN;
                         break;
-
-                    /* TODO: case for p=3 */
-
-                    default:    /* PARTIAL: switch(p) incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled p case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
-                        goto unknown_op;
+                    case 3:
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_movw_SP_v(cpu_T[0]);
+                        zprintf("ld sp,%s\n", regpairnames[r1]);
+                        break;
                     }
                     break;
-
-                default:    /* PARTIAL: switch(q) incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) read - unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
-                    goto unknown_op;
                 }
                 break;
 
