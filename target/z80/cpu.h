@@ -158,6 +158,7 @@ struct Z80CPU {
 /* helper.c */
 void z80_cpu_do_interrupt(CPUState *cpu);
 bool z80_cpu_exec_interrupt(CPUState *cpu, int int_req);
+int z80_cpu_pending_interrupt(CPUState *cs, int interrupt_request);
 
 void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 

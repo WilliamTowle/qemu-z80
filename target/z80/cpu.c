@@ -193,8 +193,11 @@ static bool z80_cpu_has_work(CPUState *cs)
      * IF_MASK unset or interrupts are not inhibited if it is.
      * Zilog's Z80 also has NMI type interrupts [not implemented]
      */
-/* FIXME: implement for v5: with z80_cpu_pending_interrupt() */
+#if QEMU_VERSION_MAJOR < 5
     return cs->interrupt_request & CPU_INTERRUPT_HARD;
+#else
+    return z80_cpu_pending_interrupt(cs, cs->interrupt_request) != 0;
+#endif
 }
 
 
@@ -220,7 +223,14 @@ static void z80_cpu_synchronize_from_tb(CPUState *cs, TranslationBlock *tb)
     env->pc= tb->pc;
 }
 
-/* FIXME: port of int x86_cpu_pending_interrupt(CPUState *cs, int interrupt_request) here */
+int z80_cpu_pending_interrupt(CPUState *cs, int interrupt_request)
+{
+    /* [QEmu v5] return the interrupt designator (or zero if none
+     * pending) so that it can be queried.
+     * TODO: test/return CPU_INTERRUPT_NMI?
+     */
+    return cs->interrupt_request & CPU_INTERRUPT_HARD;
+}
 
 static void z80_cpu_class_init(ObjectClass *oc, void *data)
 {

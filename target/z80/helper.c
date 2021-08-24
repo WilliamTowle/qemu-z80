@@ -222,7 +222,7 @@ bool z80_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
     //Z80CPU *cpu = Z80_CPU(cs);
     //CPUZ80State *env = &cpu->env;
 
-    //interrupt_request = z80_cpu_pending_interrupt(cs, interrupt_request);
+    interrupt_request = z80_cpu_pending_interrupt(cs, interrupt_request);
     if (!interrupt_request) {
         return false;
     }
