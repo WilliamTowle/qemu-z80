@@ -884,11 +884,14 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     prefixes= 0;
 
     zprintf("PC = %04x: ", s->pc);
-    /* TODO: later prefix handling will jump here to keep track
+    /* prefix handling jumps here to keep track
      * of prefixes seen in state
-//next_byte:
      */
-    s->prefix= prefixes;
+next_byte:
+    //s->prefix= prefixes;
+
+/* START */
+
     if (prefixes & PREFIX_DD) {
         m = MODE_DD;
     } else if (prefixes & PREFIX_FD) {
@@ -1318,8 +1321,13 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     gen_eob(s);
                     s->base.is_jmp = DISAS_NORETURN;
                     break;
+                case 1:
+                    zprintf("cb prefix\n");
+                    prefixes |= PREFIX_CB;
+                    goto next_byte;
+                    break;
 
-                /* TODO: case(s) for y=1 to y=3 */
+                /* TODO: case(s) for y=2 to y=3 */
 
                 case 4:
                     r1 = regpairmap(OR2_HL, m);
@@ -1412,8 +1420,21 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     }
     else /* TODO: differentiate "cb mode" and "ed mode" cases */
     {
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - CB- or ED-prefixed opcode unhandled [prefixes=0x%x, mode=%x]\n", __FILE__, __LINE__, prefixes, m);
+        unsigned int x, y, z; /* also p, q? */
+        //int8_t d;
+        //int r1, r2;
+
+        b = z80_ldub_code(env, s);
+        //s->pc++;
+
+        x= (b >> 6) & 0x03;     /* isolate bits 7, 6 */
+        y= (b >> 3) & 0x07;     /* isolate bits 5, 4, 3 */
+        z= b & 0x07;            /* isolate bits 2, 1, 0 */
+        //p = y >> 1;
+        //q = y & 0x01;
+
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - CB or ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x with x=%d, y=%d, z=%d]\n", __FILE__, __LINE__, prefixes, m, b, x, y, z);
 #endif
         goto unknown_op;
     }
