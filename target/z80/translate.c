@@ -1417,8 +1417,10 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     }
     else /* TODO: differentiate "cb mode" and "ed mode" cases */
     {
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - CB- or ED-prefixed opcode unhandled [prefixes=0x%x, mode=%x]\n", __FILE__, __LINE__, prefixes, m);
+        b = z80_ldub_code(env, s);
+        //s->pc++;
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("[%s:%d] FALLTHROUGH - CB or ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x]\n", __FILE__, __LINE__, prefixes, m, b);
 #endif
         goto unknown_op;
     }
