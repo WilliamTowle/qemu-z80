@@ -26,6 +26,9 @@ typedef struct CPUZ80State {
 
     /* FIXME: need data registers, index registers, interrupt registers */
 
+    /* emulator internal eflags handling */
+    uint32_t hflags; /* hidden flags, see HF_xxx constants */
+
     CPU_COMMON
 
     /* TODO: 'int model' CPU identifier */
