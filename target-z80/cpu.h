@@ -103,4 +103,19 @@ static inline bool cpu_has_work(CPUState *cs)
 
 #include "exec/exec-all.h"
 
+static inline void cpu_get_tb_cpu_state(CPUZ80State *env, target_ulong *pc,
+                                        target_ulong *cs_base, int *flags)
+{
+#if 1   /* As implemented at repo.or.cz target-z80/cpu.h */
+    *pc= env->pc;
+    *cs_base= 0;
+    *flags= env->hflags;     /* Z80: no env->eflags */
+#else   /* as implemented for target-i386 */
+    *cs_base = env->segs[R_CS].base;
+    *pc = *cs_base + env->eip;
+    *flags = env->hflags |
+        (env->eflags & (IOPL_MASK | TF_MASK | RF_MASK | VM_MASK | AC_MASK));
+#endif
+}
+
 #endif /* !defined (CPU_Z80_H) */
