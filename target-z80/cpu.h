@@ -30,6 +30,7 @@ typedef struct CPUZ80State {
 
 #include "cpu-qom.h"
 
+Z80CPU *cpu_z80_init(const char *cpu_model);
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
@@ -37,6 +38,15 @@ typedef struct CPUZ80State {
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 32 /* min TCG register size? */
 #define TARGET_VIRT_ADDR_SPACE_BITS 32 /* min TCG register size? */
+
+static inline CPUZ80State *cpu_init(const char *cpu_model)
+{
+    Z80CPU *cpu = cpu_z80_init(cpu_model);
+    if (cpu == NULL) {
+        return NULL;
+    }
+    return &cpu->env;
+}
 
 
 // MMU modes definitions?
