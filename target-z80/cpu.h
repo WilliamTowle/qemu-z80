@@ -92,6 +92,15 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 
 #include "exec/cpu-all.h"
 
+static inline bool cpu_has_work(CPUState *cs)
+{
+    /* For i386, INTERRUPT_HARD is only flagged if eflags has
+     * IF_MASK set; Zilog's Z80 also has NMI type interrupts [not
+     * implemented]
+     */
+    return cs->interrupt_request & CPU_INTERRUPT_HARD;
+}
+
 #include "exec/exec-all.h"
 
 #endif /* !defined (CPU_Z80_H) */
