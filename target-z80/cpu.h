@@ -41,6 +41,9 @@ typedef struct CPUZ80State {
     /* TODO: 'int model' CPU identifier */
 } CPUZ80State;
 
+Z80CPU *cpu_z80_init(const char *cpu_model);
+Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
+                       Error **errp);
 
 /* TODO: TARGET_{PAGE|PHYS_ADDR_SPACE|VIRT_ADDR_SPACE}_BITS */
 
@@ -49,6 +52,15 @@ typedef struct CPUZ80State {
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 32 /* min TCG register size? */
 #define TARGET_VIRT_ADDR_SPACE_BITS 32 /* min TCG register size? */
+
+static inline CPUZ80State *cpu_init(const char *cpu_model)
+{
+    Z80CPU *cpu = cpu_z80_init(cpu_model);
+    if (cpu == NULL) {
+        return NULL;
+    }
+    return &cpu->env;
+}
 
 
 /* TODO: cpu_mmu_index() */
