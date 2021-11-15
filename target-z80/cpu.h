@@ -21,7 +21,13 @@
 #define NB_MMU_MODES 1	/* more in target-x86 */
 
 typedef struct CPUZ80State {
-    /* TODO: Z80 registers */
+    /* Z80 registers */
+    uint16_t pc;    /* Program Counter (referencing 64KiB main RAM) */
+
+    /* FIXME: need data registers, index registers, interrupt registers */
+
+    /* emulator internal eflags handling */
+    uint32_t hflags; /* hidden flags, see HF_xxx constants */
 
     CPU_COMMON
 
