@@ -23,6 +23,19 @@ int load_raw_binary(struct bblbrx_binprm *bprm);
 void cpu_list_lock(void);
 void cpu_list_unlock(void);
 
+
+/* user access */
+
+#define VERIFY_READ 0
+#define VERIFY_WRITE 1 /* implies read access */
+
+static inline int access_ok(int type, abi_ulong addr, abi_ulong size)
+{
+    return page_check_range((target_ulong)addr, size,
+                            (type == VERIFY_READ) ? PAGE_READ : (PAGE_READ | PAGE_WRITE)) == 0;
+}
+
+
 /* Functions for accessing guest memory.  The tget and tput functions
    read/write single values, byteswapping as necessary.  The lock_user function
    gets a pointer to a contiguous area of guest memory, but does not perform
