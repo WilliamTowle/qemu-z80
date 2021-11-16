@@ -31,6 +31,8 @@ typedef struct CPUZ80State {
 #include "cpu-qom.h"
 
 Z80CPU *cpu_z80_init(const char *cpu_model);
+Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
+                       Error **errp);
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
