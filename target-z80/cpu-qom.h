@@ -80,4 +80,8 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 
 #define ENV_GET_CPU(e) CPU(z80_env_get_cpu(e))
 
+
+void z80_cpu_do_interrupt(CPUState *cpu);
+
+
 #endif /* !defined (QEMU_Z80_CPU_QOM_H) */
