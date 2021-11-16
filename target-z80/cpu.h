@@ -38,6 +38,20 @@
 
 #include "exec/cpu-defs.h"
 
+
+/* hidden flags - used internally by qemu to represent additional cpu
+   states. Only the CPL and INHIBIT_IRQ are not redundant. We avoid
+   using the IOPL_MASK, TF_MASK and VM_MASK bit position to ease oring
+   with eflags. */
+/* true if soft mmu is being used */
+#define HF_SOFTMMU_SHIFT     2
+/* true if hardware interrupts must be disabled for next instruction */
+#define HF_INHIBIT_IRQ_SHIFT 3
+
+#define HF_SOFTMMU_MASK      (1 << HF_SOFTMMU_SHIFT)
+#define HF_INHIBIT_IRQ_MASK  (1 << HF_INHIBIT_IRQ_SHIFT)
+
+
 /* cpu-defs.h needs NB_MMU_MODES */
 #define NB_MMU_MODES 1	/* more in target-x86 */
 
