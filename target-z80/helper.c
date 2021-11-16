@@ -51,3 +51,34 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                    env->imode, env->iff1, env->iff2, env->regs[R_I], env->regs[R_R]);
 #endif
 }
+
+
+void z80_cpu_do_interrupt(CPUState *cs)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
+
+    /* Handle the ILLOP exception as thrown by disas_insn() by
+     * bailing cleanly. For z80-bblbrx-user there are no I/O
+     * interrupts
+     */
+    if (env->exception_index == EXCP06_ILLOP)
+    {
+        cpu_abort(env, "EXCP_ILLOP at pc=0x%04x", env->pc);
+    }
+
+#if defined(CONFIG_USER_ONLY)
+    /* target-i386 has do_interrupt_user() to simulate a fake
+     * exception for handling outside the CPU execution loop. Our
+     * magic_ramloc test handles this elsewhere
+     */
+#else
+;fprintf(stderr, "** about to do_interrupt() ** passing env=%p\n", env);
+    /* Interrupt the CPU */
+    do_interrupt(env);  /* target-i386: do_interrupt_all() */
+#endif
+#if 0	/* never implemented for target-z80 */
+    /* successfully delivered */
+    env->old_exception = -1;
+#endif
+}
