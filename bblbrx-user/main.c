@@ -93,6 +93,10 @@ int main(int argc, char **argv)
     if (argc <= 1)
         usage(EXIT_SUCCESS);    /* effectively "--help" */
 
+#if 1	/* testing init */
+    module_call_init(MODULE_INIT_QOM);
+#endif
+
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 1/3...\n", __func__);
 #endif
@@ -133,11 +137,13 @@ int main(int argc, char **argv)
      * 8. Initialisation of 'target_environ'
      */
 
+;DPRINTF("INFO: About to call cpu_init()...\n");
     env = cpu_init(cpu_model);
     if (!env) {
         fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
         exit(1);
     }
+;DPRINTF("About to ENV_GET_CPU() and cpu_reset()...\n");
 
     /* ...and after cpu_init()
      *  1. maybe a cpu_reset(env) call (TARGET_{I386|SPARC|PPC})
