@@ -95,6 +95,10 @@ int main(int argc, char **argv)
     if (argc <= 1)
         usage(EXIT_SUCCESS);    /* effectively "--help" */
 
+#if 1
+    module_call_init(MODULE_INIT_QOM);
+#endif
+
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 1/3...\n", __func__);
 #endif
