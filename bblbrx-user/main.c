@@ -95,6 +95,10 @@ int main(int argc, char **argv)
     if (argc <= 1)
         usage(EXIT_SUCCESS);    /* effectively "--help" */
 
+#if 1
+    module_call_init(MODULE_INIT_QOM);
+#endif
+
     /* PARTIAL - prior to argument parse v1.7.2 has:
      * 1. module_call_init() for QOM
      * 2. qemu_cache_utils_init()
