@@ -97,38 +97,114 @@ out:
 }
 
 
+static void z80_cpu_instance_init(Object *obj)
+{
+    CPUState *cs = CPU(obj);
+    Z80CPU *cpu = Z80_CPU(obj);
+    CPUZ80State *env = &cpu->env;
+    static int inited;
+
+    cs->env_ptr = env;
+    cpu_exec_init(env);
+
+    /* x86 sets family/model/stepping etc here */
+
+    /* init various static tables used in TCG mode */
+    if (tcg_enabled() && !inited) {
+        inited = 1;
+#if 0   /* x86-specific name */
+        optimize_flags_init();
+#endif
+#ifndef CONFIG_USER_ONLY
+        cpu_set_debug_excp_handler(breakpoint_handler);
+#endif
+    }
+//X{
+//X    Z80CPU *cpu = Z80_CPU(obj);
+//X    cpu_set_cpustate_pointers(cpu);
+//X}
+}
+
+static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
+{
+    CPUState *cs = CPU(dev);
+    Z80CPUClass *xcc = Z80_CPU_GET_CLASS(dev);
+    //XCPUZ80State *env = &cpu->env;
+    Error *local_err = NULL;
+#ifndef CONFIG_USER_ONLY
+    Z80CPU *cpu = Z80_CPU(dev);
+
+    qemu_register_reset(z80_cpu_machine_reset_cb, cpu);
+#endif
+
+    qemu_init_vcpu(cs);
+
+    cpu_reset(cs);
+
+    xcc->parent_realize(dev, &local_err);
+
+//Xout:
+    if (local_err != NULL) {
+        error_propagate(errp, local_err);
+        return;
+    }
+//X{
+//X    CPUState *cs = CPU(dev);
+//X    Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
+//X    Error *local_err = NULL;
+//X
+//X    cpu_exec_realizefn(cs, &local_err);
+//X    if (local_err != NULL) {
+//X        error_propagate(errp, local_err);
+//X        return;
+//X    }
+//X    qemu_init_vcpu(cs);
+//X    cpu_reset(cs);
+//X
+//X    zcc->parent_realize(dev, errp);
+//X}
+}
+
+
+
 static void z80_cpu_class_init(ObjectClass *oc, void *data)
 {
-    DeviceClass *dc = DEVICE_CLASS(oc);
+    Z80CPUClass *xcc = Z80_CPU_CLASS(oc);
     CPUClass *cc = CPU_CLASS(oc);
-    Z80CPUClass *zcc = Z80_CPU_CLASS(oc);
+    DeviceClass *dc = DEVICE_CLASS(oc);
 
-#if 1	/* WmT - PARTIAL */
-;fprintf(stderr, "DEBUG: Reached %s() **PARTIAL ONLY**\n", __func__);
-#endif
-    zcc->parent_realize = dc->realize;
+    xcc->parent_realize = dc->realize;
     dc->realize = z80_cpu_realizefn;
+    //Xdc->bus_type = TYPE_ICC_BUS;
+    //Xdc->props = z80_cpu_properties;
 
-//    device_class_set_parent_reset(dc, z80_cpu_reset, &zcc->parent_reset);
-//
-//    cc->class_by_name = z80_cpu_class_by_name;
-//
-    cc->has_work = z80_cpu_has_work;
-//    cc->do_interrupt = z80_cpu_do_interrupt;
-//    cc->cpu_exec_interrupt = z80_cpu_exec_interrupt;
-//    cc->dump_state = z80_cpu_dump_state;
+    xcc->parent_reset = cc->reset;
+    cc->reset = z80_cpu_reset;
+    //cc->reset_dump_flags = CPU_DUMP_FPU | CPU_DUMP_CCOP;
+    cc->reset_dump_flags = 0;
+
+    cc->do_interrupt = z80_cpu_do_interrupt;
+    cc->dump_state = z80_cpu_dump_state;
     cc->set_pc = z80_cpu_set_pc;
-//    cc->memory_rw_debug = z80_cpu_memory_rw_debug;
-//    cc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
-//    cc->tlb_fill = z80_cpu_tlb_fill;
-////    cc->vmsd = &vms_z80_cpu;
-//    cc->disas_set_info = z80_cpu_disas_set_info;
-//    cc->tcg_initialize = z80_cpu_tcg_init;
     cc->synchronize_from_tb = z80_cpu_synchronize_from_tb;
-//    cc->gdb_read_register = z80_cpu_gdb_read_register;
-//    cc->gdb_write_register = z80_cpu_gdb_write_register;
-//    cc->gdb_num_core_regs = 35;	/* NUMBER_OF_CPU_REGISTERS? */
-//    cc->gdb_core_xml_file = "z80-cpu.xml";
+#if 0	/* FIXME: gdb interface unimplemented */
+    cc->gdb_read_register = z80_cpu_gdb_read_register;
+    cc->gdb_write_register = z80_cpu_gdb_write_register;
+#endif
+    //Xcc->get_arch_id = z80_cpu_get_arch_id;
+    //Xcc->get_paging_enabled = z80_cpu_get_paging_enabled;
+#ifndef CONFIG_USER_ONLY
+    //Xcc->get_memory_mapping = z80_cpu_get_memory_mapping;
+    //Xcc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
+    //Xcc->write_elf64_note = z80_cpu_write_elf64_note;
+    //Xcc->write_elf64_qemunote = z80_cpu_write_elf64_qemunote;
+    //Xcc->write_elf32_note = z80_cpu_write_elf32_note;
+    //Xcc->write_elf32_qemunote = z80_cpu_write_elf32_qemunote;
+    //Xcc->vmsd = &vmstate_z80_cpu;
+#endif
+#if 0	/* FIXME: gdb interface unimplemented (and probably wrong) */
+    cc->gdb_num_core_regs = CPU_NB_REGS * 2 + 25;
+#endif
 }
 
 static const TypeInfo z80_cpu_type_info = {
@@ -141,7 +217,8 @@ static const TypeInfo z80_cpu_type_info = {
         .parent = TYPE_CPU,
         .instance_size = sizeof(Z80CPU),
         .instance_init = z80_cpu_instance_init,
-        //.abstract = true;
+        //.abstract = true,
+	.abstract = false,
         .class_size = sizeof(Z80CPUClass),
         .class_init = z80_cpu_class_init,
 };
