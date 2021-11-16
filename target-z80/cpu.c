@@ -44,6 +44,39 @@ out:
     return cpu;
 }
 
+/* CPUClass::reset() */
+static void z80_cpu_reset(CPUState *s)
+{
+    Z80CPU *cpu = Z80_CPU(s);
+    Z80CPUClass *xcc = Z80_CPU_GET_CLASS(cpu);
+    CPUZ80State *env = &cpu->env;
+
+    xcc->parent_reset(s);
+
+    memset(env, 0, offsetof(CPUZ80State, breakpoints));
+
+    tlb_flush(env, 1);
+
+    //Xenv->old_exception = -1;
+
+    /* init to reset state */
+
+    /* FIXME: full set of registers not yet implemented */
+    //memset(env->regs, 0, sizeof(env->regs));
+    env->pc= 0x0000;
+    //env->iff1= 0;
+    //env->iff2= 0;
+    //env->imode= 0;
+    //env->regs[R_A]= 0xff;
+    //env->regs[R_F]= 0xff;
+    //env->regs[R_SP]= 0xffff;
+    env->hflags= 0;
+
+#ifdef CONFIG_SOFTMMU
+    env->hflags |= HF_SOFTMMU_MASK;
+#endif
+}
+
 static void cpu_z80_register(Z80CPU *cpu, const char *name, Error **errp)
 {
     /* FUTURE: distinguish/support CPU types here?
