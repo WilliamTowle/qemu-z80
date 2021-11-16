@@ -276,9 +276,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     //cc->reset_dump_flags = CPU_DUMP_FPU | CPU_DUMP_CCOP;
     cc->reset_dump_flags = 0;
 
-#if 0	/* TODO: implement later - not required for z80-bblbrx-user */
     cc->do_interrupt = z80_cpu_do_interrupt;
-#endif
     cc->dump_state = z80_cpu_dump_state;
     cc->set_pc = z80_cpu_set_pc;
     cc->synchronize_from_tb = z80_cpu_synchronize_from_tb;
