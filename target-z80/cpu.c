@@ -221,6 +221,15 @@ static void z80_cpu_set_pc(CPUState *cs, vaddr value)
 }
 
 
+static void z80_cpu_synchronize_from_tb(CPUState *cs, TranslationBlock *tb)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
+
+    env->pc= tb->pc;
+}
+
+
 static void z80_cpu_class_init(ObjectClass *oc, void *data)
 {
     Z80CPUClass *xcc = Z80_CPU_CLASS(oc);
