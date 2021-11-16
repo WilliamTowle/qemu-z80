@@ -214,6 +214,13 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 }
 
 
+static void z80_cpu_set_pc(CPUState *cs, vaddr value)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+
+    cpu->env.pc = value;
+}
+
 
 static void z80_cpu_class_init(ObjectClass *oc, void *data)
 {
