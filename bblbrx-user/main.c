@@ -188,6 +188,9 @@ int main(int argc, char **argv)
      *    2. with call to cpu_exec_init_all();
      */
 
+    tcg_exec_init(0);
+    /* TODO: cpu_exec_init_all(); here */
+
     env = cpu_init(cpu_model);
     if (!env) {
         fprintf(stderr, "Unable to find definition for cpu_model '%s'\n", cpu_model);
