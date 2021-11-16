@@ -191,7 +191,7 @@ int main(int argc, char **argv)
      */
 
     tcg_exec_init(0);
-    /* TODO: cpu_exec_init_all(); here */
+    cpu_exec_init_all();
 
 ;DPRINTF("INFO: About to call cpu_init()...\n");
     env = cpu_init(cpu_model);
