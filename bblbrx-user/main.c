@@ -187,6 +187,9 @@ int main(int argc, char **argv)
      * 8. Initialisation of 'target_environ'
      */
 
+    tcg_exec_init(0);
+    cpu_exec_init_all();
+
 ;DPRINTF("INFO: About to call cpu_init()...\n");
     env = cpu_init(cpu_model);
     if (!env) {
