@@ -11,6 +11,17 @@
 
 #include "qemu.h"
 
+
+#if 1	/* debug */
+	/* TODO: version with error_printf() needs CPU headers */
+#define DPRINTF(fmt, ...) \
+	do { fprintf(stderr, fmt, ## __VA_ARGS__); } while (0)
+#else
+#define DPRINTF(fmt, ...) \
+	do { } while (0)
+#endif
+
+
 static void usage(int exitcode)
 {
     printf("Usage: qemu-" TARGET_ARCH " [options] program\n");
@@ -60,7 +71,7 @@ int main(int argc, char **argv)
         usage(EXIT_SUCCESS);    /* effectively "--help" */
 
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - missing initialisation 1/2...\n", __func__);
+;DPRINTF("%s(): PARTIAL - missing initialisation 1/2...\n", __func__);
 #endif
     /* PARTIAL: at this point:
      * 1. may need to call qemu_cache_utils_init(envp);
@@ -76,7 +87,7 @@ int main(int argc, char **argv)
     filename= argv[optind];
 
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - missing initialisation 2/2...\n", __func__);
+;DPRINTF("%s(): PARTIAL - missing initialisation 2/2...\n", __func__);
 #endif
     /* PARTIAL:
      * to effect CPU init, we do:
