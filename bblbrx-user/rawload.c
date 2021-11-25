@@ -10,6 +10,17 @@
 
 #include "qemu.h"
 
+
+#if 1	/* debug */
+	/* TODO: version with error_printf() needs CPU headers */
+#define DPRINTF(fmt, ...) \
+	do { fprintf(stderr, fmt, ## __VA_ARGS__); } while (0)
+#else
+#define DPRINTF(fmt, ...) \
+	do { } while (0)
+#endif
+
+
 int load_raw_binary(struct bblbrx_binprm *bprm)
 {
     abi_ulong	host_start, host_size;
@@ -18,7 +29,7 @@ int load_raw_binary(struct bblbrx_binprm *bprm)
     host_size= bprm->filesize;
 
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): PARTIAL - missing load (%u bytes from file %s) to addr 0x%04x\n", __func__, host_size, bprm->filename, host_start);
+;DPRINTF("%s(): PARTIAL - missing load (%u bytes from file %s) to addr 0x%04x\n", __func__, host_size, bprm->filename, host_start);
 #endif
     /* PARTIAL: typical algorithm runs as follows
      * 1. call load function; normally:
