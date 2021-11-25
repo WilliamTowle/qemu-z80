@@ -603,10 +603,10 @@ static inline void gen_cond_jump(int cc, int l1)
 static inline void gen_jcc(DisasContext *s, int cc,
                            target_ulong val, target_ulong next_pc)
 {
-    TranslationBlock *tb;
+    //TranslationBlock *tb; /* unused */
     int l1;
 
-    tb = s->tb;
+    //tb = s->tb;
 
     l1 = gen_new_label();
 
@@ -623,10 +623,10 @@ static inline void gen_jcc(DisasContext *s, int cc,
 static inline void gen_callcc(DisasContext *s, int cc,
                               target_ulong val, target_ulong next_pc)
 {
-    TranslationBlock *tb;
+    //TranslationBlock *tb; /* unused */
     int l1;
 
-    tb = s->tb;
+    //tb = s->tb;
 
     l1 = gen_new_label();
 
@@ -645,9 +645,12 @@ static inline void gen_callcc(DisasContext *s, int cc,
 static inline void gen_retcc(DisasContext *s, int cc,
                              target_ulong next_pc)
 {
-    TranslationBlock *tb;
+    //TranslationBlock *tb; /* unused */
     int l1;
 
+    //tb = s->tb;
+
+    l1 = gen_new_label();
 
     gen_cond_jump(cc, l1);
 
