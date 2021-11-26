@@ -161,7 +161,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     //rex_r = 0;
 
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
+;DPRINTF("%s(): INFO - 'next_byte' label follows PC value dump...\n", __func__);
 #endif
     zprintf("PC = %04x: ", s->pc);
 //next_byte:
@@ -194,10 +194,10 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         q = y & 0x01;
 
 #if 0	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] HACK - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #else
-;fprintf(stderr, "[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] PARTIAL - unprefixed opcode, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
 //...
 #endif
         switch (x) {
@@ -755,10 +755,10 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         q = y & 0x01;
 
 #if 1	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] HACK - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] HACK - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #else
-;fprintf(stderr, "[%s:%d] PARTIAL - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] PARTIAL - PREFIX_CB case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
 #endif
 //        if (m != MODE_NORMAL) {
 //            r1 = regmap(OR_HLmem, m);
@@ -832,10 +832,10 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         q = y & 0x01;
 
 #if 1	/* WmT - HACK */
-;fprintf(stderr, "[%s:%d] HACK - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] HACK - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) -> unhandled\n", __FILE__, __LINE__, b, x, y, z, p, q);
 ;goto illegal_op;
 #else
-;fprintf(stderr, "[%s:%d] PARTIAL - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
+;DPRINTF("[%s:%d] PARTIAL - PREFIX_ED case, byte 0x%02x (x %d, y %d, z %d, p %d, q %d) retrieved\n", __FILE__, __LINE__, b, x, y, z, p, q);
 #endif
 //        switch (x) {
 //        case 0:
@@ -1148,7 +1148,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     /* generate intermediate code */
     pc_start = tb->pc;
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
+;DPRINTF("%s(): set pc_start to tb->pc 0x%04x\n", __func__, pc_start);
 #endif
     cs_base = tb->cs_base;
     flags = tb->flags;
@@ -1172,7 +1172,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
+;DPRINTF("%s(): set pc_ptr <- pc_start 0x%04x\n", __func__, pc_ptr);
 #endif
     lj = -1;
 #if 1	/* WmT - TRACE */
