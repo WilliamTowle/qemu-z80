@@ -1054,10 +1054,6 @@ static inline int gen_intermediate_code_internal(CPUState *env,
                                                  TranslationBlock *tb,
                                                  int search_pc)
 {
-#if 0	/* WmT - PARTIAL */
-;DPRINTF("BAIL %s() - INCOMPLETE\n", __func__);
-;exit(1);
-#else
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
     uint16_t *gen_opc_end;
