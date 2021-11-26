@@ -1007,17 +1007,12 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 #endif
 
  //illegal_op:
-#if 1
-;DPRINTF("%s(): INCOMPLETE - reached 'illegal_op' label ***\n", __func__);
-;exit(1);
-#else
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
+;DPRINTF("EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
 #endif
     /* XXX: ensure that no lock was generated */
     gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
     return s->pc;
-#endif
 }
 
 ///* generate intermediate code in gen_opc_buf and gen_opparam_buf for
