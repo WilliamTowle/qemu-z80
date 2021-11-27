@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     CPUArchState *env;
     void  *target_ram;
   struct bblbrx_binprm bprm;
-  TaskState *ts;
+    TaskState ts1, *ts= &ts1;
     int optind;
     int ret;
 
@@ -284,12 +284,12 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-        /* PARTIAL. Depending on target system, manage passing arg{c|v} to program */
+    /* PARTIAL. Depending on target system, manage passing arg{c|v} to program */
 
-	ts= qemu_mallocz(sizeof *ts);
 	ts->used = 1;
 	ts->bprm = &bprm;
 	env->opaque = ts;
+
     ret= bblbrx_exec(filename, &bprm);
     if (ret != 0) {
         if (ret > 0)
