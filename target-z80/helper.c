@@ -79,7 +79,7 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
 #if defined(CONFIG_USER_ONLY)
 
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
-                             int is_write, int mmu_idx, int is_softmmu)
+                             int is_write, int mmu_idx)
 {
     /* user mode only emulation */
     is_write &= 1;
@@ -98,7 +98,6 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
    -1 = cannot handle fault
    0  = nothing more to do
    1  = generate PF fault
-   2  = soft MMU activation required for this block
 */
 #if 0	/* legacy prototype */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
@@ -108,17 +107,19 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
                              int is_write1, int mmu_idx)
 #endif
 {
-    int prot, page_size, ret, is_write;
+    int prot, page_size, is_write;
     unsigned long paddr, page_offset;
     target_ulong vaddr, virt_addr;
-    int is_user = 0;
 
+    //is_user = mmu_idx == MMU_USER_IDX;
 #if defined(DEBUG_MMU)
-    printf("MMU fault: addr=" TARGET_FMT_lx " w=%d u=%d pc=" TARGET_FMT_lx "\n",
-           addr, is_write1, mmu_idx, env->pc);
+    printf("MMU fault: addr=" TARGET_FMT_lx " w=%d u=%d eip=" TARGET_FMT_lx "\n",
+           addr, is_write1, is_user, env->eip);
 #endif
+
     is_write = is_write1 & 1;
 
+    /* this page can be put in the TLB */
     virt_addr = addr & TARGET_PAGE_MASK;
     prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
     page_size = TARGET_PAGE_SIZE;
@@ -130,10 +131,9 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
     paddr = (addr & TARGET_PAGE_MASK) + page_offset;
     vaddr = virt_addr + page_offset;
 
-    //ret = tlb_set_page_exec(env, vaddr, paddr, prot, is_user, is_softmmu);
-    //return ret;
     tlb_set_page(env, vaddr, paddr, prot, mmu_idx, page_size);
     return 0;
+    /* No fault handling required */
 }
 #endif
 
