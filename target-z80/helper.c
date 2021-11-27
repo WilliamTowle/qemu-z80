@@ -158,11 +158,11 @@ void cpu_dump_state(CPUState *env, FILE *f,
    2  = soft mmu activation required for this block
 */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
-                             int is_write1, int mmu_idx, int is_softmmu)
+                             int is_write, int mmu_idx)
 {
-#if 1	/* temp'y */
-	printf("%s() skeleton ... INCOMPLETE\n", __func__);
-	exit(1);
+#if 1	/* TODO: temp'y */
+;DPRINTF("[%s:%d] MMU fault handler INCOMPLETE\n", __FILE__, __LINE__);
+;exit(1);
 #else
 	/* TODO: see g106f733 "Add target-z80 tree, z80-dis.c" */
 #endif

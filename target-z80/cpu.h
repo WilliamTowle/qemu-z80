@@ -77,7 +77,7 @@ int cpu_z80_exec(CPUZ80State *s);
 
 /* helper.c */
 int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
-                             int is_write1, int mmu_idx, int is_softmmu);
+                             int is_write, int mmu_idx);
 #define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
 
 #define cpu_init cpu_z80_init
