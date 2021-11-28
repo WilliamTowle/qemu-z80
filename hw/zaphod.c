@@ -10,7 +10,6 @@
 #include "qemu-error.h"
 
 #include "boards.h"
-#include "exec-memory.h"
 
 
 /* ZAPHOD_RAM_SIZE:
@@ -27,37 +26,49 @@
     do { } while (0)
 #endif
 
-
-static void zaphod_init(ram_addr_t ram_size,
-                     const char *boot_device,
-                     const char *kernel_filename, const char *kernel_cmdline,
-                     const char *initrd_filename, const char *cpu_model)
+static CPUState *zaphod_init_cpu(const char *cpu_model)
 {
-    CPUState *env;
-    MemoryRegion *address_space_mem= get_system_memory();
-    MemoryRegion *ram= g_new(MemoryRegion, 1);
+    CPUState *cpu;
 
     /* QEmu v1 doesn't record a default CPU; ours is Z80 */
     if (!cpu_model)
         cpu_model= "z80";
-    env= cpu_init(cpu_model);
-    if (!env) {
+
+    cpu= cpu_init(cpu_model);
+    if (!cpu) {
         hw_error("Unable to find '%s' CPU definition\n", cpu_model);
     }
 
-    cpu_reset(env);
+    return cpu;
+}
+
+static MemoryRegion *zaphod_init_ram(void)
+{
+    MemoryRegion *address_space_mem= get_system_memory();
+    MemoryRegion *ram= g_new(MemoryRegion, 1);
 
     /* QEmu v1 bases ram_size on '-m megs' option. Override this */
     memory_region_init_ram(ram, NULL, "zaphod.ram", ZAPHOD_RAM_SIZE);
-    /* Leaving the entire 64KiB memory space writable supports
-     * self-modifying test code. Call memory_region_set_readonly()
-     * for ROM regions,
-     */
+    /* TODO: for ROM we can memory_region_set_readonly() */
     memory_region_add_subregion(address_space_mem, 0, ram);
 
+    return ram;
+}
+
+static void zaphod_init_machine(ram_addr_t ram_size,
+                     const char *boot_device,
+                     const char *kernel_filename, const char *kernel_cmdline,
+                     const char *initrd_filename, const char *cpu_model)
+{
+    ZaphodState *zs= g_new(ZaphodState, 1);
+
+    zs->cpu= zaphod_init_cpu(cpu_model);
+    cpu_reset(zs->cpu);
+
+    zs->ram= zaphod_init_ram();
+
 #if 1   /* TRACE */
-;DPRINTF("INCOMPLETE - %s() BAILING\n", __func__);
-;exit(1);
+;DPRINTF("DEBUG: %s() INCOMPLETE - will execute from empty RAM\n", __func__);
 #endif
     /* TODO
      * Board-specific init, with:
@@ -72,7 +83,7 @@ static QEMUMachine zaphod_machine= {
     /* sample machine: Z80 CPU, 64KiB RAM, basic I/O */
     .name=	"zaphod",
     .desc=	"Zaphod 1",
-    .init=	zaphod_init,
+    .init=	zaphod_init_machine,
 
 #if 1
     .max_cpus= 1,
