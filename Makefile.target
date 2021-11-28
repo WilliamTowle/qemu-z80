@@ -161,11 +161,11 @@ obj-z80-y += ioport-user.o
 $(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
 
 ## build subset (or none) of cpu emulator library
-libobj-y =
-libobj-y += exec.o translate-all.o cpu-exec.o translate.o
-libobj-y += tcg/tcg.o tcg/optimize.o
-libobj-y += op_helper.o helper.o
-libobj-y += disas.o
+#libobj-y =
+#libobj-y += exec.o translate-all.o cpu-exec.o translate.o
+#libobj-y += tcg/tcg.o tcg/optimize.o
+#libobj-y += op_helper.o helper.o
+#libobj-y += disas.o
 
 obj-y += $(addprefix ../libuser/, $(user-obj-y))
 obj-y += $(addprefix ../libdis-user/, $(libdis-y))
