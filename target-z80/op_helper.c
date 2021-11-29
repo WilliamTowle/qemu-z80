@@ -989,9 +989,11 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void
     //env = cpu_single_env;
     env = env1;
 
-    //ret = cpu_x86_handle_mmu_fault(env, addr, is_write, mmu_idx);
-    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
-;DPRINTF("TRACE: handle MMU fault gave retval %d\n", ret);
+    /* repo.or.cz tries to force mmu_idx=MMU_USER_IDX at all times
+     * but in v1.0.1 (during initial fetch?) it's 0 sometimes
+     */
+    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, mmu_idx);
     if (ret) {
         if (retaddr) {
             /* now we have a real cpu fault */
