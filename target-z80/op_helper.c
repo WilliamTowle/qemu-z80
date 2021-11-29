@@ -976,7 +976,7 @@ void HELPER(ld_A_I)(void)
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
-void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int is_user, void *retaddr)
+void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void *retaddr)
 {
     TranslationBlock *tb;
     int ret;
@@ -986,9 +986,12 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int is_user, void
     /* XXX: hack to restore env in all cases, even if not called from
        generated code */
     saved_env = env;
-    env = cpu_single_env;
+    //env = cpu_single_env;
+    env = env1;
 
+    //ret = cpu_x86_handle_mmu_fault(env, addr, is_write, mmu_idx);
     ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
+;DPRINTF("TRACE: handle MMU fault gave retval %d\n", ret);
     if (ret) {
         if (retaddr) {
             /* now we have a real cpu fault */
@@ -1000,11 +1003,7 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int is_user, void
                 cpu_restore_state(tb, env, pc);
             }
         }
-        if (retaddr) {
-            raise_exception_err(env->exception_index, env->error_code);
-        } else {
-            raise_exception_err_norestore(env->exception_index, env->error_code);
-        }
+        raise_exception_err(env->exception_index, env->error_code);
     }
     env = saved_env;
 }
