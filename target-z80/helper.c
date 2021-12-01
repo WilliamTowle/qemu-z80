@@ -23,6 +23,17 @@
 
 #include "cpu.h"
 
+
+#if 1	/* debug */
+	/* TODO: version with error_printf() needs CPU headers */
+#define DPRINTF(fmt, ...) \
+	do { fprintf(stderr, fmt, ## __VA_ARGS__); } while (0)
+#else
+#define DPRINTF(fmt, ...) \
+	do { } while (0)
+#endif
+
+
 static int cpu_z80_find_by_name(const char *name);
 
 CPUZ80State *cpu_z80_init(const char *model)
@@ -37,6 +48,9 @@ CPUZ80State *cpu_z80_init(const char *model)
 
     env= calloc(1, sizeof *env);
 
+#if defined(TARGET_Z80)
+;DPRINTF("%s(): PARTIAL - model/flags init missing...\n", __func__);
+#endif
     /* PARTIAL: cpu_z80_init() continues (requiring enhanced
      * CPUZ80State?) with:
      * 1. cpu_exec_init() for the 'env'
