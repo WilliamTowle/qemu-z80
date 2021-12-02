@@ -6,8 +6,10 @@
  */
 
 
+#include "cpu.h"
 #include "exec.h"
 #include "helper.h"
+#include "dyngen-exec.h"
 
 //#define A0 (env->a0)
 //
