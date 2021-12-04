@@ -19,11 +19,15 @@
  */
 
 #include "cpu.h"
-#include "exec.h"
+//#include "exec.h"
 #include "helper.h"
 #include "dyngen-exec.h"
-
 #include "ioport.h"
+
+#if !defined(CONFIG_USER_ONLY)
+#include "softmmu_exec.h"
+#endif /* !defined(CONFIG_USER_ONLY) */
+
 
 #if 1  /* was: TARGET_LONG_BITS > HOST_LONG_BITS
         * but TCG_AREG{1|2} no longer available for else case
@@ -42,23 +46,24 @@ target_ulong T1;
 //register target_ulong T1 asm(AREG2);
 #endif /* ! (TARGET_LONG_BITS > HOST_LONG_BITS) */
 
-//#define A0 (env->a0)
-//
-//#define A   (env->regs[R_A])
-//#define F   (env->regs[R_F])
-//#define BC  (env->regs[R_BC])
-//#define DE  (env->regs[R_DE])
-//#define HL  (env->regs[R_HL])
-//#define IX  (env->regs[R_IX])
-//#define IY  (env->regs[R_IY])
-//#define SP  (env->regs[R_SP])
-//#define I   (env->regs[R_I])
-//#define R   (env->regs[R_R])
-//#define AX  (env->regs[R_AX])
-//#define FX  (env->regs[R_FX])
-//#define BCX (env->regs[R_BCX])
-//#define DEX (env->regs[R_DEX])
-//#define HLX (env->regs[R_HLX])
+
+#define A0 (env->a0)
+
+#define A   (env->regs[R_A])
+#define F   (env->regs[R_F])
+#define BC  (env->regs[R_BC])
+#define DE  (env->regs[R_DE])
+#define HL  (env->regs[R_HL])
+#define IX  (env->regs[R_IX])
+#define IY  (env->regs[R_IY])
+#define SP  (env->regs[R_SP])
+#define I   (env->regs[R_I])
+#define R   (env->regs[R_R])
+#define AX  (env->regs[R_AX])
+#define FX  (env->regs[R_FX])
+#define BCX (env->regs[R_BCX])
+#define DEX (env->regs[R_DEX])
+#define HLX (env->regs[R_HLX])
 
 #define PC  (env->pc)
 
@@ -145,7 +150,7 @@ void do_interrupt(CPUZ80State *env)
  * EIP value AFTER the interrupt instruction. It is only relevant if
  * is_int is TRUE.
  */
-void raise_interrupt(int intno, int is_int, int error_code,
+static void raise_interrupt(int intno, int is_int, int error_code,
                      int next_eip_addend)
 {
     env->exception_index = intno;
@@ -160,8 +165,6 @@ void raise_interrupt(int intno, int is_int, int error_code,
     cpu_loop_exit(env);
 #endif
 }
-
-/* shortcuts to generate exceptions */
 
 /* same as raise_exception_err, but do not restore global registers */
 static void raise_exception_err_norestore(int exception_index, int error_code)
@@ -178,7 +181,7 @@ static void raise_exception_err(int exception_index, int error_code)
     longjmp(env->jmp_env, 1);
 }
 
-void raise_exception(int exception_index)
+static void raise_exception(int exception_index)
 {
     raise_interrupt(exception_index, 0, 0, 0);
 }
