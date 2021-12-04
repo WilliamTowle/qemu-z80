@@ -196,8 +196,10 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 #define cpu_list z80_cpu_list
 
 /* MMU modes definitions */
+#if !defined(CONFIG_USER_ONLY)
 #define MMU_MODE0_SUFFIX _kernel
 #define MMU_MODE1_SUFFIX _user
+#endif
 #define MMU_USER_IDX 1
 
 static inline int cpu_mmu_index(CPUState *env)
