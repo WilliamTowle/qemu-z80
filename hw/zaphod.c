@@ -180,13 +180,8 @@ DPRINTF("INFO: %s(): Kernel size %d bytes\n", __func__, kernel_size);
     }
 }
 
-static void zaphod_init_dev_machine(ram_addr_t ram_size,
-                     const char *boot_device,
-                     const char *kernel_filename, const char *kernel_cmdline,
-                     const char *initrd_filename, const char *cpu_model)
+static void zaphod_init_common(ZaphodState *zs, const char *kernel_filename, const char *cpu_model)
 {
-    ZaphodState *zs= g_new(ZaphodState, 1);
-
     zs->cpu= zaphod_init_cpu(cpu_model);
     cpu_reset(zs->cpu);
 
@@ -202,37 +197,70 @@ static void zaphod_init_dev_machine(ram_addr_t ram_size,
     zaphod_init_sercon(zs, serial_hds[0]);
 }
 
-static QEMUMachine zaphod_machine= {
-    /* sample machine: Z80 CPU, 64KiB RAM, basic I/O */
+
+/* Development machine init
+ * Implemented for testing purposes - no fixed features list
+ */
+
+static void zaphod_init_dev_machine(ram_addr_t ram_size,
+                     const char *boot_device,
+                     const char *kernel_filename, const char *kernel_cmdline,
+                     const char *initrd_filename, const char *cpu_model)
+{
+    ZaphodState *zs= g_new(ZaphodState, 1);
+    /* TODO: "features" support required to distinguish this board */
+    zaphod_init_common(zs, kernel_filename, cpu_model);
+}
+
+static QEMUMachine zaphod_dev_machine= {
     .name=	"zaphod-dev",
     .desc=	"Zaphod 0 (Test System)",
     .init=	zaphod_init_dev_machine,
 
-#if 1
     .max_cpus= 1,
-    .no_parallel= 1,
-    .is_default = 1
-#else   /* all options for v1 */
-    .use_scsi= 0,
-    .max_cpus= 1,
-    .no_serial= 0,
-    .no_parallel= 1,
-    .no_vga= 1,
-    .no_floppy= 1,
-    .no_cdrom= 1,
-    .no_sdcard= 1,
-    .is_default = 1
-#endif
+    .no_parallel= 1
 };
+
+
+/* "Phil Brown Emulator" init
+ * Features:
+ *  Input: 'stdio' emulation
+ *  Output: screen enabled, with simple control codes
+ */
+
+static void zaphod_init_pb_machine(ram_addr_t ram_size,
+                     const char *boot_device,
+                     const char *kernel_filename, const char *kernel_cmdline,
+                     const char *initrd_filename, const char *cpu_model)
+{
+    ZaphodState *zs= g_new(ZaphodState, 1);
+    /* TODO: "features" support required to distinguish this board */
+    zaphod_init_common(zs, kernel_filename, cpu_model);
+}
+
+static QEMUMachine zaphod_pb_machine= {
+    .name=	"zaphod-pb",
+    .alias=	"zaphod",
+    .desc=	"Zaphod 1 (Phil Brown Emulator)",
+    .init=	zaphod_init_pb_machine,
+
+    .max_cpus= 1,
+    .no_parallel= 1
+};
+
+
+/* TODO: "Grant Searle SBC" init to feature:
+ *  Input: 'stdio' emulation, plus mc6850 emulation (with IRQ)
+ *  Output: screen enabled, with extended control codes
+ *  // static void zaphod_init_pb_machine([...])
+ */
+
 
 
 static void zaphod_machine_init(void)
 {
-;DPRINTF("DEBUG: Enter %s() { calling qemu_register_machine() }\n", __func__);
-
-	qemu_register_machine(&zaphod_machine);
-
-;DPRINTF("DEBUG: Exit %s()\n", __func__);
+	qemu_register_machine(&zaphod_dev_machine);
+	qemu_register_machine(&zaphod_pb_machine);
 }
 
 machine_init(zaphod_machine_init);
