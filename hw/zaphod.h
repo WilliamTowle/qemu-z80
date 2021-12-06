@@ -38,6 +38,7 @@ typedef struct {
 #ifdef ZAPHOD_HAS_SCREEN
 typedef struct {
     DisplayState    *ds;
+    uint8_t         *rgb_bg, *rgb_fg;
     bool            curs_visible;
     int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
@@ -68,7 +69,7 @@ ZaphodSerConState *zaphod_new_sercon(ZaphodState *zs, CharDriverState* sercon);
 #endif
 
 #ifdef ZAPHOD_HAS_SCREEN
-ZaphodScreenState *zaphod_new_screen(void);
+ZaphodScreenState *zaphod_new_screen(ZaphodState *zs);
 #endif
 
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
