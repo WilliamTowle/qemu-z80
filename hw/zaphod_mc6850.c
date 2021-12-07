@@ -28,7 +28,7 @@ static uint32_t zaphod_mc6850_read(void *opaque, uint32_t addr)
 	switch (addr)
 	{
 	case 0x80:		/* read mc6850 PortStatus */
-		value= (((ZaphodState *)zms->super)->inkey)? 0x01 : 0; /* RxDataReady */
+		value= zaphod_get_inkey(zms->super, false)? 0x01 : 0; /* RxDataReady */
 		value|= 0x02;		/* TxDataEmpty (always) */
 		value|= 0x04;		/* DTD [Data Carrier Detect] */
 		value|= 0x08;		/* CTS [Clear to Send] */
@@ -38,8 +38,7 @@ static uint32_t zaphod_mc6850_read(void *opaque, uint32_t addr)
 #endif
 		return value;
 	case 0x81:		/* read mc6850 RxData */
-		value= ((ZaphodState *)zms->super)->inkey;
-		((ZaphodState *)zms->super)->inkey= 0;
+		value= zaphod_get_inkey(zms->super, true);
 #ifdef ZAPHOD_HAS_RXINT_IRQ
 		if (zms->rxint_irq)
 			qemu_irq_lower(*zms->rxint_irq);

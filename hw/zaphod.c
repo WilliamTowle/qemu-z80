@@ -97,9 +97,10 @@ static void zaphod_init_common(ZaphodState *zs, const char *kernel_filename, con
 
     zs->ram= zaphod_init_ram();
 
+    zs->inkey= 0;
+
     zaphod_load_kernel(kernel_filename);
 
-    /* TODO: API for 'inkey' access by devices */
 #ifdef ZAPHOD_HAS_SERCON
     zs->sercon= zaphod_new_sercon(zs, serial_hds[0]);
 #endif
@@ -110,6 +111,26 @@ static void zaphod_init_common(ZaphodState *zs, const char *kernel_filename, con
     zs->screen= zaphod_new_screen(zs);
 #endif
 }
+
+
+void zaphod_set_inkey(void *opaque, uint8_t val, bool is_data)
+{
+    ZaphodState *zs= (ZaphodState *)opaque;
+    zs->inkey= val;
+    /* TODO: raise MC6850's interrupt, if this was data */
+}
+
+uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear)
+{
+    ZaphodState *zs= (ZaphodState *)opaque;
+    uint8_t val= zs->inkey;
+
+    if (read_and_clear) zs->inkey= 0;
+    /* TODO: lower MC6850's interrupt, if present */
+
+  return val;
+}
+
 
 static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
 {
