@@ -94,6 +94,10 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *zs);
 ZaphodMC6850State *zaphod_new_mc6850(ZaphodState *s);
 #endif
 
+void zaphod_set_inkey(void *opaque, uint8_t val, bool is_data);
+uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear);
+
+
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
 void zaphod_putchar(ZaphodState *zs, const unsigned char ch);
 

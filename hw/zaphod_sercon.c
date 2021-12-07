@@ -30,7 +30,8 @@ static
 void zaphod_sercon_receive(void *opaque, const uint8_t *buf, int len)
 {
     ZaphodSerConState *zss= (ZaphodSerConState *)opaque;
-    ((ZaphodState *)zss->super)->inkey= buf[0];
+
+    zaphod_set_inkey(zss->super, buf[0], true);
 }
 
 void zaphod_sercon_putchar(ZaphodSerConState *zss, const unsigned char ch)
@@ -74,8 +75,7 @@ static uint32_t zaphod_sercon_read(void *opaque, uint32_t addr)
 	switch (addr)
 	{
 	case 0x00:		/* stdin */
-		value= ((ZaphodState *)zss->super)->inkey;
-		((ZaphodState *)zss->super)->inkey= 0;
+		value= zaphod_get_inkey(zss->super, true);
 		return value;
 	default:
 ;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
