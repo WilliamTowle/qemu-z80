@@ -22,29 +22,13 @@
 
 static uint32_t zaphod_mc6850_read(void *opaque, uint32_t addr)
 {
-#if 1
-;DPRINTF("INCOMPLETE: Reached %s() OK\n", __func__);
-;exit(1);
-;return -1;
-#else
-    ZaphodIOPortState *zis= (ZaphodIOPortState *)opaque;
-    //ZaphodMC6850State *zms= (ZaphodMC6850State *)opaque;
+    ZaphodMC6850State *zms= (ZaphodMC6850State *)opaque;
     int		value;
-;DPRINTF("DEBUG: Enter %s()\n", __func__);
 
 	switch (addr)
 	{
-	case 0x00:		/* stdin */
-		value= zis->inkey;
-		zis->inkey= 0;
-#ifdef ZAPHOD_HAS_RXINT_IRQ
-		if (zis->rxint_irq)
-		    qemu_irq_lower(*zis->rxint_irq);
-#endif	/* ZAPHOD_HAS_RXINT_IRQ */
-		return value;
-#ifdef ZAPHOD_HAS_SERIALIO
 	case 0x80:		/* read mc6850 PortStatus */
-		value= (zis->inkey)? 0x01 : 0; /* RxDataReady */
+		value= (((ZaphodState *)zms->super)->inkey)? 0x01 : 0; /* RxDataReady */
 		value|= 0x02;		/* TxDataEmpty (always) */
 		value|= 0x04;		/* DTD [Data Carrier Detect] */
 		value|= 0x08;		/* CTS [Clear to Send] */
@@ -54,60 +38,41 @@ static uint32_t zaphod_mc6850_read(void *opaque, uint32_t addr)
 #endif
 		return value;
 	case 0x81:		/* read mc6850 RxData */
-		value= zis->inkey;
-		zis->inkey= 0;
+		value= ((ZaphodState *)zms->super)->inkey;
+		((ZaphodState *)zms->super)->inkey= 0;
 #ifdef ZAPHOD_HAS_RXINT_IRQ
-		if (zis->rxint_irq)
-			qemu_irq_lower(*zis->console->rxint_irq);
+		if (zms->rxint_irq)
+			qemu_irq_lower(*zms->rxint_irq);
 #endif	/* ZAPHOD_HAS_RXINT_IRQ */
 DPRINTF("DEBUG: %s() read mc6850 RXData (port 0x%02x) -> ch-value %d\n", __func__, addr, value);
 		return value? value : 0xff;
-#endif	/* ZAPHOD_HAS_SERIALIO */
 	default:
 DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
 		return 0x00;
 	}
 
-;DPRINTF("DEBUG: Exit %s()\n", __func__);
-#endif
 }
 
 static void zaphod_mc6850_write(void *opaque, uint32_t addr, uint32_t value)
 {
-#if 1
-;DPRINTF("INCOMPLETE: Reached %s() OK\n", __func__);
-;exit(1);
-#else
-    ZaphodIOPortState *zis= (ZaphodIOPortState *)opaque;
-    //ZaphodMC6850State *zms= (ZaphodMC6850State *)opaque;
+    ZaphodMC6850State *zms= (ZaphodMC6850State *)opaque;
 
 	switch (addr)
 	{
-	case 0x01:		/* stdout */
-;DPRINTF("%s: character value: %d\n", __func__, value);
-	    zaphod_consolegui_putchar(zis->console, value & 0xff);
-#ifdef ZAPHOD_HAS_SERIALIO
-	    zaphod_serio_putchar(/*zis->console, */value & 0xff);
-#endif
-	    break;
-#ifdef ZAPHOD_HAS_SERIALIO
 	case 0x80:		/* write -> mc6850 PortControl */
 		/* ignore since baud rate change etc. not emulated? */
 DPRINTF("DEBUG: %s() write m6850 PortControl (port 0x%02x) <- value %d\n", __func__, addr, value);
 		break;
 	case 0x81:		/* write -> mc6850 TxData */
 DPRINTF("DEBUG: %s() write mc6850 TxData (port 0x%02x) -> ch-value=%d\n", __func__, addr, value);
-#ifdef ZAPHOD_HAS_CONSOLEGUI
-		zaphod_consolegui_putchar(zis->console, toupper(value & 0xff));
-#endif
-		zaphod_serio_putchar(/*zis->console, */value & 0xff);
+		//zaphod_consolegui_putchar(zms->console, toupper(value & 0xff));
+		//zaphod_serio_putchar(/*zms->console, */value & 0xff);
+		zaphod_putchar((ZaphodState *)zms->super, value & 0xff);
 		break;
-#endif	/* ZAPHOD_HAS_SERIALIO */
 	default:
 DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, value);
 	    break;
 	}
-#endif
 }
 
 /* zaphod_mc6850_portio
@@ -131,6 +96,8 @@ ZaphodMC6850State *zaphod_new_mc6850(ZaphodState *super)
         return NULL;
 
     zms= g_new(ZaphodMC6850State, 1);
+    zms->super= super;
+
     zms->ports = g_new(PortioList, 1);
 
     portio_list_init(zms->ports, zaphod_mc6850_portio, zms, "zaphod.mc6850");
