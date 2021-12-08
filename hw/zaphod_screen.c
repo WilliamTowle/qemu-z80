@@ -104,6 +104,12 @@ static void zaphod_put_keycode(void *opaque, int keycode)
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
 
+static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
+                            int row, int minc, int maxc)
+{
+;DPRINTF("TODO: Reached %s() because row %d was marked dirty from col %d to %d\n", __func__, row, minc, maxc);
+}
+
 static void zaphod_screen_update_display(void *opaque)
 {
     ZaphodScreenState *zss= (ZaphodScreenState *)opaque;
@@ -124,13 +130,17 @@ static void zaphod_screen_update_display(void *opaque)
 
     if (zss->dirty_minr > -1)
     {
-;DPRINTF("TODO: DisplayState was marked dirty from %d,%d to %d,%d\n", zss->dirty_minr,zss->dirty_minc, zss->dirty_maxr, zss->dirty_maxc);
+        int row;
 
         /* FIXME: calls to the repaint functions for the dirty
          * region belong here [ie. immediately prior to our
          * dpy_update()]; we risk blanking the screen otherwise. If
          * this obliterates the cursor we may need to repaint it too
          */
+        for (row= zss->dirty_minr; row <= zss->dirty_maxr; row++)
+            zaphod_screen_redraw_row(zss, row,
+                                zss->dirty_minc, zss->dirty_maxc);
+
         dpy_update(zss->ds,
                 zss->dirty_minc * FONT_WIDTH,
                 zss->dirty_minr * FONT_HEIGHT,
