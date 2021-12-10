@@ -473,6 +473,8 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
     zss->curs_visible= zss->curs_dirty= false;
     zss->curs_blink_time= 0;
 
+    zss->rxint_irq= qemu_allocate_irqs(zaphod_interrupt, super, 1);
+
 	qemu_console_resize(zss->ds,
 		FONT_WIDTH * MAX_TEXT_COLS, FONT_HEIGHT * MAX_TEXT_ROWS);
 
