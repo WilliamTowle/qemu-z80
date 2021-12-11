@@ -3497,6 +3497,7 @@ case "$target_arch2" in
     target_int_alignment=1
     target_long_alignment=1
     target_llong_alignment=1
+    gdb_xml_files=''
 #    echo "INFO: Z80 CPU support configured..." 1>&2
   ;;
   *)
