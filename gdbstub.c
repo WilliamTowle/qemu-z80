@@ -1653,34 +1653,45 @@ static int cpu_gdb_write_register(CPUState *env, uint8_t *mem_buf, int n)
 }
 #elif defined(TARGET_Z80)
 
-/* Z80 FIXME Z80 TODO Z80 */
-/* GDB doesn't define this yet */
-static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
+#define NUM_CORE_REGS 1		/* TODO: align to CPU_NB_REGS in cpu.h */
+
+static int cpu_gdb_read_register(CPUState *env, uint8_t *mem_buf, int n)
 {
-    uint32_t *registers = (uint32_t *)mem_buf;
-    int i, fpus;
-
-    for(i = 0; i < 8; i++) {    /* A, F, BC, DE, HL, IX, IY, SP */
-        registers[i] = env->regs[i];
+    if (n < 0 || n >= NUM_CORE_REGS) {
+        return 0;
     }
-    registers[8] = env->pc;
-    registers[9] = env->imode;
 
-    return 10 * 4;
+    switch(n)
+    {
+    case 0:     /* PC is 16bit/2 bytes */
+        GET_REG16(env->pc);
+        return 2;
+    default:
+        qemu_log("%s from unsupported reg %d\n",
+                __func__, n);
+        return 0;
+    }
 }
 
-static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
+static int cpu_gdb_write_register(CPUState *env, uint8_t *mem_buf, int n)
 {
-    uint32_t *registers = (uint32_t *)mem_buf;
-    int i;
+    uint32_t tmp;
 
-    for(i = 0; i < 8; i++) {
-        env->regs[i] = tswapl(registers[i]);
+    if (n < 0 || n >= NUM_CORE_REGS) {
+        return 0;
     }
-    env->pc = tswapl(registers[8]);
-    env->imode = tswapl(registers[9]);
 
-    return 0;
+    tmp = ldl_p(mem_buf);
+    switch(n)
+    {
+    case 0:     /* PC is 16bit/2 bytes */
+        env->pc= tmp;
+        return 2;
+    default:
+        qemu_log("%s from unsupported reg %d\n",
+                __func__, n);
+        return 0;
+    }
 }
 #else
 
@@ -1966,6 +1977,8 @@ static void gdb_set_cpu_pc(GDBState *s, target_ulong pc)
 #elif defined (TARGET_LM32)
     s->c_cpu->pc = pc;
 #elif defined(TARGET_XTENSA)
+    s->c_cpu->pc = pc;
+#elif defined(TARGET_Z80)
     s->c_cpu->pc = pc;
 #endif
 }
