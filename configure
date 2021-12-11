@@ -3511,6 +3511,7 @@ case "$target_arch2" in
     target_long_alignment=1
     target_llong_alignment=1
     gdb_xml_files=''
+    target_libs_softmmu='-lrt'
     echo "INFO: Z80 CPU support configured..." 1>&2
     echo "NOTE ...will use default TARGET_ARCH '${TARGET_ARCH}'"
     echo "NOTE: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
