@@ -133,7 +133,10 @@
 
 #include "cpu-defs.h"
 
-#define NB_MMU_MODES 2
+/* MMU modes definitions */
+#define NB_MMU_MODES 1
+#define MMU_MODE0_SUFFIX _kernel
+#define MMU_KERNEL_IDX 0
 
 typedef struct CPUZ80State {
 #if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
