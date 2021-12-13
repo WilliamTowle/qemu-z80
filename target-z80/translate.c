@@ -1207,9 +1207,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
            the flag and abort the translation to give the irqs a
            change to be happen */
-#if 1	/* WmT - TRACE */
-;DPRINTF("[%s:%d] PARTIAL - unimplemented 'singlestep'...\n", __FILE__, __LINE__);
-#else
+
         if (dc->singlestep_enabled ||
             (flags & HF_INHIBIT_IRQ_MASK)) {
 #if 0
@@ -1220,7 +1218,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
             gen_eob(dc);
             break;
         }
-#endif
+
         /* if too long translation, stop generation too */
         if (tcg_ctx.gen_opc_ptr >= gen_opc_end ||
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
