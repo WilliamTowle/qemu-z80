@@ -253,6 +253,13 @@ int cpu_exec(CPUState *env)
 ;fprintf(stderr, "[%s:%d] debug TARGET_Z80 execute do_interrupt()\n", __FILE__, __LINE__);
                     do_interrupt(env);
 #endif
+#if defined(TARGET_Z80)
+;fprintf(stderr, "[%s:%d] TRACE: Mirror TARGET_I386; call do_interrupt()\n", __FILE__, __LINE__);
+                    /* permit management of disas_insn()s exceptions
+                     * by do_interrupt()
+                     */
+                    do_interrupt(env);
+#endif
                     ret = env->exception_index;
                     break;
 #else
