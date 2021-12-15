@@ -66,7 +66,6 @@ register target_ulong T1 asm(AREG2);
 #include "cpu.h"
 #include "exec-all.h"
 
-void do_interrupt(CPUZ80State *env);
 void raise_interrupt(int intno, int is_int, int error_code,
                      int next_eip_addend);
 void raise_exception_err(int exception_index, int error_code);
