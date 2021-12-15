@@ -976,11 +976,12 @@ void HELPER(muluw_cc)(void)
 
 #endif
 
+#if !defined(CONFIG_USER_ONLY)
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
-void tlb_fill(target_ulong addr, int is_write, int is_user, void *retaddr)
+void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void *retaddr)
 {
     TranslationBlock *tb;
     int ret;
@@ -990,9 +991,15 @@ void tlb_fill(target_ulong addr, int is_write, int is_user, void *retaddr)
     /* XXX: hack to restore env in all cases, even if not called from
        generated code */
     saved_env = env;
-    env = cpu_single_env;
+    //env = cpu_single_env;
+    env = env1;
 
-    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    /* repo.or.cz tries to force mmu_idx=MMU_USER_IDX at all times
+     * but in v1.0.1 (during initial fetch?) it's 0 sometimes [due
+     * to cpu_mmu_index()?]
+     */
+    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, mmu_idx);
     if (ret) {
         if (retaddr) {
             /* now we have a real cpu fault */
@@ -1001,14 +1008,12 @@ void tlb_fill(target_ulong addr, int is_write, int is_user, void *retaddr)
             if (tb) {
                 /* the PC is inside the translated code. It means that we have
                    a virtual CPU fault */
+//               cpu_restore_state(tb, env, pc, NULL);
                 cpu_restore_state(tb, env, pc);
             }
         }
-        if (retaddr) {
-            raise_exception_err(env->exception_index, env->error_code);
-        } else {
-            raise_exception_err_norestore(env->exception_index, env->error_code);
-        }
+        raise_exception_err(env->exception_index, env->error_code);
     }
     env = saved_env;
 }
+#endif
