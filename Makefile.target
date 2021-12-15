@@ -152,16 +152,23 @@ $(call set-vpath, $(SRC_PATH)/bblbrx-user)
 QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 
 ## build objects from 'bblbrx' tree
-obj-y = main.o bblbrxload.o
+obj-y += main.o bblbrxload.o rawload.o mmap.o
+obj-y += user-exec.o $(oslib-obj-y)
+
+# Ensure ioport-user.o for IN/OUT insn support
+obj-z80-y += ioport-user.o
 
 $(obj-y) $(obj-$(TARGET_BASE_ARCH)-y): $(GENERATED_HEADERS)
 
 ## build subset (or none) of cpu emulator library
-libobj-y =
-#libobj-y += ...
+##libobj-y =
+#libobj-y = exec.o translate-all.o cpu-exec.o translate.o
+#libobj-y += tcg/tcg.o tcg/optimize.o
+#libobj-y += op_helper.o helper.o
+#libobj-y += disas.o
 
-#obj-y += $(addprefix ../libuser/, $(user-obj-y))
-#obj-y += $(addprefix ../libdis-user/, $(libdis-y))
+obj-y += $(addprefix ../libuser/, $(user-obj-y))
+obj-y += $(addprefix ../libdis-user/, $(libdis-y))
 obj-y += $(libobj-y)
 
 endif #CONFIG_BBLBRX_USER
