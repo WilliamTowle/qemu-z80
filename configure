@@ -3314,9 +3314,9 @@ case "$target_arch2" in
     echo "INFO: ...will use default TARGET_BASE_ARCH '${TARGET_BASE_ARCH}'"
     echo "INFO: ...will use default TARGET_ABI_DIR '${TARGET_ABI_DIR}'"
     echo "INFO: ...will use default TARGET_SYSTBL_ABI '${TARGET_SYSTBL_ABI}'"
+    echo "INFO: ...will use gdb_xml_files '${gdb_xml_files}'"
     echo "INFO: ...will use default bflt '${bflt}'"
     echo "INFO: ...will use default mttcg '${mttcg}'"
-    echo "INFO: ...will use default gdb_xml_files '${gdb_xml_files}'"
     echo "INFO: ...will use default target_compiler '${target_compiler}'"
     echo "INFO: ...will use target_bigendian '${target_bigendian}'"
   ;;
