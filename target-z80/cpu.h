@@ -218,8 +218,13 @@ int cpu_z80_signal_handler(int host_signum, struct siginfo *info,
 
 uint64_t cpu_get_tsc(CPUZ80State *env);
 
-int cpu_z80_handle_mmu_fault(CPUZ80State *env1, target_ulong address, int rw,
-                             int mmu_idx, int is_softmmu);
+#if 0	/* QEmu v0.1 */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx, int is_softmmu);
+#else	/* QEmu v1.x */
+int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
+                             int is_write1, int mmu_idx);
+#endif
 #define cpu_handle_mmu_fault cpu_z80_handle_mmu_fault
 
 void z80_cpu_list(FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
