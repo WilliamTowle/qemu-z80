@@ -1085,9 +1085,6 @@ void tb_invalidate_phys_page_range(tb_page_addr_t start, tb_page_addr_t end,
                 cpu_restore_state(current_tb, env, env->mem_io_pc);
                 cpu_get_tb_cpu_state(env, &current_pc, &current_cs_base,
                                      &current_flags);
-#elif defined(TARGET_Z80)
-                current_flags = env->hflags;
-                current_pc = env->pc;
             }
 #endif /* TARGET_HAS_PRECISE_SMC */
             /* we need to do that to handle the case where a signal

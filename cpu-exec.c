@@ -145,10 +145,6 @@ static inline TranslationBlock *tb_find_fast(CPUState *env)
        always be the same before a given translated block
        is executed. */
     cpu_get_tb_cpu_state(env, &pc, &cs_base, &flags);
-#elif defined(TARGET_Z80)
-    flags = env->hflags;
-    cs_base = 0;
-    pc = env->pc;
     tb = env->tb_jmp_cache[tb_jmp_cache_hash_func(pc)];
     if (unlikely(!tb || tb->pc != pc || tb->cs_base != cs_base ||
                  tb->flags != flags)) {
@@ -230,15 +226,6 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_XTENSA)
     /* XXXXX */
-#elif defined(TARGET_Z80)
-    env_to_regs();
-    /* put eflags in CPU temporary format */
-    CC_SRC = env->eflags & (CC_S | CC_Z | CC_P | CC_C);
-    CC_OP = CC_OP_EFLAGS;
-    env->eflags &= ~(CC_S | CC_Z | CC_P | CC_C);
-#elif defined(TARGET_Z80)
-    /* restore flags in standard format */
-//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
 #else
 #error unsupported target CPU
 #endif
@@ -509,13 +496,6 @@ int cpu_exec(CPUState *env)
                         do_interrupt(env);
                         next_tb = 0;
                     }
-#elif defined(TARGET_Z80)
-                    if (interrupt_request & CPU_INTERRUPT_HARD) {
-			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
-//                      Z80 FIXME Z80
-//                        env->exception_index = EXCP_IRQ;
-                        do_interrupt(env);
-                    }
 #endif
                    /* Don't use the cached interrupt_request value,
                       do_interrupt may have updated the EXITTB flag. */
@@ -545,8 +525,6 @@ int cpu_exec(CPUState *env)
                     env->sr = (env->sr & 0xffe0)
                               | env->cc_dest | (env->cc_x << 4);
                     log_cpu_state(env, 0);
-#elif defined(TARGET_Z80)
-                    cpu_dump_state(env, logfile, fprintf, 0);
 #else
                     log_cpu_state(env, 0);
 #endif
@@ -649,9 +627,6 @@ int cpu_exec(CPUState *env)
 #elif defined(TARGET_S390X)
 #elif defined(TARGET_XTENSA)
     /* XXXXX */
-#elif defined(TARGET_Z80)
-    /* restore flags in standard format */
-//    env->eflags = env->eflags | cc_table[CC_OP].compute_all();
 #else
 #error unsupported target CPU
 #endif
