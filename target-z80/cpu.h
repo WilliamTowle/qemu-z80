@@ -249,6 +249,13 @@ static inline int cpu_mmu_index (CPUState *env)
 }
 
 #include "cpu-all.h"
+
+static inline bool cpu_has_work(CPUState *env)
+{
+    return (env->interrupt_request & CPU_INTERRUPT_HARD);
+}
+
+
 #include "exec-all.h"
 
 static inline void cpu_pc_from_tb(CPUState *env, TranslationBlock *tb)
