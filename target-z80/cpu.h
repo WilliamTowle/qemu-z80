@@ -21,6 +21,7 @@
 #define CPU_Z80_H
 
 #include "config.h"
+#include "qemu-common.h"
 
 #define TARGET_LONG_BITS 32
 
