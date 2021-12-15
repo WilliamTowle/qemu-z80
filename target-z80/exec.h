@@ -27,41 +27,8 @@
 /* at least 4 register variables are defined */
 register struct CPUZ80State *env asm(AREG0);
 
-#if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
-	 * suits logic change elsewhere due to no TCG_AREG{1|2}
-	 */
-/* no registers can be used */
-#define T0 (env->t0)
-#define T1 (env->t1)
 
-#else
 
-/* XXX: use unsigned long instead of target_ulong - better code will
-   be generated for 64 bit CPUs */
-register target_ulong T0 asm(AREG1);
-register target_ulong T1 asm(AREG2);
-
-#endif /* ! (TARGET_LONG_BITS > HOST_LONG_BITS) */
-
-#define A0 (env->a0)
-
-#define A   (env->regs[R_A])
-#define F   (env->regs[R_F])
-#define BC  (env->regs[R_BC])
-#define DE  (env->regs[R_DE])
-#define HL  (env->regs[R_HL])
-#define IX  (env->regs[R_IX])
-#define IY  (env->regs[R_IY])
-#define SP  (env->regs[R_SP])
-#define I   (env->regs[R_I])
-#define R   (env->regs[R_R])
-#define AX  (env->regs[R_AX])
-#define FX  (env->regs[R_FX])
-#define BCX (env->regs[R_BCX])
-#define DEX (env->regs[R_DEX])
-#define HLX (env->regs[R_HLX])
-
-#define PC  (env->pc)
 
 #include "cpu.h"
 #include "exec-all.h"
