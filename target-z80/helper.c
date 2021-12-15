@@ -42,7 +42,8 @@ CPUZ80State *cpu_z80_init(const char *model)
     if (id == 0) {
         return NULL;
     }
-    env = qemu_mallocz(sizeof(CPUZ80State));
+
+    env= calloc(1, sizeof *env);
     cpu_exec_init(env);
 
     /* init various static tables */
