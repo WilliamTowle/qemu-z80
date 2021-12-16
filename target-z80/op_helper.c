@@ -1009,8 +1009,13 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void
      * but in v1.0.1 (during initial fetch?) it's 0 sometimes [due
      * to cpu_mmu_index()?]
      */
-    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
+#if 0
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, MMU_USER_IDX);
+#else	/* don't force? */
+;fprintf(stderr, "INFO: %s() querying addr 0x%04x (env %p, mapaddr %p; is_write %d, mmu_idx %d) for MMU fault...\n", __func__, addr, env, env->mapaddr, is_write, mmu_idx);
     ret = cpu_z80_handle_mmu_fault(env, addr, is_write, mmu_idx);
+#endif
+;fprintf(stderr, "INFO: %s() got ret %d from mmu fault handler...\n", __func__, ret);
     if (ret) {
         if (retaddr) {
             /* now we have a real cpu fault */
