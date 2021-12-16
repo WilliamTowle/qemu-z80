@@ -1653,6 +1653,16 @@ static int cpu_gdb_write_register(CPUState *env, uint8_t *mem_buf, int n)
 }
 #elif defined(TARGET_Z80)
 
+/* NB. THIS IS UNTESTED
+ * Alternative repositories for GDB support (in QEmu 0.10.50) exist:
+	https://github.com/legumbre/qemu-z80
+	https://github.com/legumbre/gdb-z80
+	https://github.com/legumbre/z80-stub
+ * Based on qemu-z80 above, the repo.or.cz CPUZ80State needs
+ * GET_REG8(env->regs[n]) for n=R_{A|F|I|R|AX|FX} with
+ * GET_REG16(...) for env->pc and all other env->regs[n]
+ */
+
 #define NUM_CORE_REGS 1		/* TODO: align to CPU_NB_REGS in cpu.h */
 
 static int cpu_gdb_read_register(CPUState *env, uint8_t *mem_buf, int n)
