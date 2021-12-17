@@ -214,6 +214,10 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
     paddr = (addr & TARGET_PAGE_MASK) + page_offset;
     vaddr = virt_addr + page_offset;
 
+    /* [WmT] we only call tlb_set_page() here, which means we don't
+     * vary 'prot' bits - and the kernel/user MMU modes distinction
+     * cpu.h introduces is overkill?
+	 */
     tlb_set_page(env, vaddr, paddr, prot, mmu_idx, page_size);
     return 0;
     /* No fault handling required */
