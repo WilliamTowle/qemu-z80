@@ -103,9 +103,15 @@ const uint8_t parity_table[256] = {
     0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
 };
 
-void do_interrupt(CPUZ80State *env)
+void do_interrupt(CPUZ80State *env1)
 {
+    CPUState *saved_env;
 // printf("z80: do_interrupt()\n");
+
+    saved_env = env;
+    env = env1;
+// printf("z80: do_interrupt()\n");
+
     /* Handle the ILLOP exception as thrown by disas_insn() by
      * bailing cleanly
      */
@@ -124,6 +130,7 @@ void do_interrupt(CPUZ80State *env)
     env->iff1 = 0;
     env->iff2 = 0; /* XXX: Unchanged for NMI */
 
+;fprintf(stderr, "%s() with env=%p: stack manip follows\n", __func__, env);
     {
         target_ulong sp;
         sp = (uint16_t)(env->regs[R_SP] - 2);
@@ -153,6 +160,8 @@ void do_interrupt(CPUZ80State *env)
         env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
         break;
     }
+
+    env = saved_env;
 }
 
 /*
