@@ -102,8 +102,12 @@ const uint8_t parity_table[256] = {
     0, CC_P, CC_P, 0, CC_P, 0, 0, CC_P,
 };
 
-void do_interrupt(CPUZ80State *env)
+void do_interrupt(CPUZ80State *env1)
 {
+    CPUState *saved_env;
+
+    saved_env = env;
+    env = env1;
 // printf("z80: do_interrupt()\n");
 	/* Handle the ILLOP exception as thrown by disas_insn() by
      * bailing cleanly
@@ -124,10 +128,12 @@ void do_interrupt(CPUZ80State *env)
     env->iff1 = 0;
     env->iff2 = 0; /* XXX: Unchanged for NMI */
 
+;fprintf(stderr, "%s() with env=%p: stack manip follows\n", __func__, env);
     {
         target_ulong sp;
         sp = (uint16_t)(env->regs[R_SP] - 2);
         env->regs[R_SP] = sp;
+;fprintf(stderr, "%s() about to stw_kernel()...\n", __func__);
         stw_kernel(sp, env->pc);
     }
 
@@ -141,6 +147,7 @@ void do_interrupt(CPUZ80State *env)
     /* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
 
     uint8_t d;
+;fprintf(stderr, "%s() handle imode=%d...\n", __func__, env->imode);
     switch (env->imode) {
     case 0:
         /* XXX: assuming 0xff on data bus */
@@ -153,6 +160,8 @@ void do_interrupt(CPUZ80State *env)
         env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
         break;
     }
+
+    env = saved_env;
 }
 
 /*
@@ -1004,6 +1013,7 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void
     saved_env = env;
     //env = cpu_single_env;
     env = env1;
+;fprintf(stderr, "[%s:%d] TRACE: using env=%p - saved %p\n", __FILE__, __LINE__, env, saved_env);
 
     /* repo.or.cz tries to force mmu_idx=MMU_USER_IDX at all times
      * but in v1.0.1 (during initial fetch?) it's 0 sometimes [due
@@ -1030,6 +1040,8 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void
         }
         raise_exception_err(env->exception_index, env->error_code);
     }
+
     env = saved_env;
+;fprintf(stderr, "[%s:%d] function exit - saved_env %p restored\n", __FILE__, __LINE__, saved_env);
 }
 #endif
