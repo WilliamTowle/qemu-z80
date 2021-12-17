@@ -89,7 +89,6 @@ static void zaphod_init_common(ZaphodState *zs, const char *kernel_filename, con
     /* TODO
      * Board-specific init, with:
      * - basic "stdio" I/O mechanism, with 'inkey' state variable
-     * - hardware emulation and machine "features" bitmap
      */
 #ifdef ZAPHOD_HAS_SERCON
     zs->sercon= zaphod_new_sercon(zs, serial_hds[0]);
@@ -97,6 +96,16 @@ static void zaphod_init_common(ZaphodState *zs, const char *kernel_filename, con
 #ifdef ZAPHOD_HAS_SCREEN
     zs->screen= zaphod_new_screen();
 #endif
+}
+
+static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
+{
+    zs->features|= 1 << n;
+}
+
+int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n)
+{
+    return zs->features & ( 1 << n);
 }
 
 
@@ -110,7 +119,7 @@ static void zaphod_init_dev_machine(ram_addr_t ram_size,
                      const char *initrd_filename, const char *cpu_model)
 {
     ZaphodState *zs= g_new(ZaphodState, 1);
-    /* TODO: "features" support required to distinguish this board */
+    /* No board-specific "features" at this time */
     zaphod_init_common(zs, kernel_filename, cpu_model);
 }
 
@@ -136,7 +145,7 @@ static void zaphod_init_pb_machine(ram_addr_t ram_size,
                      const char *initrd_filename, const char *cpu_model)
 {
     ZaphodState *zs= g_new(ZaphodState, 1);
-    /* TODO: "features" support required to distinguish this board */
+    zaphod_add_feature(zs, ZAPHOD_SIMPLE_SCREEN);
     zaphod_init_common(zs, kernel_filename, cpu_model);
 }
 
