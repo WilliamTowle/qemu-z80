@@ -577,10 +577,17 @@ int cpu_exec(CPUArchState *env)
                     }
 #elif defined(TARGET_Z80)
                     if (interrupt_request & CPU_INTERRUPT_HARD) {
-//			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
-////                      Z80 FIXME Z80
-////                        env->exception_index = EXCP_IRQ;
-                        cc->do_interrupt(cpu);
+#if 0   /* legacy implementation */
+                        env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+//                      Z80 FIXME Z80
+//                        env->exception_index = EXCP_IRQ;
+                        do_interrupt(env);
+#else   /* TODO: might want NMI support? */
+;fprintf(stderr, "[%s:%d] TRACE: v1 interrupt handle, with 'next_tb' assign 0 [NONE]\n", __FILE__, __LINE__);
+                        env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+                        do_interrupt(env);
+                        next_tb = 0;
+#endif
                     }
 #endif
                    /* Don't use the cached interrupt_request value,
