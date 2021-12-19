@@ -55,7 +55,7 @@ static MemoryRegion *zaphod_init_ram(void)
     return ram;
 }
 
-static void zaphod_init_machine(ram_addr_t ram_size,
+static void zaphod_init_dev_machine(ram_addr_t ram_size,
                      const char *boot_device,
                      const char *kernel_filename, const char *kernel_cmdline,
                      const char *initrd_filename, const char *cpu_model)
@@ -68,22 +68,21 @@ static void zaphod_init_machine(ram_addr_t ram_size,
     zs->ram= zaphod_init_ram();
 
 #if 1   /* TRACE */
-;DPRINTF("DEBUG: %s() INCOMPLETE - will execute from empty RAM\n", __func__);
+;DPRINTF("DEBUG: %s() INCOMPLETE - will execute 'nop's from empty RAM\n", __func__);
 #endif
     /* TODO
      * Board-specific init, with:
-     * - state variable with CPU and RAM handle (passed to callbacks)
-     * - separate functions for initialising state
      * - loading of "kernel" image if filename specified
-     * - basic "inkey" I/O mechanism
+     * - basic "stdio" I/O mechanism, with 'inkey' state variable
+     * - hardware emulation and machine "features" bitmap
      */
 }
 
 static QEMUMachine zaphod_machine= {
     /* sample machine: Z80 CPU, 64KiB RAM, basic I/O */
-    .name=	"zaphod",
-    .desc=	"Zaphod 1",
-    .init=	zaphod_init_machine,
+    .name=	"zaphod-dev",
+    .desc=	"Zaphod 0 (Test System)",
+    .init=	zaphod_init_dev_machine,
 
 #if 1
     .max_cpus= 1,
