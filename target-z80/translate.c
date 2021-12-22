@@ -67,7 +67,26 @@ typedef struct DisasContext {
    be stopped. Return the next pc value */
 static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 {
-#if 0
+#if 1	/* HACK */
+    /* PARTIAL. For testing purposes, we implement:
+     * 1. Reading of a byte (at least one ensures TB has non-zero size)
+     * 2. Triggering of ILLOP exception for missing translation cases
+     * 3. Unprefixed and prefixed instruction implementation (stepwise)
+     */
+
+    s->pc= pc_start;
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, s->pc);
+;exit(1);
+#endif
+    /* TODO: implement read byte here */
+    //b = ldub_code(s->pc);
+    //s->pc++;
+
+    /* TODO: full translation implementation tracks prefixes and
+     * interprets according to CPU type
+     */
+#else	/* legacy repo.or.cz implementation */
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
     int m;
@@ -1006,18 +1025,14 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
 //;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
 //#endif
 //    return s->pc;
-#endif
 
- //illegal_op:
-#if 1
-;DPRINTF("%s(): INCOMPLETE - reached 'illegal_op' label ***\n", __func__);
-;exit(1);
-#else
+ illegal_op:
 #if 1	/* WmT - TRACE */
 ;fprintf(stderr, "EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
 #endif
     /* XXX: ensure that no lock was generated */
-    gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
+    //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
+    gen_exception(s, EXCP06_ILLOP, pc_start /* - s->cs_base */);
     return s->pc;
 #endif
 }
