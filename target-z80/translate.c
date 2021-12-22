@@ -49,7 +49,7 @@
 #define MODE_FD     2
 #endif
 
-#if 0	/* debug instruction decode? */
+#if 1	/* debug instruction decode? */
 #define zprintf printf
 #else
 #define zprintf(...)
@@ -98,10 +98,21 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     /* reading at least one byte is critical to ensuring the
      * translation block has non-zero size
      */
-        b = ldub_code(s->pc);
-;DPRINTF("HACK: %s() any byte illegal (RAM contains 0x%02x)\n", __func__, b);
-    goto illegal_op;
-;exit(1);
+    s->pc = pc_start;
+    zprintf("PC = %04x: ", s->pc);
+
+    b = ldub_code(s->pc);
+    switch (b)
+    {
+    case 0xc9:  /* 'ret' */
+        zprintf("ret (** HACK - EXCP_KERNEL_TRAP trigger **)\n");
+        //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
+        gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
+        return s->pc;
+    default:
+        zprintf("byte 0x%02x (** HACK - illegal_op trigger **)\n", b);
+        goto illegal_op;
+    }
 #else
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
