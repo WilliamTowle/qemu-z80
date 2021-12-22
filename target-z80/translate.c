@@ -101,17 +101,18 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     {
     case 0xc9:  /* 'ret' */
 #if 1   /* TRACE */
-;DPRINTF("INFO: read byte is potential end-of-program 'ret'\n");
-    /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
+;DPRINTF("INFO: BAILING %s() with EXCP_KERNEL_TRAP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP_KERNEL_TRAP, s->pc);
+    /* TODO: only trigger KERNEL_TRAP if this is end-of-program */
 #endif
-        break;
-    default:    /* other op */
+        gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
+        return s->pc;
+    default:
 #if 1   /* TRACE */
 ;DPRINTF("INFO: read byte OK, was non-ret op\n");
     /* TODO: trigger ILLOP and return if translation is not available */
 #endif
+        goto illegal_op;
     }
-;exit(1);
 #else	/* legacy repo.or.cz implementation */
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
@@ -1051,16 +1052,16 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //;fprintf(stderr, "EXIT %s() - opcode valid, will return s->pc=0x%04x\n", __func__, s->pc);
 //#endif
 //    return s->pc;
+#endif
 
  illegal_op:
 #if 1	/* WmT - TRACE */
-;fprintf(stderr, "EXIT %s() - via gen_exception() for EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
+;DPRINTF("INFO: BAILING %s() with EXCP06_ILLOP (trapnr=%d) [ret s->pc=0x%04x]\n", __func__, EXCP06_ILLOP, s->pc);
 #endif
     /* XXX: ensure that no lock was generated */
     //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
     gen_exception(s, EXCP06_ILLOP, pc_start /* - s->cs_base */);
     return s->pc;
-#endif
 }
 
 /* generate intermediate code in gen_opc_buf and gen_opparam_buf for
