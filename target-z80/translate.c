@@ -53,7 +53,7 @@ static TCGv_ptr cpu_env;
 #define MODE_FD     2
 #endif
 
-#if 0	/* debug instruction decode? */
+#if 1	/* debug instruction decode? */
 #define zprintf printf
 #else
 #define zprintf(...)
@@ -102,11 +102,22 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     /* reading at least one byte is critical to ensuring the
      * translation block has non-zero size
      */
+    s->pc = pc_start;
+    zprintf("PC = %04x: ", s->pc);
+
     b = cpu_ldub_code(env, s->pc);
     s->pc++;
-;DPRINTF("HACK: all insns temporarily illegal (...value read: 0x%02x)\n", __func__, b);
-    goto illegal_op;
-;exit(1);
+    switch (b)
+    {
+    case 0xc9:  /* 'ret' */
+        zprintf("ret (** HACK - EXCP_KERNEL_TRAP trigger **)\n");
+        //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
+        gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
+        return s->pc;
+    default:
+        zprintf("byte 0x%02x (** HACK - illegal_op trigger **)\n", b);
+        goto illegal_op;
+    }
 #else
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
