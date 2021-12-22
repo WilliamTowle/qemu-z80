@@ -135,7 +135,7 @@ void cpu_loop(CPUZ80State *env)
              * For a system with ROMs we might need to emulate or
              * call relevant routines.
              */
-            printf("Program exit. Register dump follows\n");
+            printf("Successful program exit. Register dump follows:\n");
             cpu_dump_state(env, stderr, fprintf, 0);
             break;	/* to exit() beyond switch */
         case EXCP06_ILLOP:
