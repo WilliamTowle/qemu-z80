@@ -378,24 +378,40 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
-#if 1   /* HACK - reveal unhandled control codes */
-    if (!isprint(ch))
+    switch(ch)
     {
-        uint8_t nyb_hi, nyb_lo;
-
-        nyb_hi= (ch & 0xf0) >> 4;
-        nyb_lo= ch & 0x0f;
-        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
-        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
-
-        zaphod_screen_putchar(zss, '[');
-        zaphod_screen_putchar(zss, nyb_hi);
-        zaphod_screen_putchar(zss, nyb_lo);
-        zaphod_screen_putchar(zss, ']');
-        zaphod_screen_putchar(zss, '*');
+    case '\r':  /* CR (carriage return, 0x0D) */
+        zss->curs_posc= 0;
+        /* TODO: redraw cursor if visible? */
         return;
-    }
+    case '\n':  /* NL (newline, 0x0A) */
+        if (++zss->curs_posr == MAX_TEXT_ROWS)
+        {
+            zaphod_screen_scroll(zss);
+            zss->curs_posr= MAX_TEXT_ROWS-1;
+        }
+        /* TODO: redraw cursor if visible? */
+        return;
+#if 1   /* HACK - reveal unhandled control codes */
+    default:
+        if (!isprint(ch))
+        {
+            uint8_t nyb_hi, nyb_lo;
+
+            nyb_hi= (ch & 0xf0) >> 4;
+            nyb_lo= ch & 0x0f;
+            nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+            nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+
+            zaphod_screen_putchar(zss, '[');
+            zaphod_screen_putchar(zss, nyb_hi);
+            zaphod_screen_putchar(zss, nyb_lo);
+            zaphod_screen_putchar(zss, ']');
+            zaphod_screen_putchar(zss, '*');
+            return;
+        }
 #endif
+    }
 
     /* update grid and state for dirty region */
 DPRINTF("INFO: Reached putchar for ch=0x%02x at r=%d,c=%d\n", ch, zss->curs_posr, zss->curs_posc);
