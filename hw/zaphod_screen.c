@@ -412,13 +412,13 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
             zss->curs_posc--;
         zss->curs_dirty|= zss->curs_visible;
         return;
-    case '\r':  /* carriage return */
+    case '\r':  /* CR (carriage return, 0x0D) */
         if (zss->curs_visible)
             zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
         zss->curs_posc= 0;
         zss->curs_dirty|= zss->curs_visible;
         return;
-    case '\n':  /* newline */
+    case '\n':  /* NL (newline, 0x0A) */
         if (zss->curs_visible)
             zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
         if (++zss->curs_posr == MAX_TEXT_ROWS)
