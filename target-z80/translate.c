@@ -1425,12 +1425,9 @@ next_byte:
             zprintf("nop\n");
             break;
         case 3:
-//        switch (x) {
-//        case 0:
-//            zprintf("nop\n");
-//            break;
-//        case 3:
-//            if (s->model == Z80_CPU_R800) {
+            if (s->model == Z80_CPU_R800) {
+;DPRINTF("[%s:%d] HACK - illegal_op jump for b=0x%02x (x %d, CPU R800)\n", __FILE__, __LINE__, b, x);
+                goto illegal_op;
 //                switch (z) {
 //                case 1:
 //                    /* does mulub work with r1 == h, l, (hl) or a? */
@@ -1455,9 +1452,9 @@ next_byte:
 //                    zprintf("nop\n");
 //                    break;
 //                }
-//            } else {
+            } else {
                 zprintf("nop\n");
-//            }
+            }
             break;
 
         case 1:
