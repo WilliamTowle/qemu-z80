@@ -462,7 +462,7 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
     /* TODO: "screen clear" escape should reset everything too */
     for (row= 0; row < MAX_TEXT_ROWS; row++)
     {
-        zss->row_attr[row]= 0;
+        zss->row_attr[row]= ZAPHOD_SCREEN_ATTR_80COL;
         for (col= 0; col < MAX_TEXT_COLS; col++)
             zss->char_grid[row][col]= '\0';
     }
