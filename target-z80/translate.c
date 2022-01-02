@@ -49,8 +49,11 @@
 #define MODE_DD     1
 #define MODE_FD     2
 
+#if 1	/* debug instruction decode? */
+#define zprintf printf
+#else
 #define zprintf(...)
-//#define zprintf printf
+#endif
 
 /* global register indexes */
 static TCGv cpu_env, cpu_T[3], cpu_A0;
