@@ -1674,7 +1674,7 @@ next_byte:
 //    }
     /* lock generation */
     return s->pc;
-#endif
+
  illegal_op:
     /* XXX: ensure that no lock was generated */
     //gen_exception(s, EXCP06_ILLOP, pc_start - s->cs_base);
