@@ -21,7 +21,7 @@
 #define ZAPHOD_HAS_MC6850
 
 #ifdef ZAPHOD_HAS_SCREEN
-#define ZAPHOD_HAS_KEYBIO
+//#define ZAPHOD_HAS_KEYBIO
 #endif
 
 #ifdef ZAPHOD_HAS_SCREEN

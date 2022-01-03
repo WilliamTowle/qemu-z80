@@ -515,6 +515,13 @@ DPRINTF("INFO: Screen dirty from %d,%d to %d,%d\n", zss->dirty_minr, zss->dirty_
     zss->curs_dirty|= zss->curs_visible;
 }
 
+#ifdef ZAPHOD_HAS_KEYBIO
+#else
+#include "qdev.h"
+static int foo /*can_receive*/(void *opaque) { return fprintf(stderr, "FOO\n"); }
+static void bar /*receive*/(void *opaque, const uint8_t *buf, int len) { fprintf(stderr, "BAR\n"); }
+static void baz /*event*/(void *opaque, int event) { fprintf(stderr, "BAZ\n"); }
+#endif	/* ZAPHOD_HAS_KEYBIO */
 
 ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 {
@@ -551,6 +558,16 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
     /* provide keycode to ASCII translation for zaphod_io_read() */
     zss->modifiers= 0;
     qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
+#else
+    {
+    CharDriverState *cds= qdev_init_chardev(NULL);
+    //IOCanReadHandler foo= { fprintf(stderr, "FOO\n"); };
+    //IOReadHandler bar= { fprintf(stderr, "BAR\n"); };
+    //IOEventHandler baz= { fprintf(stdferr, "BAZ\n"); };
+;DPRINTF("%s() add handlers foo/bar/baz...\n", __func__);
+    qemu_chr_add_handlers(cds, foo, bar, baz, zss);
+;DPRINTF("%s() ...added handlers OK\n", __func__);
+    }
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
     return zss;
