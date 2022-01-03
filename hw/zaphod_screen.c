@@ -47,28 +47,28 @@ uint8_t zaphod_rgb_palette[][3]= {
 #ifdef ZAPHOD_HAS_KEYBIO
 /* EXPERIMENTAL */
 static const unsigned char keycode_to_asciilc[128]= {
-	/* keymap for UK QWERTY keyboard */
-	/* FIXME: this is (unintentionally) partial, and the handler
-	 * (also) lacks code to sense/track/apply modifier keys
-	 */
-	  0,  0,'1','2','3','4','5','6',
-	'7','8','9','0',  0,  0,  0,  0,
-	'q','w','e','r','t','y','u','i',
-	'o','p',  0,  0, 13,  0,'a','s',
-	'd','f','g','h','j','k','l',  0,
-	  0,  0,  0,  0,'z','x','c','v',
-	'b','n','m',  0,  0,  0,  0,  0,
-	  0,' ',  0,  0,  0,  0,  0,  0,
+    /* keymap for UK QWERTY keyboard */
+    /* FIXME: this is (unintentionally) partial, and the handler
+     * (also) lacks code to sense/track/apply modifier keys
+     */
+      0,  0,'1','2','3','4','5','6',
+    '7','8','9','0',  0,  0,  0,  0,
+    'q','w','e','r','t','y','u','i',
+    'o','p',  0,  0, 13,  0,'a','s',
+    'd','f','g','h','j','k','l',  0,
+      0,  0,  0,  0,'z','x','c','v',
+    'b','n','m',  0,  0,  0,  0,  0,
+      0,' ',  0,  0,  0,  0,  0,  0,
 
-	  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
-
-	  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
 };
 
 static void zaphod_put_keycode(void *opaque, int keycode)
@@ -76,28 +76,28 @@ static void zaphod_put_keycode(void *opaque, int keycode)
     ZaphodScreenState	*zss= (ZaphodScreenState *)opaque;
     int	release= keycode & 0x80;
 
-	if (release)
-	{
-		/* TODO: resetting cs_inkey on key release is risky if
-		 * systems without an IRQ sent on keypress don't poll
-		 * the port promptly enough. Do we want to implement key
-		 * repeat (in which case we start a timer elsewhere that
-		 * should get stopped here)?
-		 */
+    if (release)
+    {
+        /* TODO: resetting cs_inkey on key release is risky if
+         * systems without an IRQ sent on keypress don't poll
+         * the port promptly enough. Do we want to implement key
+         * repeat (in which case we start a timer elsewhere that
+         * should get stopped here)?
+         */
         zaphod_set_inkey(zss->super, 0, false);
-	}
-	else
-	{
-	  int	ch= keycode_to_asciilc[keycode & 0x7f];
+    }
+    else
+    {
+      int	ch= keycode_to_asciilc[keycode & 0x7f];
             zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
 #ifdef ZAPHOD_DEBUG
 ;DPRINTF("DEBUG: %s() stored keycode %d to inkey as ch=%02x\n", __func__, keycode, ch);
 #endif
 #ifdef ZAPHOD_HAS_RXINT_IRQ
-		if (zss->rxint_irq)
-		    qemu_irq_raise(*zss->rxint_irq);
+        if (zss->rxint_irq)
+            qemu_irq_raise(*zss->rxint_irq);
 #endif
-	}
+    }
 }
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
@@ -519,8 +519,8 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 		FONT_WIDTH * MAX_TEXT_COLS, FONT_HEIGHT * MAX_TEXT_ROWS);
 
 #ifdef ZAPHOD_HAS_KEYBIO
-	/* provide an inkey (ASCII) feed for zaphod_io_read() */
-	qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
+    /* provide an inkey (ASCII) feed for zaphod_io_read() */
+    qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
     return zss;
