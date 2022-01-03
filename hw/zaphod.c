@@ -220,18 +220,37 @@ static QEMUMachine zaphod_pb_machine= {
 };
 
 
-/* TODO: "Grant Searle SBC" init to feature:
+/* "Grant Searle SBC" init
+ * Features:
  *  Input: 'stdio' emulation, plus mc6850 emulation (with IRQ)
  *  Output: screen enabled, with extended control codes
- *  // static void zaphod_init_pb_machine([...])
  */
 
+static void zaphod_init_gs_machine(ram_addr_t ram_size,
+                     const char *boot_device,
+                     const char *kernel_filename, const char *kernel_cmdline,
+                     const char *initrd_filename, const char *cpu_model)
+{
+    ZaphodState *zs= g_new0(ZaphodState, 1);
+    zaphod_add_feature(zs, ZAPHOD_FEATURE_MC6850);
+    zaphod_init_common(zs, kernel_filename, cpu_model);
+}
+
+static QEMUMachine zaphod_gs_machine= {
+    .name=	"zaphod-gs",
+    .desc=	"Zaphod 2 (Grant Searle SBC)",
+    .init=	zaphod_init_gs_machine,
+
+    .max_cpus= 1,
+    .no_parallel= 1
+};
 
 
 static void zaphod_machine_init(void)
 {
 	qemu_register_machine(&zaphod_dev_machine);
 	qemu_register_machine(&zaphod_pb_machine);
+	qemu_register_machine(&zaphod_gs_machine);
 }
 
 machine_init(zaphod_machine_init);
