@@ -538,6 +538,9 @@ int cpu_exec(CPUState *env)
                     env->sr = (env->sr & 0xffe0)
                               | env->cc_dest | (env->cc_x << 4);
                     log_cpu_state(env, 0);
+#elif defined(TARGET_Z80)
+                    /* FIXME: want log_cpu_state() here */
+                    //cpu_dump_state(env, logfile, fprintf, 0);
 #else
                     log_cpu_state(env, 0);
 #endif
