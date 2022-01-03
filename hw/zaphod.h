@@ -69,6 +69,9 @@ typedef struct {
     bool            curs_visible, curs_dirty;
     int64_t         curs_blink_time;    /* millisec */
     qemu_irq        *rxint_irq;
+#ifdef ZAPHOD_HAS_KEYBIO
+    int             modifiers;
+#endif
 } ZaphodScreenState;
 #endif
 
