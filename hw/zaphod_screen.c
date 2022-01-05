@@ -518,9 +518,10 @@ DPRINTF("INFO: Screen dirty from %d,%d to %d,%d\n", zss->dirty_minr, zss->dirty_
 #ifdef ZAPHOD_HAS_KEYBIO
 #else
 #include "qdev.h"
-static int foo /*can_receive*/(void *opaque) { return fprintf(stderr, "FOO\n"); }
-static void bar /*receive*/(void *opaque, const uint8_t *buf, int len) { fprintf(stderr, "BAR\n"); }
-static void baz /*event*/(void *opaque, int event) { fprintf(stderr, "BAZ\n"); }
+//static int foo /*can_receive*/(void *opaque) { hw_error("FOO\n"); return 0; }
+static int foo /*can_receive*/(void *opaque) { return 1; }
+static void bar /*receive*/(void *opaque, const uint8_t *buf, int len) { printf("BAR - ch %c (len %d)\n", buf[0], len); }
+static void baz /*event*/(void *opaque, int event) { hw_error("BAZ - event %d\n", event); }
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
 ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
@@ -559,14 +560,27 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
     zss->modifiers= 0;
     qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
 #else
+    /* curses and SDL UIs call kbd_put_keycode() [above] in
+     * sdl_process_key() and similar functions. Library-specific
+     * keycodes have been filtered or converted to generic ones
+     */
     {
+#if 0
     CharDriverState *cds= qdev_init_chardev(NULL);
-    //IOCanReadHandler foo= { fprintf(stderr, "FOO\n"); };
-    //IOReadHandler bar= { fprintf(stderr, "BAR\n"); };
-    //IOEventHandler baz= { fprintf(stdferr, "BAZ\n"); };
 ;DPRINTF("%s() add handlers foo/bar/baz...\n", __func__);
     qemu_chr_add_handlers(cds, foo, bar, baz, zss);
 ;DPRINTF("%s() ...added handlers OK\n", __func__);
+#else
+    /* label, filename, initfn */
+    /* "stdio" - terminal; "vc:..." - DEV_VIRTCON */
+    //CharDriverState *cds= qemu_chr_new("zaphod.screen", "stdio", NULL);
+    CharDriverState *cds= qemu_chr_new("zaphod.screen", "vc:80Cx24C", NULL);
+    //qemu_chr_add_handlers(cds, foo, bar, baz, zss);
+    qemu_chr_add_handlers(cds, foo, bar, NULL, zss);
+    /* graphic_console_init() sets up the DisplayState* we get back
+     * and a local TextConsole with the new_console() result as well
+     */
+#endif
     }
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
