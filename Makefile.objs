@@ -61,7 +61,9 @@ common-obj-$(CONFIG_POSIX) += migration-exec.o migration-unix.o migration-fd.o
 common-obj-$(CONFIG_SPICE) += spice-qemu-char.o
 
 common-obj-y += audio/
+ifneq (${TARGET_BASE_ARCH},z80)
 common-obj-y += hw/
+endif
 
 common-obj-y += ui/
 common-obj-y += bt-host.o bt-vhci.o
