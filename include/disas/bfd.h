@@ -224,6 +224,9 @@ enum bfd_architecture
 #define bfd_mach_ia64_elf32    32
   bfd_arch_lm32,       /* Lattice Mico32 */
 #define bfd_mach_lm32 1
+  bfd_arch_z80,       /* Zilog Z80 */
+#define bfd_mach_z80	1
+/* TODO: bfd_mach_r800 to differentiate Mitsui R800 */
   bfd_arch_last
   };
 #define bfd_mach_s390_31 31
