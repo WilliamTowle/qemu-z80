@@ -288,13 +288,12 @@ int cpu_exec(CPUArchState *env)
                        loop */
 #if defined(TARGET_I386)
                     cc->do_interrupt(cpu);
-#endif
-#if defined(TARGET_Z80)
+#elif defined(TARGET_Z80)
 ;fprintf(stderr, "[%s:%d] TRACE: Mirror TARGET_I386; call do_interrupt()\n", __FILE__, __LINE__);
                     /* permit management of disas_insn()s exceptions
                      * by do_interrupt()
                      */
-                    do_interrupt(env);
+                    cc->do_interrupt(cpu);
 #endif
                     ret = env->exception_index;
                     break;
@@ -578,10 +577,10 @@ int cpu_exec(CPUArchState *env)
                     }
 #elif defined(TARGET_Z80)
                     if (interrupt_request & CPU_INTERRUPT_HARD) {
-			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
-//                      Z80 FIXME Z80
-//                        env->exception_index = EXCP_IRQ;
-                        do_interrupt(env);
+//			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+////                      Z80 FIXME Z80
+////                        env->exception_index = EXCP_IRQ;
+                        cc->do_interrupt(cpu);
                     }
 #endif
                    /* Don't use the cached interrupt_request value,
@@ -608,6 +607,8 @@ int cpu_exec(CPUArchState *env)
                     env->cc_op = CC_OP_FLAGS;
                     env->sr = (env->sr & 0xffe0)
                               | env->cc_dest | (env->cc_x << 4);
+                    log_cpu_state(cpu, 0);
+#elif defined(TARGET_Z80)
                     log_cpu_state(cpu, 0);
 #elif defined(TARGET_Z80)
                     cpu_dump_state(env, logfile, fprintf, 0);
