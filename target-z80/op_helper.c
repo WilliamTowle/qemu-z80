@@ -155,12 +155,29 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
-void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void *retaddr)
+void tlb_fill(CPUArchState *env, target_ulong addr, int is_write, int mmu_idx, uintptr_t retaddr)
 {
+#if 1	/* rework per v1.7.x target-lm32 */
+    int ret;
+
+    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, mmu_idx);
+    if (unlikely(ret)) {
+        if (retaddr) {
+            /* now we have a real cpu fault */
+            cpu_restore_state(env, retaddr);
+        }
+#if 0	/* target-i386 */
+        raise_exception_err(env, env->exception_index, env->error_code);
+#else	/* target-lm32 */
+        cpu_loop_exit(env);
+#endif
+    }
+#else	/* legacy implementation */
     TranslationBlock *tb;
     int ret;
     unsigned long pc;
     CPUZ80State *saved_env;
+
 
     /* XXX: hack to restore env in all cases, even if not called from
        generated code */
@@ -187,5 +204,6 @@ void tlb_fill(CPUState *env1, target_ulong addr, int is_write, int mmu_idx, void
         raise_exception_err(env->exception_index, env->error_code);
     }
     env = saved_env;
+#endif
 }
 #endif
