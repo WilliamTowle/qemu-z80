@@ -23,9 +23,9 @@
 #include "cpu.h"
 #include "helper.h"
 
-#include "exec/softmmu_exec.h"
 
 #if !defined(CONFIG_USER_ONLY)
+#include "exec/softmmu_exec.h"
 
 #define MMUSUFFIX _mmu
 
