@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     char *filename;
-    CPUState *env;
+    CPUArchState *env;
     void  *target_ram;
     int optind;
     int ret;
