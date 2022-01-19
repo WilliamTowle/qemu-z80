@@ -8,6 +8,10 @@
 #include "cpu.h"
 
 #include "qemu/error-report.h"
+
+#ifndef CONFIG_USER_ONLY
+#include "hw/hw.h"
+#endif
 #include "hw/qdev-properties.h"
 
 
@@ -116,7 +120,9 @@ static void z80_cpu_instance_init(Object *obj)
         optimize_flags_init();
 #endif
 #ifndef CONFIG_USER_ONLY
+#if 0    /* omit? unimplemented */
         cpu_set_debug_excp_handler(breakpoint_handler);
+#endif
 #endif
     }
 //X{
@@ -124,6 +130,15 @@ static void z80_cpu_instance_init(Object *obj)
 //X    cpu_set_cpustate_pointers(cpu);
 //X}
 }
+
+#ifndef CONFIG_USER_ONLY
+/* TODO: remove me, when reset over QOM tree is implemented */
+static void z80_cpu_machine_reset_cb(void *opaque)
+{
+    Z80CPU *cpu = opaque;
+    cpu_reset(CPU(cpu));
+}
+#endif
 
 static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 {
