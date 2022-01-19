@@ -7,9 +7,11 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
+#include <stdint.h>
 
 #include "qemu.h"
+
+#include "exec/user/abitypes.h"
 
 
 #if 1	/* debug */
