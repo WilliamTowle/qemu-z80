@@ -106,13 +106,13 @@ ifdef CONFIG_BBLBRX_USER
 QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 
 ## build subset (or none) of cpu emulator library
-obj-y=
-obj-y += exec.o translate-all.o cpu-exec.o
-obj-y += tcg/tcg.o tcg/optimize.o
-obj-y += target-$(TARGET_BASE_ARCH)/
-obj-y += disas.o
+#obj-y=
+#obj-y += exec.o translate-all.o cpu-exec.o
+#obj-y += tcg/tcg.o tcg/optimize.o
+#obj-y += target-$(TARGET_BASE_ARCH)/
+#obj-y += disas.o
 #obj-$(call notempty,$(TARGET_XML_FILES)) += gdbstub-xml.o
-obj-$(call lnot,$(CONFIG_KVM)) += kvm-stub.o
+#obj-$(call lnot,$(CONFIG_KVM)) += kvm-stub.o
 
 obj-y += bblbrx-user/
 #obj-y += gdbstub.o user-exec.o
