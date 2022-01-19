@@ -1,1 +1,1 @@
-obj-y += cpu.o
+obj-y += translate.o cpu.o
