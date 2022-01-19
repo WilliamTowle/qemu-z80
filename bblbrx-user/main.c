@@ -78,7 +78,7 @@ static int parse_args(int argc, char **argv)
 int main(int argc, char **argv)
 {
     char *filename;
-    CPUState *env;
+    CPUArchState *env;
     void  *target_ram;
     int optind;
     int ret;
