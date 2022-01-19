@@ -155,9 +155,9 @@ obj-$(call lnot,$(CONFIG_XEN)) += xen-stub.o
 ifeq ($(TARGET_NAME), sparc64)
 obj-y += hw/sparc64/
 else
-ifneq (${TARGET_BASE_ARCH},z80)
+#ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += hw/$(TARGET_BASE_ARCH)/
-endif
+#endif
 endif
 
 main.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
