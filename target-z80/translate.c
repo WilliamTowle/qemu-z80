@@ -65,7 +65,7 @@ typedef struct DisasContext {
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
-static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
+static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong pc_start)
 {
 #if 1
     int b;
@@ -73,7 +73,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
     /* reading at least one byte is critical to ensuring the
      * translation block has non-zero size
      */
-        b = ldub_code(s->pc);
+    b = cpu_ldub_code(env, s->pc);
 ;DPRINTF("HACK: %s() any byte illegal (RAM contains 0x%02x)\n", __func__, b);
     goto illegal_op;
 ;exit(1);
@@ -1039,6 +1039,8 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 ;DPRINTF("BAIL %s() - INCOMPLETE\n", __func__);
 ;exit(1);
 #else
+    //CPUState *cs = CPU(cpu);
+    CPUZ80State *env = &cpu->env;
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
 //    uint16_t *gen_opc_end;
@@ -1113,7 +1115,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 //            gen_io_start();
 //        }
 
-        pc_ptr = disas_insn(dc, pc_ptr);
+        pc_ptr = disas_insn(env, dc, pc_ptr);
 //        num_insns++;
 //        /* stop translation if indicated */
 //        if (dc->is_jmp) {
