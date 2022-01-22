@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA  02110-1301 USA
  */
 
+#include "cpu.h"
+#include "helper.h"
 
 
 //#define A0 (env->a0)
@@ -43,7 +45,7 @@
 #define PC  (env->pc)
 
 
-void HELPER(movl_pc_im)(uint32_t new_pc)
+void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 {
     PC = (uint16_t)new_pc;
 }
