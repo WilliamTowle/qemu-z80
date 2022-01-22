@@ -148,10 +148,10 @@ int main(int argc, char **argv)
     /* cpu_reset() can contain a tlb_flush() for some platforms. Based
      * on linux-user/main.c, side effects apply on I386/SPARC/PPC
      */
-    cpu_reset(env);
+    cpu_reset(ENV_GET_CPU(env));
 #if 1    /* WmT - TRACE */
 ;DPRINTF("%s(): INFO - CPU has reset; initial state follows...\n", __func__);
-;cpu_dump_state(env, stderr, fprintf, 0);
+;cpu_dump_state(ENV_GET_CPU(env), stderr, fprintf, 0);
 #endif
 
     /* Following cpu_reset():
