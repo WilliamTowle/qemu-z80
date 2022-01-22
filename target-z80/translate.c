@@ -65,7 +65,7 @@ typedef struct DisasContext {
 
 /* convert one instruction. s->is_jmp is set if the translation must
    be stopped. Return the next pc value */
-static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
+static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong pc_start)
 {
 #if 1	/* HACK */
     /* PARTIAL. For testing purposes, we implement:
@@ -73,19 +73,20 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
      * 2. Triggering of ILLOP exception for missing translation cases
      * 3. Unprefixed and prefixed instruction implementation (stepwise)
      */
+    uint8_t b;
 
     s->pc= pc_start;
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, s->pc);
-;exit(1);
 #endif
-    /* TODO: implement read byte here */
-    //b = ldub_code(s->pc);
+    /* TODO: "next_byte" label and zprintf() of PC/insns */
+    b = cpu_ldub_code(env, s->pc);
     //s->pc++;
 
     /* TODO: full translation implementation tracks prefixes and
      * interprets according to CPU type
      */
+;exit(1);
 #else	/* legacy repo.or.cz implementation */
     int b, prefixes;
     //int rex_w, rex_r;	/* unused [i386-specific?] */
@@ -1048,6 +1049,8 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 ;DPRINTF("BAIL %s() - INCOMPLETE\n", __func__);
 ;exit(1);
 #else
+    //CPUState *cs = CPU(cpu);
+    CPUZ80State *env = &cpu->env;
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
 //    uint16_t *gen_opc_end;
@@ -1122,7 +1125,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 //            gen_io_start();
 //        }
 
-        pc_ptr = disas_insn(dc, pc_ptr);
+        pc_ptr = disas_insn(env, dc, pc_ptr);
 //        num_insns++;
 //        /* stop translation if indicated */
 //        if (dc->is_jmp) {
