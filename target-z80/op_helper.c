@@ -43,7 +43,7 @@
 #define PC  (env->pc)
 
 
-void HELPER(movl_pc_im)(uint32_t new_pc)
+void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 {
     PC = (uint16_t)new_pc;
 }

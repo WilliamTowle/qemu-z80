@@ -69,7 +69,7 @@ typedef struct DisasContext {
 
 static inline void gen_jmp_im(target_ulong pc)
 {
-    gen_helper_movl_pc_im(tcg_const_tl(pc));
+    gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
 }
 
 
