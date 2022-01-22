@@ -84,7 +84,9 @@ void cpu_list_unlock(void)
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
+    CPUState *cs = CPU(z80_env_get_cpu(env));
     int	trapnr;
+
     /* PARTIAL:
      * Temporary indication we're doing something
      */
@@ -102,9 +104,12 @@ void cpu_loop(CPUZ80State *env)
          * simplest case.
          */
         printf("%s(): Calling cpu_exec() here...\n", __func__);
-        trapnr= cpu_exec(env);	/* cpu-exec.c cpu_exec() */
+	/* TODO: v1.7.x has mutexes and cpu_exec_{start|end}() */
+        trapnr= cpu_z80_exec(env);
+
         printf("BAILING - abnormal return %d from cpu_exec() - dump of env at %p follows\n", trapnr, env);
-        cpu_dump_state(env, stderr, fprintf, 0);
+        //cpu_dump_state(env, stderr, fprintf, 0);
+        cpu_dump_state(cs, stderr, fprintf, 0);
         exit(1);
 
         /* PARTIAL:
@@ -115,10 +120,13 @@ void cpu_loop(CPUZ80State *env)
     }
 }
 #else	/* non-z80 CPUs */
-void cpu_loop(CPUState *env)
+void cpu_loop(CPUZ80State *env)
 {
+    CPUState *cs = CPU(z80_env_get_cpu(env));
+
 	printf("cpu_loop() for unimplemented CPU type\n");
-	cpu_dump_state(env, stderr, fprintf, 0);
+	//cpu_dump_state(env, stderr, fprintf, 0);
+	cpu_dump_state(cs, stderr, fprintf, 0);
 	exit(1);
 }
 #endif
