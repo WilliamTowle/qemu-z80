@@ -83,6 +83,6 @@ static inline void unlock_user(void *host_ptr, abi_ulong guest_addr,
 #endif
 }
 
-void cpu_loop(CPUState *env);
+void cpu_loop(CPUArchState *env);
 
 #endif /* QEMU_H */
