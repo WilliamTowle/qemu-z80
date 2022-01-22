@@ -53,6 +53,7 @@ typedef struct CPUZ80State {
 Z80CPU *cpu_z80_init(const char *cpu_model);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
+int cpu_z80_exec(CPUZ80State *s);
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
@@ -70,6 +71,8 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
     return &cpu->env;
 }
 
+
+#define cpu_exec cpu_z80_exec
 
 /* TODO: cpu_mmu_index() */
 
