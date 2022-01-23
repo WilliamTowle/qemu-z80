@@ -123,7 +123,7 @@ void raise_exception(CPUZ80State *env, int exception_index)
     raise_interrupt2(env, exception_index, 0, 0, 0);
 }
 
-void HELPER(debug)(void)
+void HELPER(debug)(CPUZ80State *env)
 {
     env->exception_index = EXCP_DEBUG;
 #if 0	/* obsolete */
@@ -133,12 +133,12 @@ void HELPER(debug)(void)
 #endif
 }
 
-//void HELPER(set_inhibit_irq)(void)
+//void HELPER(set_inhibit_irq)(CPUZ80State *env)
 //{
 //    env->hflags |= HF_INHIBIT_IRQ_MASK;
 //}
 
-void HELPER(reset_inhibit_irq)(void)
+void HELPER(reset_inhibit_irq)(CPUZ80State *env)
 {
     env->hflags &= ~HF_INHIBIT_IRQ_MASK;
 }
