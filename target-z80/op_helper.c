@@ -103,7 +103,7 @@ void raise_exception(CPUZ80State *env, int exception_index)
     raise_interrupt2(env, exception_index, 0, 0, 0);
 }
 
-void HELPER(debug)(void)
+void HELPER(debug)(CPUZ80State *env)
 {
     env->exception_index = EXCP_DEBUG;
 #if 0	/* obsolete */
