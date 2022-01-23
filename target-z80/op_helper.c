@@ -104,12 +104,12 @@ void raise_exception(CPUZ80State *env, int exception_index)
 }
 
 
-//void HELPER(set_inhibit_irq)(void)
+//void HELPER(set_inhibit_irq)(CPUZ80State *env)
 //{
 //    env->hflags |= HF_INHIBIT_IRQ_MASK;
 //}
 
-void HELPER(reset_inhibit_irq)(void)
+void HELPER(reset_inhibit_irq)(CPUZ80State *env)
 {
     env->hflags &= ~HF_INHIBIT_IRQ_MASK;
 }
