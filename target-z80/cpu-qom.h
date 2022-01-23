@@ -80,6 +80,8 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 
 #define ENV_GET_CPU(e) CPU(z80_env_get_cpu(e))
 
+#define ENV_OFFSET offsetof(Z80CPU, env)
+
 
 void z80_cpu_do_interrupt(CPUState *cpu);
 
