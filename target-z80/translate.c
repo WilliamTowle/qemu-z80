@@ -1114,12 +1114,10 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 #endif
                     );
 
-    gen_opc_ptr = gen_opc_buf;
 #if 1	/* WmT - TRACE */
-;DPRINTF("%s(): set gen_opc_ptr: to gen_opc_buf value %p\n", __func__, gen_opc_ptr);
+;DPRINTF("%s(): set gen_opc_ptr: to gen_opc_buf value %p\n", __func__, tcg_ctx.gen_opc_ptr);
 #endif
-    gen_opc_end = gen_opc_buf + OPC_MAX_SIZE;
-    gen_opparam_ptr = gen_opparam_buf;
+    gen_opc_end = tcg_ctx.gen_opc_buf + OPC_MAX_SIZE;
 
     dc->is_jmp = DISAS_NEXT;
     pc_ptr = pc_start;
@@ -1156,16 +1154,17 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         }
 #endif
         if (search_pc) {
-            j = gen_opc_ptr - gen_opc_buf;
+            j = tcg_ctx.gen_opc_ptr - tcg_ctx.gen_opc_buf;
             if (lj < j) {
                 lj++;
                 while (lj < j) {
-                    gen_opc_instr_start[lj++] = 0;
+                    tcg_ctx.gen_opc_instr_start[lj++] = 0;
                 }
             }
-            gen_opc_pc[lj] = pc_ptr;
-            gen_opc_instr_start[lj] = 1;
-            gen_opc_icount[lj] = num_insns;
+            tcg_ctx.gen_opc_pc[lj] = pc_ptr;
+            //gen_opc_cc_op[lj] = dc->cc_op;
+            tcg_ctx.gen_opc_instr_start[lj] = 1;
+            tcg_ctx.gen_opc_icount[lj] = num_insns;
         }
         if (num_insns + 1 == max_insns && (tb->cflags & CF_LAST_IO)) {
             gen_io_start();
@@ -1194,7 +1193,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         }
 
         /* if too long translation, stop generation too */
-        if (gen_opc_ptr >= gen_opc_end ||
+        if (tcg_ctx.gen_opc_ptr >= gen_opc_end ||
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
             num_insns >= max_insns) {
             gen_jmp_im(pc_ptr - dc->cs_base);
@@ -1211,13 +1210,13 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         gen_io_end();
     }
     gen_icount_end(tb, num_insns);
-    *gen_opc_ptr = INDEX_op_end;
+    *tcg_ctx.gen_opc_ptr = INDEX_op_end;
     /* we don't forget to fill the last values */
     if (search_pc) {
-        j = gen_opc_ptr - gen_opc_buf;
+        j = tcg_ctx.gen_opc_ptr - tcg_ctx.gen_opc_buf;
         lj++;
         while (lj <= j) {
-            gen_opc_instr_start[lj++] = 0;
+            tcg_ctx.gen_opc_instr_start[lj++] = 0;
         }
     }
 
