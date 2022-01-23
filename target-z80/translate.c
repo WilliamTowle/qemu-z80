@@ -1139,7 +1139,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 ;DPRINTF("[%s:%d] decided on max_insns %d\n", __FILE__, __LINE__, max_insns);
 #endif
 
-    gen_icount_start();
+    gen_tb_start();
     for (;;) {
 #if 1	/* WmT - TRACE */
 ;DPRINTF("[%s:%d] PARTIAL - ignoring breakpoints\n", __FILE__, __LINE__);
@@ -1209,7 +1209,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     if (tb->cflags & CF_LAST_IO) {
         gen_io_end();
     }
-    gen_icount_end(tb, num_insns);
+    gen_tb_end(tb, num_insns);
     *tcg_ctx.gen_opc_ptr = INDEX_op_end;
     /* we don't forget to fill the last values */
     if (search_pc) {
