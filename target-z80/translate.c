@@ -57,7 +57,7 @@
 
 /* global register indexes and instruction counting routines */
 static TCGv_ptr cpu_env;
-#include "gen-icount.h"
+#include "exec/gen-icount.h"
 
 
 typedef struct DisasContext {
