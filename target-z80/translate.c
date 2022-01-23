@@ -1079,7 +1079,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
                                                  TranslationBlock *tb,
                                                  int search_pc)
 {
-    //CPUState *cs = CPU(cpu);
+    CPUState *cs = CPU(cpu);
     CPUZ80State *env = &cpu->env;
     DisasContext dc1, *dc = &dc1;
     target_ulong pc_ptr;
@@ -1103,11 +1103,11 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
     flags = tb->flags;
     //cflags = tb->cflags;
 
-    dc->singlestep_enabled = env->singlestep_enabled;
+    dc->singlestep_enabled = cs->singlestep_enabled;
     dc->cs_base = cs_base;
     dc->tb = tb;
     dc->flags = flags;
-    dc->jmp_opt = !(env->singlestep_enabled ||
+    dc->jmp_opt = !(cs->singlestep_enabled ||
                     (flags & HF_INHIBIT_IRQ_MASK)
 #ifndef CONFIG_SOFTMMU
                     || (flags & HF_SOFTMMU_MASK)
