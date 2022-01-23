@@ -1259,7 +1259,6 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 #if 1	/* WmT - TRACE */
 ;DPRINTF("*** EXIT %s(), OK ***\n", __func__);
 #endif
-    return 0;
 }
 
 void gen_intermediate_code(CPUZ80State *env, TranslationBlock *tb)
