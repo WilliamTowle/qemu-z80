@@ -151,6 +151,8 @@ static void z80_cpu_instance_init(Object *obj)
         inited = 1;
 #if 0   /* x86-specific name */
         optimize_flags_init();
+#else	/* legacy qemu-z80 */
+	z80_translate_init();
 #endif
 #ifndef CONFIG_USER_ONLY
 #if 0	/* omit? unimplemented */
