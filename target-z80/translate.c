@@ -123,7 +123,8 @@ static inline void gen_jmp_im(target_ulong pc)
 static void gen_debug(DisasContext *s, target_ulong cur_pc)
 {
     gen_jmp_im(cur_pc);
-    gen_helper_debug();
+    //gen_helper_debug();
+    gen_helper_debug(cpu_env);
     s->is_jmp = 3;
 }
 
