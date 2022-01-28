@@ -145,7 +145,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     /* unprefixed opcodes */
 
     if ((prefixes & (PREFIX_CB | PREFIX_ED)) == 0) {
-        b = ldub_code(s->pc);
+        b = cpu_ldub_code(env, s->pc);
         s->pc++;
 
         int x, y, z, p, q;
@@ -700,11 +700,11 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 
         if (m != MODE_NORMAL) {
             /* 0xDD 0xCB OFFS OP or 0xFD 0xCB OFFS OP */
-            d = ldsb_code(s->pc);
+            d = cpu_ldsb_code(env, s->pc);
             s->pc++;
         }
 
-        b = ldub_code(s->pc);
+        b = cpu_ldub_code(env, s->pc);
         s->pc++;
 
         x = (b >> 6) & 0x03;
@@ -777,7 +777,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     } else if (prefixes & PREFIX_ED) {
         /* ed mode: */
 
-        b = ldub_code(s->pc);
+        b = cpu_ldub_code(env, s->pc);
         s->pc++;
 
         int x, y, z, p, q;
