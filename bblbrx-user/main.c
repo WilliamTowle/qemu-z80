@@ -113,7 +113,7 @@ void cpu_list_unlock(void)
 #if defined(TARGET_Z80)
 void cpu_loop(CPUZ80State *env)
 {
-    //CPUState *cs = CPU(z80_env_get_cpu(env));
+    CPUState *cs = CPU(z80_env_get_cpu(env));
     int	trapnr;
 
     /* PARTIAL:
@@ -143,7 +143,8 @@ void cpu_loop(CPUZ80State *env)
              * call relevant routines.
              */
             printf("Successful program exit. Register dump follows:\n");
-            cpu_dump_state(env, stderr, fprintf, 0);
+            //cpu_dump_state(env, stderr, fprintf, 0);
+            cpu_dump_state(cs, stderr, fprintf, 0);
             break;	/* to exit() beyond switch */
         case EXCP06_ILLOP:
             printf("cpu_exec() encountered EXCP06_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
