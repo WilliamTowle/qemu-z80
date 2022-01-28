@@ -1334,13 +1334,13 @@ void z80_translate_init(void)
 #if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
 	 * but TCG_AREG{1|2} no longer available for else case
 	 */
-	cpu_T[0] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t0), "T0");
-	cpu_T[1] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, t1), "T1");
+	cpu_T[0] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUZ80State, t0), "T0");
+	cpu_T[1] = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUZ80State, t1), "T1");
 #else
 	cpu_T[0] = tcg_global_reg_new_i32(TCG_AREG1, "T0");
 	cpu_T[1] = tcg_global_reg_new_i32(TCG_AREG2, "T1");
 #endif
-	cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUState, a0), "A0");
+	cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUZ80State, a0), "A0");
 
     /* register helpers */
 #define GEN_HELPER 2
