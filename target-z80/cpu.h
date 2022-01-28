@@ -108,7 +108,31 @@
 #define HF_INHIBIT_IRQ_MASK  (1 << HF_INHIBIT_IRQ_SHIFT)
 
 
-/* TODO: NB_MMU_MODES define, CPUZ80State, TARGET_PAGE_BITS */
+/* Z80 registers */
+
+#define R_A     0
+#define R_F     1
+
+#define R_BC    2
+#define R_DE    3
+#define R_HL    4
+#define R_IX    5
+#define R_IY    6
+#define R_SP    7
+
+#define R_I     8
+#define R_R     9
+
+#define R_AX    10
+#define R_FX    11
+#define R_BCX   12
+#define R_DEX   13
+#define R_HLX   14
+
+#define CPU_NB_REGS 15
+
+
+/* TODO: NB_MMU_MODES define */
 
 //#define NB_MMU_MODES 1	/* no kernel/userland distinction */
 
@@ -124,8 +148,11 @@ typedef struct CPUZ80State {
 
     /* Z80 registers */
     uint16_t pc;    /* Program Counter (referencing 64KiB main RAM) */
+    target_ulong regs[CPU_NB_REGS];
 
-    /* FIXME: need data registers, index registers, interrupt registers */
+    int iff1;
+    int iff2;
+    int imode;
 
     /* emulator internal eflags handling */
     uint32_t hflags; /* hidden flags, see HF_xxx constants */
