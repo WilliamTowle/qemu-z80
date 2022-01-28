@@ -541,7 +541,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 ;DPRINTF("[%s:%d] INFO - process 'ret' opcode...\n", __FILE__, __LINE__);
 #endif
                         gen_popw(cpu_T[0]);
-                        gen_helper_jmp_T0();
+                        gen_helper_jmp_T0(cpu_env);
                         zprintf("ret\n");
                         gen_eob(s);
                         s->is_jmp = 3;
