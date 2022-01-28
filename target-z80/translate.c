@@ -1331,8 +1331,10 @@ void z80_translate_init(void)
 #endif
 	cpu_A0 = tcg_global_mem_new_i32(TCG_AREG0, offsetof(CPUZ80State, a0), "A0");
 
+#if 0	/* omit for v1.7.x - reworked to generate array members */
     /* register helpers */
 #define GEN_HELPER 2
 #include "helper.h"
+#endif
 #endif
 }
