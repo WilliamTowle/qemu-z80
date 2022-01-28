@@ -148,7 +148,7 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 /* Z80 instruction-specific helpers */
 
-void HELPER(jmp_T0)(void)
+void HELPER(jmp_T0)(CPUZ80State *env)
 {
     PC = T0;
 }
