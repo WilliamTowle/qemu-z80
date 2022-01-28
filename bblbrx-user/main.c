@@ -123,7 +123,8 @@ void cpu_loop(CPUZ80State *env)
              * call relevant routines.
              */
             printf("Successful program exit. Register dump follows:\n");
-            cpu_dump_state(env, stderr, fprintf, 0);
+            //cpu_dump_state(env, stderr, fprintf, 0);
+            cpu_dump_state(cs, stderr, fprintf, 0);
             break;	/* to exit() beyond switch */
         case EXCP06_ILLOP:
             printf("cpu_exec() encountered EXCP06_ILLOP (trapnr=%d) - aborting emulation\n", trapnr);
