@@ -1113,7 +1113,7 @@ goto illegal_op;
                     case 2:
                         r1 = regpairmap(OR2_HL, m);
                         gen_movw_v_reg(cpu_T[0], r1);
-                        gen_helper_jmp_T0();
+                        gen_helper_jmp_T0(cpu_env);
                         zprintf("jp %s\n", regpairnames[r1]);
                         gen_eob(s);
                         s->is_jmp = 3;
@@ -1237,7 +1237,7 @@ goto illegal_op;
                 case 1:
                     switch (p) {
                     case 0:
-                        n = lduw_code(s->pc);
+                        n = cpu_lduw_code(env, s->pc);
                         s->pc += 2;
                         tcg_gen_movi_tl(cpu_T[0], s->pc);
                         gen_pushw(cpu_T[0]);
