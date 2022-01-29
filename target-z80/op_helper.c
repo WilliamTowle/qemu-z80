@@ -187,7 +187,7 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 /* Halt */
 
-void HELPER(halt)(void)
+void HELPER(halt)(CPUZ80State *env)
 {
     //printf("halting at PC 0x%x\n",env->pc);
     env->halted = 1;
