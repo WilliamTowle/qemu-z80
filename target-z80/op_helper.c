@@ -210,7 +210,7 @@ void HELPER(jmp_T0)(CPUZ80State *env)
     PC = T0;
 }
 
-void HELPER(djnz)(uint32_t pc1, uint32_t pc2)
+void HELPER(djnz)(CPUZ80State *env, uint32_t pc1, uint32_t pc2)
 {
     BC = (uint16_t)(BC - 0x0100);
     if (BC & 0xff00) {
