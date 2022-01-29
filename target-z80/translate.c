@@ -1195,11 +1195,11 @@ goto illegal_op;
                     zprintf("ex de,hl\n");
                     break;
                 case 6:
-                    gen_helper_di();
+                    gen_helper_di(cpu_env);
                     zprintf("di\n");
                     break;
                 case 7:
-                    gen_helper_ei();
+                    gen_helper_ei(cpu_env);
                     zprintf("ei\n");
 //                  gen_eob(s);
 //                  s->is_ei = 1;
