@@ -2,3 +2,4 @@ obj-y += translate.o helper.o cpu.o
 obj-y += excp_helper.o
 obj-y += misc_helper.o
 obj-y += op_helper.o
+obj-$(CONFIG_BBLBRX_USER) += ioport-user.o
