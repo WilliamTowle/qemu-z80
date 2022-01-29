@@ -528,7 +528,9 @@ static const char *const alu[8] = {
     "cp ",
 };
 
-typedef void (alu_helper_func)(void);
+//typedef void (alu_helper_func)(void);
+//typedef void (alu_helper_func)(CPUZ80State *);
+typedef void (alu_helper_func)(TCGv_ptr cpu_env);
 
 static alu_helper_func *const gen_alu[8] = {
     gen_helper_add_cc,
@@ -650,7 +652,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                     r2 = regpairmap(OR2_HL, m);
                     gen_movw_v_reg(cpu_T[0], r1);
                     gen_movw_v_reg(cpu_T[1], r2);
-                    gen_helper_addw_T0_T1_cc();
+                    gen_helper_addw_T0_T1_cc(cpu_env);
                     gen_movw_reg_v(r2, cpu_T[0]);
                     zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
                     break;
@@ -909,7 +911,7 @@ goto illegal_op;
             } else {
                 gen_movb_v_reg(cpu_T[0], r1);
             }
-            gen_alu[y](); /* places output in A */
+            gen_alu[y](cpu_env); /* places output in A */
             if (is_indexed(r1)) {
                 zprintf("%s(%s%c$%02x)\n", alu[y], idxnames[r1], shexb(d));
             } else {
@@ -1110,7 +1112,7 @@ goto illegal_op;
                 n = cpu_ldub_code(env, s->pc);
                 s->pc++;
                 tcg_gen_movi_tl(cpu_T[0], n);
-                gen_alu[y](); /* places output in A */
+                gen_alu[y](cpu_env); /* places output in A */
                 zprintf("%s$%02x\n", alu[y], n);
                 break;
 
