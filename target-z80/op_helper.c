@@ -416,7 +416,7 @@ void HELPER(rrd_cc)(CPUZ80State *env)
 
 /* Block instructions */
 
-void HELPER(bli_ld_inc_cc)(void)
+void HELPER(bli_ld_inc_cc)(CPUZ80State *env)
 {
     int pf;
 
@@ -428,7 +428,7 @@ void HELPER(bli_ld_inc_cc)(void)
     F = (F & (CC_S | CC_Z | CC_C)) | pf;
 }
 
-void HELPER(bli_ld_dec_cc)(void)
+void HELPER(bli_ld_dec_cc)(CPUZ80State *env)
 {
     int pf;
 
@@ -440,7 +440,7 @@ void HELPER(bli_ld_dec_cc)(void)
     F = (F & (CC_S | CC_Z | CC_C)) | pf;
 }
 
-void HELPER(bli_ld_rep)(uint32_t next_pc)
+void HELPER(bli_ld_rep)(CPUZ80State *env, uint32_t next_pc)
 {
     if (BC) {
         PC = (uint16_t)(next_pc - 2);
@@ -449,7 +449,7 @@ void HELPER(bli_ld_rep)(uint32_t next_pc)
     }
 }
 
-void HELPER(bli_cp_cc)(void)
+void HELPER(bli_cp_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf;
     int res, carry;
@@ -464,7 +464,7 @@ void HELPER(bli_cp_cc)(void)
     F = (F & CC_C) | sf | zf | hf | pf | CC_N;
 }
 
-void HELPER(bli_cp_inc_cc)(void)
+void HELPER(bli_cp_inc_cc)(CPUZ80State *env)
 {
     int pf;
 
@@ -475,7 +475,7 @@ void HELPER(bli_cp_inc_cc)(void)
     F = (F & ~CC_P) | pf;
 }
 
-void HELPER(bli_cp_dec_cc)(void)
+void HELPER(bli_cp_dec_cc)(CPUZ80State *env)
 {
     int pf;
 
@@ -486,7 +486,7 @@ void HELPER(bli_cp_dec_cc)(void)
     F = (F & ~CC_P) | pf;
 }
 
-void HELPER(bli_cp_rep)(uint32_t next_pc)
+void HELPER(bli_cp_rep)(CPUZ80State *env, uint32_t next_pc)
 {
     if (BC && T0 != A) {
         PC = (uint16_t)(next_pc - 2);
@@ -495,7 +495,7 @@ void HELPER(bli_cp_rep)(uint32_t next_pc)
     }
 }
 
-void HELPER(bli_io_T0_inc)(uint32_t out)
+void HELPER(bli_io_T0_inc)(CPUZ80State *env, uint32_t out)
 {
     HL = (uint16_t)(HL + 1);
     BC = (uint16_t)(BC - 0x0100);
@@ -508,7 +508,7 @@ void HELPER(bli_io_T0_inc)(uint32_t out)
         ((T0 & 0x80) ? CC_N : 0);
 }
 
-void HELPER(bli_io_T0_dec)(uint32_t out)
+void HELPER(bli_io_T0_dec)(CPUZ80State *env, uint32_t out)
 {
     HL = (uint16_t)(HL - 1);
     BC = (uint16_t)(BC - 0x0100);
@@ -521,7 +521,7 @@ void HELPER(bli_io_T0_dec)(uint32_t out)
         ((T0 & 0x80) ? CC_N : 0);
 }
 
-void HELPER(bli_io_rep)(uint32_t next_pc)
+void HELPER(bli_io_rep)(CPUZ80State *env, uint32_t next_pc)
 {
     if (F & CC_Z) {
         PC = (uint16_t)(next_pc - 2);
@@ -630,7 +630,7 @@ void HELPER(ccf_cc)(CPUZ80State *env)
 
 /* misc */
 
-void HELPER(neg_cc)(void)
+void HELPER(neg_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = A;
@@ -744,7 +744,7 @@ void HELPER(decb_T0_cc)(CPUZ80State *env)
 /* when an interrupt occurs, iff1 and iff2 are reset, disabling interrupts */
 /* when an NMI occurs, iff1 is reset. iff2 is left unchanged */
 
-void HELPER(imode)(uint32_t imode)
+void HELPER(imode)(CPUZ80State *env, uint32_t imode)
 {
     env->imode = imode;
 }
@@ -764,22 +764,22 @@ void HELPER(di)(CPUZ80State *env)
 }
 
 /* reenable interrupts if enabled */
-void HELPER(ri)(void)
+void HELPER(ri)(CPUZ80State *env)
 {
     env->iff1 = env->iff2;
 }
 
-void HELPER(ld_R_A)(void)
+void HELPER(ld_R_A)(CPUZ80State *env)
 {
     R = A;
 }
 
-void HELPER(ld_I_A)(void)
+void HELPER(ld_I_A)(CPUZ80State *env)
 {
     I = A;
 }
 
-void HELPER(ld_A_R)(void)
+void HELPER(ld_A_R)(CPUZ80State *env)
 {
     int sf, zf, pf;
 
@@ -791,7 +791,7 @@ void HELPER(ld_A_R)(void)
     F = (F & CC_C) | sf | zf | pf;
 }
 
-void HELPER(ld_A_I)(void)
+void HELPER(ld_A_I)(CPUZ80State *env)
 {
     int sf, zf, pf;
 
