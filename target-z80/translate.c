@@ -777,7 +777,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                 case 2:
                     n = cpu_ldsb_code(env, s->pc);
                     s->pc++;
-                    gen_helper_djnz(tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
+                    gen_helper_djnz(cpu_env, tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
                     gen_eob(s);
                     s->is_jmp = 3;
                     zprintf("djnz $%02x\n", n);
