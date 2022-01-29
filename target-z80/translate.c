@@ -746,7 +746,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             case 4:
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
-                    d = ldsb_code(s->pc);
+                    d = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                     gen_movb_v_idx(cpu_T[0], r1, d);
                 } else {
