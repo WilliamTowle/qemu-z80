@@ -848,7 +848,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                         zprintf("ld (de),a\n");
                         break;
                     case 2:
-                        n = lduw_code(s->pc);
+                        n = cpu_lduw_code(env, s->pc);
                         s->pc += 2;
                         r1 = regpairmap(OR2_HL, m);
                         gen_movw_v_reg(cpu_T[0], r1);
@@ -857,7 +857,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                         zprintf("ld ($%04x),%s\n", n, regpairnames[r1]);
                         break;
                     case 3:
-                        n = lduw_code(s->pc);
+                        n = cpu_lduw_code(env, s->pc);
                         s->pc += 2;
                         gen_movb_v_A(cpu_T[0]);
                         tcg_gen_movi_i32(cpu_A0, n);
@@ -881,7 +881,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                         zprintf("ld a,(de)\n");
                         break;
                     case 2:
-                        n = lduw_code(s->pc);
+                        n = cpu_lduw_code(env, s->pc);
                         s->pc += 2;
                         r1 = regpairmap(OR2_HL, m);
                         tcg_gen_movi_i32(cpu_A0, n);
@@ -890,7 +890,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                         zprintf("ld %s,($%04x)\n", regpairnames[r1], n);
                         break;
                     case 3:
-                        n = lduw_code(s->pc);
+                        n = cpu_lduw_code(env, s->pc);
                         s->pc += 2;
                         tcg_gen_movi_i32(cpu_A0, n);
                         tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
@@ -946,13 +946,13 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             case 5:
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
-                    d = ldsb_code(s->pc);
+                    d = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                     gen_movb_v_idx(cpu_T[0], r1, d);
                 } else {
                     gen_movb_v_reg(cpu_T[0], r1);
                 }
-                gen_helper_decb_T0_cc();
+                gen_helper_decb_T0_cc(cpu_env);
                 if (is_indexed(r1)) {
                     gen_movb_idx_v(r1, cpu_T[0], d);
                 } else {
