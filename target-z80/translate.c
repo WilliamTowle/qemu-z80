@@ -644,7 +644,8 @@ static const char *const rot[8] = {
     "srl",
 };
 
-typedef void (rot_helper_func)(void);
+//typedef void (rot_helper_func)(void);
+typedef void (rot_helper_func)(TCGv_ptr cpu_env);
 
 static rot_helper_func *const gen_rot_T0[8] = {
     gen_helper_rlc_T0_cc,
@@ -1375,7 +1376,7 @@ next_byte:
         switch (x) {
         case 0:
             /* TODO: TST instead of SLL for R800 */
-            gen_rot_T0[y]();
+            gen_rot_T0[y](cpu_env);
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
@@ -1387,7 +1388,7 @@ next_byte:
             zprintf("%s %s\n", rot[y], regnames[r1]);
             break;
         case 1:
-            gen_helper_bit_T0(tcg_const_tl(1 << y));
+            gen_helper_bit_T0(cpu_env, tcg_const_tl(1 << y));
             zprintf("bit %i,%s\n", y, regnames[r1]);
             break;
         case 2:
