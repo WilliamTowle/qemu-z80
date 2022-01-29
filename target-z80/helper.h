@@ -11,7 +11,7 @@ DEF_HELPER_1(reset_inhibit_irq, void, env)
 //DEF_HELPER_1(movl_pc_im, void, i32)
 DEF_HELPER_2(movl_pc_im, void, env, i32)
 
-DEF_HELPER_0(halt, void)
+DEF_HELPER_1(halt, void, env)
 
 ///* In / Out */
 

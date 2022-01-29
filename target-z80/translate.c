@@ -1020,7 +1020,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         case 1:	/* instr pattern 01yyyzzz */
             if (z == 6 && y == 6) {
                 gen_jmp_im(s->pc);
-                gen_helper_halt();
+                gen_helper_halt(cpu_env);
                 zprintf("halt\n");
             } else {
                 if (z == 6) {
