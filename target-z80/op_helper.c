@@ -44,7 +44,7 @@
 #endif
 
 
-#include "ioport.h"
+#include "exec/ioport.h"
 
 #if 1  /* was: TARGET_LONG_BITS > HOST_LONG_BITS
         * but TCG_AREG{1|2} no longer available for else case
