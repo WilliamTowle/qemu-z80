@@ -35,14 +35,14 @@ DEF_HELPER_1(cp_cc, void, env)
 
 /* Misc */
 
-DEF_HELPER_0(rlca_cc, void)
-DEF_HELPER_0(rrca_cc, void)
-DEF_HELPER_0(rla_cc, void)
-DEF_HELPER_0(rra_cc, void)
-DEF_HELPER_0(daa_cc, void)
-DEF_HELPER_0(cpl_cc, void)
-DEF_HELPER_0(scf_cc, void)
-DEF_HELPER_0(ccf_cc, void)
+DEF_HELPER_1(rlca_cc, void, env)
+DEF_HELPER_1(rrca_cc, void, env)
+DEF_HELPER_1(rla_cc, void, env)
+DEF_HELPER_1(rra_cc, void, env)
+DEF_HELPER_1(daa_cc, void, env)
+DEF_HELPER_1(cpl_cc, void, env)
+DEF_HELPER_1(scf_cc, void, env)
+DEF_HELPER_1(ccf_cc, void, env)
 //DEF_HELPER_0(neg_cc, void)
 
 /* 16-bit arithmetic */
