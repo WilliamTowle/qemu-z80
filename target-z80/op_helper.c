@@ -224,12 +224,12 @@ void HELPER(halt)(CPUZ80State *env)
 
 /* In / Out */
 
-void HELPER(in_T0_im)(uint32_t val)
+void HELPER(in_T0_im)(CPUZ80State *env, uint32_t val)
 {
     T0 = cpu_inb(env, (A << 8) | val);
 }
 
-void HELPER(in_T0_bc_cc)(void)
+void HELPER(in_T0_bc_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
 
@@ -241,12 +241,12 @@ void HELPER(in_T0_bc_cc)(void)
     F = (F & CC_C) | sf | zf | pf;
 }
 
-void HELPER(out_T0_im)(uint32_t val)
+void HELPER(out_T0_im)(CPUZ80State *env, uint32_t val)
 {
     cpu_outb(env, (A << 8) | val, T0);
 }
 
-void HELPER(out_T0_bc)(void)
+void HELPER(out_T0_bc)(CPUZ80State *env)
 {
     cpu_outb(env, BC, T0);
 }
