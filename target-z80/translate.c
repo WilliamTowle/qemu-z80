@@ -1209,13 +1209,13 @@ next_byte:
                     goto next_byte;
                     break;
                 case 2:
-                    n = ldub_code(s->pc);
+                    n = cpu_ldub_code(env, s->pc);
                     s->pc++;
                     gen_movb_v_A(cpu_T[0]);
                     if (use_icount) {
                         gen_io_start();
                     }
-                    gen_helper_out_T0_im(tcg_const_tl(n));
+                    gen_helper_out_T0_im(cpu_env, tcg_const_tl(n));
                     if (use_icount) {
                         gen_io_end();
                         gen_jmp_im(s->pc);
@@ -1223,12 +1223,12 @@ next_byte:
                     zprintf("out ($%02x),a\n", n);
                     break;
                 case 3:
-                    n = ldub_code(s->pc);
+                    n = cpu_ldub_code(env, s->pc);
                     s->pc++;
                     if (use_icount) {
                         gen_io_start();
                     }
-                    gen_helper_in_T0_im(tcg_const_tl(n));
+                    gen_helper_in_T0_im(cpu_env, tcg_const_tl(n));
                     gen_movb_A_v(cpu_T[0]);
                     if (use_icount) {
                         gen_io_end();
@@ -1462,7 +1462,7 @@ next_byte:
                 if (use_icount) {
                     gen_io_start();
                 }
-                gen_helper_in_T0_bc_cc();
+                gen_helper_in_T0_bc_cc(cpu_env);
                 if (y != 6) {
                     r1 = regmap(reg[y], m);
                     gen_movb_reg_v(r1, cpu_T[0]);
@@ -1487,7 +1487,7 @@ next_byte:
                 if (use_icount) {
                     gen_io_start();
                 }
-                gen_helper_out_T0_bc();
+                gen_helper_out_T0_bc(cpu_env);
                 if (use_icount) {
                     gen_io_end();
                     gen_jmp_im(s->pc);
@@ -1630,19 +1630,19 @@ next_byte:
                     if (use_icount) {
                         gen_io_start();
                     }
-                    gen_helper_in_T0_bc_cc();
+                    gen_helper_in_T0_bc_cc(cpu_env);
                     if (use_icount) {
                         gen_io_end();
                     }
                     gen_movw_v_HL(cpu_A0);
                     tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
                     if (!(y & 1)) {
-                        gen_helper_bli_io_T0_inc(0);
+                        gen_helper_bli_io_T0_inc(cpu_env, 0);
                     } else {
-                        gen_helper_bli_io_T0_dec(0);
+                        gen_helper_bli_io_T0_dec(cpu_env, 0);
                     }
                     if ((y & 2)) {
-                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
+                        gen_helper_bli_io_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
                         s->is_jmp = 3;
                     } else if (use_icount) {
@@ -1656,17 +1656,17 @@ next_byte:
                     if (use_icount) {
                         gen_io_start();
                     }
-                    gen_helper_out_T0_bc();
+                    gen_helper_out_T0_bc(cpu_env);
                     if (use_icount) {
                         gen_io_end();
                     }
                     if (!(y & 1)) {
-                        gen_helper_bli_io_T0_inc(1);
+                        gen_helper_bli_io_T0_inc(cpu_env, 1);
                     } else {
-                        gen_helper_bli_io_T0_dec(1);
+                        gen_helper_bli_io_T0_dec(cpu_env, 1);
                     }
                     if ((y & 2)) {
-                        gen_helper_bli_io_rep(tcg_const_tl(s->pc));
+                        gen_helper_bli_io_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
                         s->is_jmp = 3;
                     } else if (use_icount) {
