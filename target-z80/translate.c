@@ -760,7 +760,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                 } else {
                     gen_movb_v_reg(cpu_T[0], r1);
                 }
-                gen_helper_incb_T0_cc();
+                gen_helper_incb_T0_cc(cpu_env);
                 if (is_indexed(r1)) {
                     gen_movb_idx_v(r1, cpu_T[0], d);
                 } else {
