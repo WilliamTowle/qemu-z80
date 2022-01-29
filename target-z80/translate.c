@@ -618,7 +618,8 @@ static const char *const rot[8] = {
     "srl",
 };
 
-typedef void (rot_helper_func)(void);
+//typedef void (rot_helper_func)(void);
+typedef void (rot_helper_func)(TCGv_ptr cpu_env);
 
 static rot_helper_func *const gen_rot_T0[8] = {
     gen_helper_rlc_T0_cc,
@@ -1345,7 +1346,7 @@ next_byte:
         switch (x) {
         case 0:
             /* TODO: TST instead of SLL for R800 */
-            gen_rot_T0[y]();
+            gen_rot_T0[y](cpu_env);
             if (m != MODE_NORMAL) {
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
@@ -1357,7 +1358,7 @@ next_byte:
             zprintf("%s %s\n", rot[y], regnames[r1]);
             break;
         case 1:
-            gen_helper_bit_T0(tcg_const_tl(1 << y));
+            gen_helper_bit_T0(cpu_env, tcg_const_tl(1 << y));
             zprintf("bit %i,%s\n", y, regnames[r1]);
             break;
         case 2:
@@ -1507,13 +1508,13 @@ next_byte:
                 break;
             case 4:
                 zprintf("neg\n");
-                gen_helper_neg_cc();
+                gen_helper_neg_cc(cpu_env);
                 break;
             case 5:
                 /* FIXME */
                 gen_popw(cpu_T[0]);
                 gen_helper_jmp_T0(cpu_env);
-                gen_helper_ri();
+                gen_helper_ri(cpu_env);
                 if (q == 0) {
                     zprintf("retn\n");
                 } else {
@@ -1524,7 +1525,7 @@ next_byte:
 //              s->is_ei = 1;
                 break;
             case 6:
-                gen_helper_imode(tcg_const_tl(imode[y]));
+                gen_helper_imode(cpu_env, tcg_const_tl(imode[y]));
                 zprintf("im im[%i]\n", imode[y]);
 //              gen_eob(s);
 //              s->is_ei = 1;
@@ -1532,30 +1533,30 @@ next_byte:
             case 7:
                 switch (y) {
                 case 0:
-                    gen_helper_ld_I_A();
+                    gen_helper_ld_I_A(cpu_env);
                     zprintf("ld i,a\n");
                     break;
                 case 1:
-                    gen_helper_ld_R_A();
+                    gen_helper_ld_R_A(cpu_env);
                     zprintf("ld r,a\n");
                     break;
                 case 2:
-                    gen_helper_ld_A_I();
+                    gen_helper_ld_A_I(cpu_env);
                     zprintf("ld a,i\n");
                     break;
                 case 3:
-                    gen_helper_ld_A_R();
+                    gen_helper_ld_A_R(cpu_env);
                     zprintf("ld a,r\n");
                     break;
                 case 4:
                     gen_movb_v_HLmem(cpu_T[0]);
-                    gen_helper_rrd_cc();
+                    gen_helper_rrd_cc(cpu_env);
                     gen_movb_HLmem_v(cpu_T[0]);
                     zprintf("rrd\n");
                     break;
                 case 5:
                     gen_movb_v_HLmem(cpu_T[0]);
-                    gen_helper_rld_cc();
+                    gen_helper_rld_cc(cpu_env);
                     gen_movb_HLmem_v(cpu_T[0]);
                     zprintf("rld\n");
                     break;
@@ -1585,12 +1586,12 @@ next_byte:
                     tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
 
                     if (!(y & 1)) {
-                        gen_helper_bli_ld_inc_cc();
+                        gen_helper_bli_ld_inc_cc(cpu_env);
                     } else {
-                        gen_helper_bli_ld_dec_cc();
+                        gen_helper_bli_ld_dec_cc(cpu_env);
                     }
                     if ((y & 2)) {
-                        gen_helper_bli_ld_rep(tcg_const_tl(s->pc));
+                        gen_helper_bli_ld_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
                         s->is_jmp = 3;
                     }
@@ -1599,15 +1600,15 @@ next_byte:
                 case 1: /* cpi/cpd/cpir/cpdr */
                     gen_movw_v_HL(cpu_A0);
                     tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
-                    gen_helper_bli_cp_cc();
+                    gen_helper_bli_cp_cc(cpu_env);
 
                     if (!(y & 1)) {
-                        gen_helper_bli_cp_inc_cc();
+                        gen_helper_bli_cp_inc_cc(cpu_env);
                     } else {
-                        gen_helper_bli_cp_dec_cc();
+                        gen_helper_bli_cp_dec_cc(cpu_env);
                     }
                     if ((y & 2)) {
-                        gen_helper_bli_cp_rep(tcg_const_tl(s->pc));
+                        gen_helper_bli_cp_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
                         s->is_jmp = 3;
                     }
