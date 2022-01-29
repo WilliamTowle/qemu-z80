@@ -208,7 +208,7 @@ void HELPER(djnz)(CPUZ80State *env, uint32_t pc1, uint32_t pc2)
 #define signed_overflow_sub(op1, op2, res, size) \
     (!!(((op1 ^ op2) & (op1 ^ res)) >> (size - 1)))
 
-void HELPER(add_cc)(void)
+void HELPER(add_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = A;
@@ -225,7 +225,7 @@ void HELPER(add_cc)(void)
     F = sf | zf | hf | pf | cf;
 }
 
-void HELPER(adc_cc)(void)
+void HELPER(adc_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = A;
@@ -242,7 +242,7 @@ void HELPER(adc_cc)(void)
     F = sf | zf | hf | pf | cf;
 }
 
-void HELPER(sub_cc)(void)
+void HELPER(sub_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = A;
@@ -259,7 +259,7 @@ void HELPER(sub_cc)(void)
     F = sf | zf | hf | pf | CC_N | cf;
 }
 
-void HELPER(sbc_cc)(void)
+void HELPER(sbc_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = A;
@@ -276,7 +276,7 @@ void HELPER(sbc_cc)(void)
     F = sf | zf | hf | pf | CC_N | cf;
 }
 
-void HELPER(and_cc)(void)
+void HELPER(and_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
     A = (uint8_t)(A & T0);
@@ -287,7 +287,7 @@ void HELPER(and_cc)(void)
     F = sf | zf | CC_H | pf;
 }
 
-void HELPER(xor_cc)(void)
+void HELPER(xor_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
     A = (uint8_t)(A ^ T0);
@@ -298,7 +298,7 @@ void HELPER(xor_cc)(void)
     F = sf | zf | pf;
 }
 
-void HELPER(or_cc)(void)
+void HELPER(or_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
     A = (uint8_t)(A | T0);
@@ -309,7 +309,7 @@ void HELPER(or_cc)(void)
     F = sf | zf | pf;
 }
 
-void HELPER(cp_cc)(void)
+void HELPER(cp_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int res, carry;
@@ -330,7 +330,7 @@ void HELPER(cp_cc)(void)
 
 /* word operations -- HL only? */
 
-void HELPER(sbcw_T0_T1_cc)(void)
+void HELPER(sbcw_T0_T1_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = T0;
@@ -347,7 +347,7 @@ void HELPER(sbcw_T0_T1_cc)(void)
     F = sf | zf | hf | pf | CC_N | cf;
 }
 
-void HELPER(addw_T0_T1_cc)(void)
+void HELPER(addw_T0_T1_cc)(CPUZ80State *env)
 {
     int hf, cf;
     int tmp = T0;
@@ -361,7 +361,7 @@ void HELPER(addw_T0_T1_cc)(void)
     F = (F & (CC_S | CC_Z | CC_P)) | hf | cf;
 }
 
-void HELPER(adcw_T0_T1_cc)(void)
+void HELPER(adcw_T0_T1_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int tmp = T0;
@@ -380,7 +380,7 @@ void HELPER(adcw_T0_T1_cc)(void)
 
 /* misc */
 
-void HELPER(incb_T0_cc)(void)
+void HELPER(incb_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf;
     int tmp;
@@ -398,7 +398,7 @@ void HELPER(incb_T0_cc)(void)
     F = (F & CC_C) | sf | zf | hf | pf;
 }
 
-void HELPER(decb_T0_cc)(void)
+void HELPER(decb_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf;
     int tmp;
