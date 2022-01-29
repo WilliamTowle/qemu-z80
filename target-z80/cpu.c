@@ -76,12 +76,51 @@ static void z80_cpu_reset(CPUState *s)
 #endif
 }
 
+
+typedef struct {
+    int id;
+    const char *name;
+} Z80CPUModel;
+
+static const Z80CPUModel z80_cpu_names[] = {
+    { Z80_CPU_Z80,  "z80" },
+    { Z80_CPU_R800, "r800" },
+    { 0, NULL }
+};
+
+static int cpu_z80_find_by_name(const char *name)
+{
+    int i;
+    int id;
+
+    id = 0;
+    for (i = 0; z80_cpu_names[i].name; i++) {
+        if (strcmp(name, z80_cpu_names[i].name) == 0) {
+            id = z80_cpu_names[i].id;
+            break;
+        }
+    }
+    return id;
+}
+
+
+
 static void cpu_z80_register(Z80CPU *cpu, const char *name, Error **errp)
 {
     /* FUTURE: distinguish/support CPU types here?
-     * v1.7.2 does cpu_*_find_by_name() and sets various 'object'
-     * properties and 'env' values
+     * v1.7.2 does cpu_*_find_by_name() and fills in a struct
      */
+
+    CPUZ80State *env = &cpu->env;
+    int model_id;
+    model_id= cpu_z80_find_by_name(name);
+
+    if (model_id == 0) {
+        error_setg(errp, "Unable to find CPU definition: %s", name);
+        return;
+    }
+
+    env->model= model_id;
 }
 
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
