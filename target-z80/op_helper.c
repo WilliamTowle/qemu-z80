@@ -452,15 +452,17 @@ void HELPER(decb_T0_cc)(CPUZ80State *env)
     F = (F & CC_C) | sf | zf | hf | CC_N | pf;
     /* TODO: check CC_N is set */
 }
+
+
 /* enable interrupts */
-void HELPER(ei)(void)
+void HELPER(ei)(CPUZ80State *env)
 {
     env->iff1 = 1;
     env->iff2 = 1;
 }
 
 /* disable interrupts */
-void HELPER(di)(void)
+void HELPER(di)(CPUZ80State *env)
 {
     env->iff1 = 0;
     env->iff2 = 0;
