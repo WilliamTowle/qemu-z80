@@ -207,7 +207,7 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 /* Halt */
 
-void HELPER(halt)(void)
+void HELPER(halt)(CPUZ80State *env)
 {
     //printf("halting at PC 0x%x\n",env->pc);
     env->halted = 1;
@@ -370,7 +370,7 @@ void HELPER(cp_cc)(CPUZ80State *env)
 
 /* misc */
 
-void HELPER(rlca_cc)(void)
+void HELPER(rlca_cc)(CPUZ80State *env)
 {
     int cf;
     int tmp;
@@ -381,7 +381,7 @@ void HELPER(rlca_cc)(void)
     F = (F & (CC_S | CC_Z | CC_P)) | cf;
 }
 
-void HELPER(rrca_cc)(void)
+void HELPER(rrca_cc)(CPUZ80State *env)
 {
     int cf;
     int tmp;
@@ -392,7 +392,7 @@ void HELPER(rrca_cc)(void)
     F = (F & (CC_S | CC_Z | CC_P)) | cf;
 }
 
-void HELPER(rla_cc)(void)
+void HELPER(rla_cc)(CPUZ80State *env)
 {
     int cf;
     int tmp;
@@ -403,7 +403,7 @@ void HELPER(rla_cc)(void)
     F = (F & (CC_S | CC_Z | CC_P)) | cf;
 }
 
-void HELPER(rra_cc)(void)
+void HELPER(rra_cc)(CPUZ80State *env)
 {
     int cf;
     int tmp;
@@ -415,7 +415,7 @@ void HELPER(rra_cc)(void)
 }
 
 /* TODO */
-void HELPER(daa_cc)(void)
+void HELPER(daa_cc)(CPUZ80State *env)
 {
     int sf, zf, hf, pf, cf;
     int cor = 0;
@@ -446,18 +446,18 @@ void HELPER(daa_cc)(void)
     F = (F & CC_N) | sf | zf | hf | pf | cf;
 }
 
-void HELPER(cpl_cc)(void)
+void HELPER(cpl_cc)(CPUZ80State *env)
 {
     A = (uint8_t)~A;
     F |= CC_H | CC_N;
 }
 
-void HELPER(scf_cc)(void)
+void HELPER(scf_cc)(CPUZ80State *env)
 {
     F = (F & (CC_S | CC_Z | CC_P)) | CC_C;
 }
 
-void HELPER(ccf_cc)(void)
+void HELPER(ccf_cc)(CPUZ80State *env)
 {
     int hf, cf;
 
@@ -555,15 +555,17 @@ void HELPER(decb_T0_cc)(CPUZ80State *env)
     F = (F & CC_C) | sf | zf | hf | CC_N | pf;
     /* TODO: check CC_N is set */
 }
+
+
 /* enable interrupts */
-void HELPER(ei)(void)
+void HELPER(ei)(CPUZ80State *env)
 {
     env->iff1 = 1;
     env->iff2 = 1;
 }
 
 /* disable interrupts */
-void HELPER(di)(void)
+void HELPER(di)(CPUZ80State *env)
 {
     env->iff1 = 0;
     env->iff2 = 0;

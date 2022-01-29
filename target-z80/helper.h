@@ -11,7 +11,7 @@ DEF_HELPER_1(reset_inhibit_irq, void, env)
 //DEF_HELPER_1(movl_pc_im, void, i32)
 DEF_HELPER_2(movl_pc_im, void, env, i32)
 
-DEF_HELPER_0(halt, void)
+DEF_HELPER_1(halt, void, env)
 
 ///* In / Out */
 
@@ -37,14 +37,14 @@ DEF_HELPER_1(cp_cc, void, env)
 
 /* Misc */
 
-DEF_HELPER_0(rlca_cc, void)
-DEF_HELPER_0(rrca_cc, void)
-DEF_HELPER_0(rla_cc, void)
-DEF_HELPER_0(rra_cc, void)
-DEF_HELPER_0(daa_cc, void)
-DEF_HELPER_0(cpl_cc, void)
-DEF_HELPER_0(scf_cc, void)
-DEF_HELPER_0(ccf_cc, void)
+DEF_HELPER_1(rlca_cc, void, env)
+DEF_HELPER_1(rrca_cc, void, env)
+DEF_HELPER_1(rla_cc, void, env)
+DEF_HELPER_1(rra_cc, void, env)
+DEF_HELPER_1(daa_cc, void, env)
+DEF_HELPER_1(cpl_cc, void, env)
+DEF_HELPER_1(scf_cc, void, env)
+DEF_HELPER_1(ccf_cc, void, env)
 //DEF_HELPER_0(neg_cc, void)
 
 /* 16-bit arithmetic */
@@ -56,8 +56,8 @@ DEF_HELPER_1(decb_T0_cc, void, env)
 
 /* Interrupt handling / IR registers */
 //DEF_HELPER_1(imode, void, i32)
-DEF_HELPER_0(ei, void)
-DEF_HELPER_0(di, void)
+DEF_HELPER_1(ei, void, env)
+DEF_HELPER_1(di, void, env)
 //DEF_HELPER_0(ri, void)
 //DEF_HELPER_0(ld_R_A, void)
 //DEF_HELPER_0(ld_I_A, void)

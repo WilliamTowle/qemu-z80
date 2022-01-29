@@ -1003,35 +1003,35 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             case 7:
                 switch (y) {
                 case 0:
-                    gen_helper_rlca_cc();
+                    gen_helper_rlca_cc(cpu_env);
                     zprintf("rlca\n");
                     break;
                 case 1:
-                    gen_helper_rrca_cc();
+                    gen_helper_rrca_cc(cpu_env);
                     zprintf("rrca\n");
                     break;
                 case 2:
-                    gen_helper_rla_cc();
+                    gen_helper_rla_cc(cpu_env);
                     zprintf("rla\n");
                     break;
                 case 3:
-                    gen_helper_rra_cc();
+                    gen_helper_rra_cc(cpu_env);
                     zprintf("rra\n");
                     break;
                 case 4:
-                    gen_helper_daa_cc();
+                    gen_helper_daa_cc(cpu_env);
                     zprintf("daa\n");
                     break;
                 case 5:
-                    gen_helper_cpl_cc();
+                    gen_helper_cpl_cc(cpu_env);
                     zprintf("cpl\n");
                     break;
                 case 6:
-                    gen_helper_scf_cc();
+                    gen_helper_scf_cc(cpu_env);
                     zprintf("scf\n");
                     break;
                 case 7:
-                    gen_helper_ccf_cc();
+                    gen_helper_ccf_cc(cpu_env);
                     zprintf("ccf\n");
                     break;
                 }
@@ -1042,7 +1042,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         case 1:	/* instr pattern 01yyyzzz */
             if (z == 6 && y == 6) {
                 gen_jmp_im(s->pc);
-                gen_helper_halt();
+                gen_helper_halt(cpu_env);
                 zprintf("halt\n");
             } else {
                 if (z == 6) {
@@ -1216,11 +1216,11 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                     zprintf("ex de,hl\n");
                     break;
                 case 6:
-                    gen_helper_di();
+                    gen_helper_di(cpu_env);
                     zprintf("di\n");
                     break;
                 case 7:
-                    gen_helper_ei();
+                    gen_helper_ei(cpu_env);
                     zprintf("ei\n");
 //                  gen_eob(s);
 //                  s->is_ei = 1;
