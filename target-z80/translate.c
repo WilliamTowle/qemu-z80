@@ -634,7 +634,7 @@ static inline void gen_retcc(DisasContext *s, int cc,
 
     gen_set_label(l1);
     gen_popw(cpu_T[0]);
-    gen_helper_jmp_T0();
+    gen_helper_jmp_T0(cpu_env);
     gen_eob(s);
 
     s->is_jmp = 3;
@@ -706,7 +706,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //                    zprintf("ex af,af'\n");
 //                    break;
                 case 2:
-                    n = ldsb_code(s->pc);
+                    n = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                     gen_helper_djnz(tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
                     gen_eob(s);
@@ -714,7 +714,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                     zprintf("djnz $%02x\n", n);
                     break;
                 case 3:
-                    n = ldsb_code(s->pc);
+                    n = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                     gen_jmp_im(s->pc + n);
                     gen_eob(s);
@@ -725,7 +725,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
                 case 5:
                 case 6:
                 case 7:
-                    n = ldsb_code(s->pc);
+                    n = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                     zprintf("jr %s,$%04x\n", cc[y-4], (s->pc + n) & 0xffff);
                     gen_jcc(s, y-4, s->pc + n, s->pc);
@@ -1088,7 +1088,7 @@ goto illegal_op;
                 break;
 
             case 2:
-                n = lduw_code(s->pc);
+                n = cpu_lduw_code(env, s->pc);
                 s->pc += 2;
                 gen_jcc(s, y, n, s->pc);
                 zprintf("jp %s,$%04x\n", cc[y], n);
@@ -1097,7 +1097,7 @@ goto illegal_op;
             case 3:
                 switch (y) {
                 case 0:
-                    n = lduw_code(s->pc);
+                    n = cpu_lduw_code(env, s->pc);
                     s->pc += 2;
                     gen_jmp_im(n);
                     zprintf("jp $%04x\n", n);
@@ -1168,7 +1168,7 @@ goto illegal_op;
                 break;
 
             case 4:
-                n = lduw_code(s->pc);
+                n = cpu_lduw_code(env, s->pc);
                 s->pc += 2;
                 gen_callcc(s, y, n, s->pc);
                 zprintf("call %s,$%04x\n", cc[y], n);
