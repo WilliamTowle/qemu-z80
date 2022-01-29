@@ -44,16 +44,16 @@ DEF_HELPER_1(rld_cc, void, env)
 DEF_HELPER_1(rrd_cc, void, env)
 
 /* Block instructions */
-DEF_HELPER_0(bli_ld_inc_cc, void)
-DEF_HELPER_0(bli_ld_dec_cc, void)
-DEF_HELPER_1(bli_ld_rep, void, i32)
-DEF_HELPER_0(bli_cp_cc, void)
-DEF_HELPER_0(bli_cp_inc_cc, void)
-DEF_HELPER_0(bli_cp_dec_cc, void)
-DEF_HELPER_1(bli_cp_rep, void, i32)
-DEF_HELPER_1(bli_io_T0_inc, void, i32)
-DEF_HELPER_1(bli_io_T0_dec, void, i32)
-DEF_HELPER_1(bli_io_rep, void, i32)
+DEF_HELPER_1(bli_ld_inc_cc, void, env)
+DEF_HELPER_1(bli_ld_dec_cc, void, env)
+DEF_HELPER_2(bli_ld_rep, void, env, i32)
+DEF_HELPER_1(bli_cp_cc, void, env)
+DEF_HELPER_1(bli_cp_inc_cc, void, env)
+DEF_HELPER_1(bli_cp_dec_cc, void, env)
+DEF_HELPER_2(bli_cp_rep, void, env, i32)
+DEF_HELPER_2(bli_io_T0_inc, void, env, i32)
+DEF_HELPER_2(bli_io_T0_dec, void, env, i32)
+DEF_HELPER_2(bli_io_rep, void, env, i32)
 
 /* Misc */
 
@@ -65,7 +65,7 @@ DEF_HELPER_1(daa_cc, void, env)
 DEF_HELPER_1(cpl_cc, void, env)
 DEF_HELPER_1(scf_cc, void, env)
 DEF_HELPER_1(ccf_cc, void, env)
-DEF_HELPER_0(neg_cc, void)
+DEF_HELPER_1(neg_cc, void, env)
 
 /* 16-bit arithmetic */
 DEF_HELPER_1(sbcw_T0_T1_cc, void, env)
@@ -75,13 +75,13 @@ DEF_HELPER_1(incb_T0_cc, void, env)
 DEF_HELPER_1(decb_T0_cc, void, env)
 
 /* Interrupt handling / IR registers */
-DEF_HELPER_1(imode, void, i32)
+DEF_HELPER_2(imode, void, env, i32)
 DEF_HELPER_1(ei, void, env)
 DEF_HELPER_1(di, void, env)
-DEF_HELPER_0(ri, void)
-DEF_HELPER_0(ld_R_A, void)
-DEF_HELPER_0(ld_I_A, void)
-DEF_HELPER_0(ld_A_R, void)
-DEF_HELPER_0(ld_A_I, void)
+DEF_HELPER_1(ri, void, env)
+DEF_HELPER_1(ld_R_A, void, env)
+DEF_HELPER_1(ld_I_A, void, env)
+DEF_HELPER_1(ld_A_R, void, env)
+DEF_HELPER_1(ld_A_I, void, env)
 
 #include "exec/def-helper.h"
