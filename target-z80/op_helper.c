@@ -209,8 +209,10 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 void HELPER(halt)(CPUZ80State *env)
 {
+    Z80CPU *cpu = z80_env_get_cpu(env);
+    CPUState *cs = CPU(cpu);
     //printf("halting at PC 0x%x\n",env->pc);
-    env->halted = 1;
+    cs->halted = 1;
     env->hflags &= ~HF_INHIBIT_IRQ_MASK; /* needed if sti is just before */
     env->exception_index = EXCP_HLT;
 #if 0	/* obsolete */
