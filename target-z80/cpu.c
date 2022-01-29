@@ -77,6 +77,33 @@ static void z80_cpu_reset(CPUState *s)
 #endif
 }
 
+
+typedef struct {
+    int id;
+    const char *name;
+    const char *desc;
+} Z80CPUModel;
+
+static const Z80CPUModel z80_cpu_names[] = {
+    { Z80_CPU_Z80,  "z80",  "Zilog Z80" },
+    //{ Z80_CPU_R800, "r800", "Mitsui R800" },
+
+    { 0, NULL }
+};
+
+/* TODO: static int cpu_z80_find_by_name(const char *name) { ... } */
+
+/* generate CPU information. */
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf)
+{
+    int i;
+    (*cpu_fprintf)(f, "Available CPUs:\n");
+    for (i = 0; z80_cpu_names[i].name; i++) {
+        (*cpu_fprintf)(f, " %4s - %s\n",
+                        z80_cpu_names[i].name, z80_cpu_names[i].desc);
+    }
+}
+
 static void cpu_z80_register(Z80CPU *cpu, const char *name, Error **errp)
 {
     /* FUTURE: distinguish/support CPU types here?
