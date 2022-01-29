@@ -905,7 +905,7 @@ goto illegal_op;
         case 2:     /* insn pattern 10yyyzzz */
             r1 = regmap(reg[z], m);
             if (is_indexed(r1)) {
-                d = ldsb_code(s->pc);
+                d = cpu_ldsb_code(env, s->pc);
                 s->pc++;
                 gen_movb_v_idx(cpu_T[0], r1, d);
             } else {
@@ -1109,7 +1109,7 @@ goto illegal_op;
 //                break;
 
             case 6:
-                n = ldub_code(s->pc);
+                n = cpu_ldub_code(env, s->pc);
                 s->pc++;
                 tcg_gen_movi_tl(cpu_T[0], n);
                 gen_alu[y](); /* places output in A */
