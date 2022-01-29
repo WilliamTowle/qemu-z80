@@ -54,8 +54,8 @@ DEF_HELPER_1(decb_T0_cc, void, env)
 
 /* Interrupt handling / IR registers */
 //DEF_HELPER_1(imode, void, i32)
-DEF_HELPER_0(ei, void)
-DEF_HELPER_0(di, void)
+DEF_HELPER_1(ei, void, env)
+DEF_HELPER_1(di, void, env)
 //DEF_HELPER_0(ri, void)
 //DEF_HELPER_0(ld_R_A, void)
 //DEF_HELPER_0(ld_I_A, void)
