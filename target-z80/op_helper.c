@@ -120,7 +120,7 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 /* Misc */
 
-void HELPER(bit_T0)(uint32_t val)
+void HELPER(bit_T0)(CPUZ80State *env, uint32_t val)
 {
     int sf, zf, pf;
 
@@ -273,7 +273,7 @@ void HELPER(cp_cc)(CPUZ80State *env)
 
 /* Rotation/shift operations */
 
-void HELPER(rlc_T0_cc)(void)
+void HELPER(rlc_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -287,7 +287,7 @@ void HELPER(rlc_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(rrc_T0_cc)(void)
+void HELPER(rrc_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -301,7 +301,7 @@ void HELPER(rrc_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(rl_T0_cc)(void)
+void HELPER(rl_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -315,7 +315,7 @@ void HELPER(rl_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(rr_T0_cc)(void)
+void HELPER(rr_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -329,7 +329,7 @@ void HELPER(rr_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(sla_T0_cc)(void)
+void HELPER(sla_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -343,7 +343,7 @@ void HELPER(sla_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(sra_T0_cc)(void)
+void HELPER(sra_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -358,7 +358,7 @@ void HELPER(sra_T0_cc)(void)
 }
 
 /* Z80-specific: R800 has tst instruction */
-void HELPER(sll_T0_cc)(void)
+void HELPER(sll_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -372,7 +372,7 @@ void HELPER(sll_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(srl_T0_cc)(void)
+void HELPER(srl_T0_cc)(CPUZ80State *env)
 {
     int sf, zf, pf, cf;
     int tmp;
@@ -386,7 +386,7 @@ void HELPER(srl_T0_cc)(void)
     F = sf | zf | pf | cf;
 }
 
-void HELPER(rld_cc)(void)
+void HELPER(rld_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
     int tmp = A & 0x0f;
@@ -400,7 +400,7 @@ void HELPER(rld_cc)(void)
     F = (F & CC_C) | sf | zf | pf;
 }
 
-void HELPER(rrd_cc)(void)
+void HELPER(rrd_cc)(CPUZ80State *env)
 {
     int sf, zf, pf;
     int tmp = A & 0x0f;
