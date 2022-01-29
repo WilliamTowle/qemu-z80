@@ -163,6 +163,7 @@ typedef struct CPUZ80State {
 
 Z80CPU *cpu_z80_init(const char *cpu_model);
 void z80_translate_init(void);
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
 int cpu_z80_exec(CPUZ80State *s);
@@ -186,6 +187,7 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
     return &cpu->env;
 }
 
+#define cpu_list z80_cpu_list
 
 // MMU modes definitions?
 
