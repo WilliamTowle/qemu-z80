@@ -20,14 +20,14 @@ DEF_HELPER_1(jmp_T0, void, env)
 //DEF_HELPER_2(djnz, void, i32, i32)
 
 /* 8-bit arithmetic */
-DEF_HELPER_0(add_cc, void)
-DEF_HELPER_0(adc_cc, void)
-DEF_HELPER_0(sub_cc, void)
-DEF_HELPER_0(sbc_cc, void)
-DEF_HELPER_0(and_cc, void)
-DEF_HELPER_0(xor_cc, void)
-DEF_HELPER_0(or_cc, void)
-DEF_HELPER_0(cp_cc, void)
+DEF_HELPER_1(add_cc, void, env)
+DEF_HELPER_1(adc_cc, void, env)
+DEF_HELPER_1(sub_cc, void, env)
+DEF_HELPER_1(sbc_cc, void, env)
+DEF_HELPER_1(and_cc, void, env)
+DEF_HELPER_1(xor_cc, void, env)
+DEF_HELPER_1(or_cc, void, env)
+DEF_HELPER_1(cp_cc, void, env)
 
 ///* Rotation/shifts */
 
@@ -36,10 +36,10 @@ DEF_HELPER_0(cp_cc, void)
 ///* Misc */
 
 /* 16-bit arithmetic */
-DEF_HELPER_0(sbcw_T0_T1_cc, void)
-DEF_HELPER_0(addw_T0_T1_cc, void)
-DEF_HELPER_0(adcw_T0_T1_cc, void)
-DEF_HELPER_0(incb_T0_cc, void)
-DEF_HELPER_0(decb_T0_cc, void)
+DEF_HELPER_1(sbcw_T0_T1_cc, void, env)
+DEF_HELPER_1(addw_T0_T1_cc, void, env)
+DEF_HELPER_1(adcw_T0_T1_cc, void, env)
+DEF_HELPER_1(incb_T0_cc, void, env)
+DEF_HELPER_1(decb_T0_cc, void, env)
 
 #include "exec/def-helper.h"
