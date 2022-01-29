@@ -51,8 +51,13 @@ typedef struct CPUZ80State {
 #include "cpu-qom.h"
 
 Z80CPU *cpu_z80_init(const char *cpu_model);
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
+
+
+#define Z80_CPU_Z80  1
+//#define Z80_CPU_R800 2
 
 
 /* TARGET_PAGE_BITS required by exec-all.h cache */
@@ -71,6 +76,7 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 }
 
 
+#define cpu_list z80_cpu_list
 /* TODO: cpu_mmu_index() */
 
 ///* MMU modes definitions */

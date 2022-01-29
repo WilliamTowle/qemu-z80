@@ -45,9 +45,8 @@ static void handle_arg_cpu(char *arg)
     cpu_model= arg;
 
     if (cpu_model == NULL || is_help_option(cpu_model)) {
-#if defined(cpu_list_id)
-        cpu_list_id(stdout, &fprintf, "");
-#elif defined(cpu_list)
+        /* XXX: implement xxx_cpu_list for targets that still miss it */
+#if defined(cpu_list)
         cpu_list(stdout, &fprintf); /* deprecated */
 #endif
         exit(1);
