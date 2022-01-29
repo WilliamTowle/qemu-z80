@@ -582,7 +582,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             case 1:
                 switch (q) {
                 case 0:
-                    n = lduw_code(s->pc);
+                    n = cpu_lduw_code(env, s->pc);
                     s->pc += 2;
                     tcg_gen_movi_tl(cpu_T[0], n);
                     r1 = regpairmap(regpair[p], m);
@@ -743,10 +743,10 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
             case 6:
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
-                    d = ldsb_code(s->pc);
+                    d = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                 }
-                n = ldub_code(s->pc);
+                n = cpu_ldub_code(env, s->pc);
                 s->pc++;
                 tcg_gen_movi_tl(cpu_T[0], n);
                 if (is_indexed(r1)) {
@@ -826,7 +826,7 @@ goto illegal_op;
                     r2 = regmap(reg[y], m);
                 }
                 if (is_indexed(r1) || is_indexed(r2)) {
-                    d = ldsb_code(s->pc);
+                    d = cpu_ldsb_code(env, s->pc);
                     s->pc++;
                 }
                 if (is_indexed(r1)) {
