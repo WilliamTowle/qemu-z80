@@ -944,14 +944,14 @@ void HELPER(ld_A_I)(CPUZ80State *env)
     F = (F & CC_C) | sf | zf | pf;
 }
 
-void HELPER(mulub_cc)(void)
+void HELPER(mulub_cc)(CPUZ80State *env)
 {
     /* TODO: flags */
 
     HL = A * T0;
 }
 
-void HELPER(muluw_cc)(void)
+void HELPER(muluw_cc)(CPUZ80State *env)
 {
     /* TODO: flags */
     uint32_t tmp;
