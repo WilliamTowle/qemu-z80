@@ -1433,7 +1433,7 @@ next_byte:
                     /* does mulub work with r1 == h, l, (hl) or a? */
                     r1 = regmap(reg[y], m);
                     gen_movb_v_reg(cpu_T[0], r1);
-                    gen_helper_mulub_cc();
+                    gen_helper_mulub_cc(cpu_env);
                     zprintf("mulub a,%s\n", regnames[r1]);
                     break;
                 case 3:
@@ -1442,7 +1442,7 @@ next_byte:
                         /* what is the effect of DD/FD prefixes here? */
                         r1 = regpairmap(regpair[p], m);
                         gen_movw_v_reg(cpu_T[0], r1);
-                        gen_helper_muluw_cc();
+                        gen_helper_muluw_cc(cpu_env);
                         zprintf("muluw hl,%s\n", regpairnames[r1]);
                     } else {
                         zprintf("nop\n");
@@ -1970,3 +1970,4 @@ void z80_translate_init(void)
 #endif
 #endif
 }
+
