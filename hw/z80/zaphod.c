@@ -56,7 +56,7 @@ static MemoryRegion *zaphod_init_ram(void)
     return ram;
 }
 
-static void zaphod_init_machine(QEMUMachineInitArgs *args)
+static void zaphod_init_dev_machine(QEMUMachineInitArgs *args)
 {
     const char *cpu_model = args->cpu_model;
     ZaphodState *zs= g_new(ZaphodState, 1);
@@ -71,18 +71,17 @@ static void zaphod_init_machine(QEMUMachineInitArgs *args)
 #endif
     /* TODO
      * Board-specific init, with:
-     * - state variable with CPU and RAM handle (passed to callbacks)
-     * - separate functions for initialising state
      * - loading of "kernel" image if filename specified
-     * - basic "inkey" I/O mechanism
+     * - basic "stdio" I/O mechanism, with 'inkey' state variable
+     * - hardware emulation and machine "features" bitmap
      */
 }
 
 static QEMUMachine zaphod_machine= {
     /* sample machine: Z80 CPU, 64KiB RAM, basic I/O */
-    .name=	"zaphod",
-    .desc=	"Zaphod 1",
-    .init=	zaphod_init_machine,
+    .name=	"zaphod-dev",
+    .desc=	"Zaphod 0 (Test System)",
+    .init=	zaphod_init_dev_machine,
 
     .max_cpus= 1,
     .no_parallel= 1,
