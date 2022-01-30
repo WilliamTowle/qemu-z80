@@ -88,5 +88,6 @@ void z80_cpu_do_interrupt(CPUState *cpu);
 void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                         int flags);
 
+hwaddr z80_cpu_get_phys_page_debug(CPUState *cpu, vaddr addr);
 
 #endif /* !defined (QEMU_Z80_CPU_QOM_H) */
