@@ -10,6 +10,10 @@
 
 #define ZAPHOD_DEBUG	1
 
+#include "config.h"
+
+#include "exec/address-spaces.h"
+
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
@@ -18,5 +22,9 @@
 #endif
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
+typedef struct {
+    CPUZ80State     *cpu;
+    MemoryRegion    *ram;
+} ZaphodState;
 
 #endif	/*  HW_Z80_ZAPHOD_H  */
