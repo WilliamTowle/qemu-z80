@@ -40,7 +40,8 @@ static void zaphod_init(QEMUMachineInitArgs *args)
         cpu_model= "z80";
     env= cpu_init(cpu_model);
     if (!env) {
-        hw_error("Unable to find '%s' CPU definition\n", cpu_model);
+        fprintf(stderr, "Unable to find '%s' CPU definition\n", cpu_model);
+        exit(1);
     }
 
     cpu_reset(ENV_GET_CPU(env));
