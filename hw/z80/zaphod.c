@@ -10,7 +10,6 @@
 #include "qemu/error-report.h"
 
 #include "hw/boards.h"
-#include "exec/address-spaces.h"
 
 
 /* ZAPHOD_RAM_SIZE:
@@ -27,36 +26,48 @@
     do { } while (0)
 #endif
 
-
-static void zaphod_init(QEMUMachineInitArgs *args)
+static CPUZ80State *zaphod_init_cpu(const char *cpu_model)
 {
-    const char *cpu_model = args->cpu_model;
-    MemoryRegion *address_space_mem= get_system_memory();
-    MemoryRegion *ram= g_new(MemoryRegion, 1);
-    CPUZ80State *env;
+    CPUZ80State *cpu;
 
     /* QEmu v1 doesn't record a default CPU; ours is Z80 */
     if (!cpu_model)
         cpu_model= "z80";
-    env= cpu_init(cpu_model);
-    if (!env) {
+
+    cpu= cpu_init(cpu_model);
+    if (!cpu) {
         fprintf(stderr, "Unable to find '%s' CPU definition\n", cpu_model);
         exit(1);
     }
 
-    cpu_reset(ENV_GET_CPU(env));
+    return cpu;
+}
+
+static MemoryRegion *zaphod_init_ram(void)
+{
+    MemoryRegion *address_space_mem= get_system_memory();
+    MemoryRegion *ram= g_new(MemoryRegion, 1);
 
     /* QEmu v1 bases ram_size on '-m megs' option. Override this */
     memory_region_init_ram(ram, NULL, "zaphod.ram", ZAPHOD_RAM_SIZE);
-    /* Leaving the entire 64KiB memory space writable supports
-     * self-modifying test code. Call memory_region_set_readonly()
-     * for ROM regions,
-     */
+    /* TODO: for ROM we can memory_region_set_readonly() */
     memory_region_add_subregion(address_space_mem, 0, ram);
 
+    return ram;
+}
+
+static void zaphod_init_machine(QEMUMachineInitArgs *args)
+{
+    const char *cpu_model = args->cpu_model;
+    ZaphodState *zs= g_new(ZaphodState, 1);
+
+    zs->cpu= zaphod_init_cpu(cpu_model);
+    cpu_reset(ENV_GET_CPU(zs->cpu));
+
+    zs->ram= zaphod_init_ram();
+
 #if 1   /* TRACE */
-;DPRINTF("INCOMPLETE - %s() BAILING\n", __func__);
-;exit(1);
+;DPRINTF("DEBUG: %s() INCOMPLETE - will execute 'nop's from empty RAM\n", __func__);
 #endif
     /* TODO
      * Board-specific init, with:
@@ -71,7 +82,7 @@ static QEMUMachine zaphod_machine= {
     /* sample machine: Z80 CPU, 64KiB RAM, basic I/O */
     .name=	"zaphod",
     .desc=	"Zaphod 1",
-    .init=	zaphod_init,
+    .init=	zaphod_init_machine,
 
     .max_cpus= 1,
     .no_parallel= 1,
