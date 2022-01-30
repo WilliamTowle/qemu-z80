@@ -6,6 +6,7 @@
  */
 
 #include "cpu.h"
+#include "cpu-qom.h"
 
 //void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags)
 void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
@@ -116,8 +117,10 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 #endif
 
 #if !defined(CONFIG_USER_ONLY)
-target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
+hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr)
 {
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
     uint32_t pte, paddr, page_offset, page_size;
 
     pte = addr;
