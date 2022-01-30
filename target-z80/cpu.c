@@ -311,7 +311,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     //Xcc->get_paging_enabled = z80_cpu_get_paging_enabled;
 #ifndef CONFIG_USER_ONLY
     //Xcc->get_memory_mapping = z80_cpu_get_memory_mapping;
-    //Xcc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
+    cc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
     //Xcc->write_elf64_note = z80_cpu_write_elf64_note;
     //Xcc->write_elf64_qemunote = z80_cpu_write_elf64_qemunote;
     //Xcc->write_elf32_note = z80_cpu_write_elf32_note;
