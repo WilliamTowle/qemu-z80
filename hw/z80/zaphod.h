@@ -13,6 +13,7 @@
 #include "config.h"
 
 #include "exec/address-spaces.h"
+#include "exec/ioport.h"
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
@@ -25,6 +26,10 @@
 typedef struct {
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
+    PortioList      *ports;
+
+    CharDriverState *sercon;            /* QEmu serial0 console */
+    uint8_t         inkey;
 } ZaphodState;
 
 #endif	/*  HW_Z80_ZAPHOD_H  */
