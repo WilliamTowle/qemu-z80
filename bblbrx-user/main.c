@@ -164,7 +164,6 @@ void cpu_loop(CPUState *env)
 
 int main(int argc, char **argv)
 {
-    const char *cpu_model= NULL;
     char *filename;
     CPUState *env;
   void  *target_ram;
@@ -186,6 +185,7 @@ int main(int argc, char **argv)
      * 4. Logging is initialised
      */
 
+    cpu_model= NULL;
 #if 0	/* x86 support */
 #if defined(cpudef_setup)
     cpudef_setup(); /* parse cpu definitions in target config file (TBD) */
