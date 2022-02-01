@@ -77,7 +77,28 @@ void zaphod_inkey_receive(void *opaque, const uint8_t *buf, int len)
 
 static void zaphod_sercon_putchar(CharDriverState *cd, const unsigned char ch)
 {
-    cd->chr_write(cd, &ch, 1);
+    if (isprint(ch))
+    {
+        cd->chr_write(cd, &ch, 1);
+    }
+    else
+    {   /* Render non-printable characters as corresponding hex.
+         * TODO: pass all characters to device-specific handler to
+         * interpret appropriately
+         */
+        uint8_t nyb_hi, nyb_lo;
+
+        nyb_hi= (ch & 0xf0) >> 4;
+        nyb_lo= ch & 0x0f;
+
+        zaphod_sercon_putchar(cd, '[');
+        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+        zaphod_sercon_putchar(cd, nyb_hi);
+        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+        zaphod_sercon_putchar(cd, nyb_lo);
+        zaphod_sercon_putchar(cd, ']');
+        zaphod_sercon_putchar(cd, '*');
+    }
 }
 
 static void zaphod_putchar(ZaphodState *zs, const unsigned char ch)
