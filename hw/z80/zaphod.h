@@ -11,9 +11,15 @@
 #define ZAPHOD_DEBUG	1
 
 #include "config.h"
+/* Feature configuration - see also z80-softmmu.mak */
+#define ZAPHOD_HAS_SERCON
 
 #include "exec/address-spaces.h"
 #include "exec/ioport.h"
+
+#ifdef ZAPHOD_HAS_SERCON
+#include "zaphod_sercon.h"
+#endif
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
