@@ -20,6 +20,7 @@ typedef struct {
     ZaphodState     *super;
     PortioList      *ports;
     CharDriverState *chr;
+    //uint8_t         inkey;
 } ZaphodSerConState;
 
 
@@ -33,7 +34,8 @@ typedef struct {
     OBJECT_CHECK(ZaphodSerConState, obj, TYPE_ZAPHOD_SERCON)
 
 
-//DeviceState *zaphod_sercon_new(Chardev *chr);
+void zaphod_sercon_putchar(ZaphodSerConState *zss, const unsigned char ch);
+
 DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds);
 
 
