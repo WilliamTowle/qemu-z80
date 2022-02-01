@@ -31,17 +31,14 @@
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
 
-typedef struct ZaphodState {
+struct ZaphodState {
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
-    PortioList      *ports;
-
-    //CharDriverState *sercon;            /* QEmu serial0 console */
     uint8_t         inkey;
 
 #ifdef ZAPHOD_HAS_SERCON
     ZaphodSerConState   *sercon;
 #endif
-} ZaphodState;
+};
 
 #endif	/*  HW_Z80_ZAPHOD_H  */
