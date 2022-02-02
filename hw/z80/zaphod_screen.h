@@ -10,12 +10,16 @@
 
 #include "zaphod.h"
 
+typedef struct ZaphodState ZaphodState;
+
 typedef DeviceClass ZaphodScreenClass;
 
 typedef struct {
     DeviceState     parent;
 
+    ZaphodState     *super;
     QemuConsole     *screen_con;
+    uint8_t         *rgb_bg, *rgb_fg;
     bool            curs_visible;
     int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
@@ -30,6 +34,6 @@ typedef struct {
     OBJECT_CHECK(ZaphodScreenState, obj, TYPE_ZAPHOD_SCREEN)
 
 
-DeviceState *zaphod_screen_new(void);
+DeviceState *zaphod_screen_new(ZaphodState *zs);
 
 #endif  /* HW_Z80_ZAPHOD_SCREEN_H */
