@@ -81,7 +81,6 @@ DPRINTF("INFO: %s(): Kernel size %d bytes\n", __func__, kernel_size);
 }
 
 
-
 static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 {
     const char *cpu_model = args->cpu_model;
@@ -99,7 +98,6 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
     /* TODO
      * Board-specific init, with:
      * - basic "stdio" I/O mechanism, with 'inkey' state variable
-     * - hardware emulation and machine "features" bitmap
      */
 #ifdef ZAPHOD_HAS_SERCON
     //zs->sercon= zaphod_sercon_new(zs, serial_hds[0]);
@@ -111,14 +109,24 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 #endif
 }
 
+static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
+{
+    zs->features|= 1 << n;
+}
+
+int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n)
+{
+    return zs->features & (1 << n);
+}
+
 /* Development machine init
  * Implemented for testing purposes - no fixed features list
  */
 
 static void zaphod_init_dev_machine(QEMUMachineInitArgs *args)
 {
-    ZaphodState *zs= g_new(ZaphodState, 1);
-    /* TODO: "features" support required to distinguish this board */
+    ZaphodState *zs= g_new0(ZaphodState, 1);
+    /* No board-specific "features" at this time */
     zaphod_init_common(zs, args);
 }
 
@@ -141,7 +149,7 @@ static QEMUMachine zaphod_dev_machine= {
 static void zaphod_init_pb_machine(QEMUMachineInitArgs *args)
 {
     ZaphodState *zs= g_new(ZaphodState, 1);
-    /* TODO: "features" support required to distinguish this board */
+    zaphod_add_feature(zs, ZAPHOD_SIMPLE_SCREEN);
     zaphod_init_common(zs, args);
 }
 
