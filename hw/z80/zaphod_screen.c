@@ -42,11 +42,8 @@
 
 uint8_t zaphod_rgb_palette[][3]= {
 	{ 0x00, 0x00, 0x00 },	/* background - black */
-#if 0	/* TODO: board-specific foreground colour */
-	{ 0x05, 0xf3, 0x05 }	/* foreground - green */
-#else
+	{ 0x05, 0xf3, 0x05 },	/* foreground - green */
 	{ 0xff, 0x91, 0x00 }	/* foreground - amber */
-#endif
 };
 
 
@@ -104,9 +101,9 @@ static void zaphod_screen_update_display(void *opaque)
                     /* for bypp = 4 */
                     for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
                     {
-                        *(dmem + iy)^= zaphod_rgb_palette[0][2] ^ zaphod_rgb_palette[1][2];
-                        *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
-                        *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
+                        *(dmem + iy)^= zss->rgb_bg[2] ^ zss->rgb_fg[2];
+                        *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
+                        *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
                     }
                     dmem+= surface_stride(surface);
                 }
@@ -127,11 +124,13 @@ static const GraphicHwOps zaphod_screen_ops= {
     .gfx_update     = zaphod_screen_update_display,
 };
 
-DeviceState *zaphod_screen_new(void)
-{
-    DeviceState *dev;
 
-    dev = DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+DeviceState *zaphod_screen_new(ZaphodState *super)
+{
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+    ZaphodScreenState   *zss= ZAPHOD_SCREEN(dev);
+
+    zss->super= super;
 
     //qdev_prop_set_chr(dev, "chardev", chr);
 
@@ -165,6 +164,12 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
      * previous output
      */
 
+    /* Distinguish machine type by text color */
+    zss->rgb_bg= zaphod_rgb_palette[0];
+    if (zaphod_has_feature(zss->super, ZAPHOD_SIMPLE_SCREEN))
+        zss->rgb_fg= zaphod_rgb_palette[1];
+    else
+        zss->rgb_fg= zaphod_rgb_palette[2];
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
 
