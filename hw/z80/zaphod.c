@@ -102,6 +102,9 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 #ifdef ZAPHOD_HAS_SERCON
     zs->sercon= zaphod_new_sercon(zs, serial_hds[0]);
 #endif
+#ifdef ZAPHOD_HAS_SCREEN
+    zs->screen= zaphod_new_screen();
+#endif
 }
 
 /* Development machine init
