@@ -24,6 +24,7 @@ typedef struct {
     int64_t         cursor_blink_time;    /* millisec */
 } ZaphodScreenState;
 
+
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
 
 #define ZAPHOD_SCREEN_GET_CLASS(obj) \
@@ -33,6 +34,8 @@ typedef struct {
 #define ZAPHOD_SCREEN(obj) \
     OBJECT_CHECK(ZaphodScreenState, obj, TYPE_ZAPHOD_SCREEN)
 
+
+void zaphod_screen_putchar(void *opaque, uint8_t ch);
 
 DeviceState *zaphod_screen_new(ZaphodState *zs);
 
