@@ -44,15 +44,18 @@ static void zaphod_screen_invalidate_display(void *opaque)
 ;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
 }
 
+static const GraphicHwOps zaphod_screen_ops= {
+    .invalidate     = zaphod_screen_invalidate_display,
+    .gfx_update     = zaphod_screen_update_display,
+};
 
 ZaphodScreenState *zaphod_new_screen(void)
 {
     ZaphodScreenState *zss= g_new(ZaphodScreenState, 1);
 
-	zss->ds= graphic_console_init(zaphod_screen_update_display,
-		zaphod_screen_invalidate_display,
-		NULL,	/* screen dump via ppm_save() */
-		NULL,	/* 'text update' */
+	zss->ds= graphic_console_init(
+		NULL,	/* no ISA bus bus to emulate */
+		&zaphod_screen_ops,
 		zss);
 	/* TODO: calls to zaphod_consolegui_invalidate_display() (eg. when
 	 * user switches to HMI and back) need to prompt a full redraw of
