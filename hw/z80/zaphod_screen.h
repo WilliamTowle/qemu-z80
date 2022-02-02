@@ -18,6 +18,7 @@ typedef struct {
     QemuConsole     *display;
     bool            cursor_visible;
     int64_t         cursor_blink_time;    /* millisec */
+    uint8_t         *rgb_bg, *rgb_fg;
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
