@@ -36,7 +36,13 @@
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
 
+typedef enum {                  /* "features" bit map bit offsets */
+    ZAPHOD_SIMPLE_SCREEN = 0
+} zaphod_feature_t;
+
+
 struct ZaphodState {
+    int             features;
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
     uint8_t         inkey;
@@ -49,5 +55,8 @@ struct ZaphodState {
     ZaphodSerConState   *sercon;
 #endif
 };
+
+/* zaphod.c */
+int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
 
 #endif	/*  HW_Z80_ZAPHOD_H  */
