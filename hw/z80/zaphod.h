@@ -46,7 +46,13 @@ typedef struct {
 } ZaphodScreenState;
 #endif
 
+typedef enum {                  /* "features" bit map bit offsets */
+    ZAPHOD_SIMPLE_SCREEN = 0
+} zaphod_feature_t;
+
+
 struct ZaphodState {
+    int             features;
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
      uint8_t         inkey;
@@ -69,4 +75,5 @@ ZaphodSerConState *zaphod_new_sercon(ZaphodState *zs, CharDriverState* sercon);
 ZaphodScreenState *zaphod_new_screen(void);
 #endif
 
+int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
 #endif	/*  _ZAPHOD_H_  */
