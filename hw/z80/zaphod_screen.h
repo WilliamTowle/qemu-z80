@@ -16,6 +16,8 @@ typedef struct {
     DeviceState     parent;
 
     QemuConsole     *screen_con;
+    bool            curs_visible;
+    int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
