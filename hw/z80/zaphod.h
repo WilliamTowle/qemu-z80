@@ -19,6 +19,7 @@
 
 #define ZAPHOD_HAS_SERCON
 #define ZAPHOD_HAS_SCREEN
+#define ZAPHOD_HAS_MC6850
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
@@ -47,8 +48,16 @@ typedef struct {
 } ZaphodScreenState;
 #endif
 
+#ifdef ZAPHOD_HAS_MC6850
+typedef struct {
+    PortioList *ports;
+} ZaphodMC6850State;
+#endif
+
+
 typedef enum {                  /* "features" bit map bit offsets */
-    ZAPHOD_SIMPLE_SCREEN = 0
+    ZAPHOD_SIMPLE_SCREEN = 0,
+    ZAPHOD_FEATURE_MC6850 = 1
 } zaphod_feature_t;
 
 
@@ -64,6 +73,9 @@ struct ZaphodState {
 #ifdef ZAPHOD_HAS_SCREEN
     ZaphodScreenState   *screen;
 #endif
+#ifdef ZAPHOD_HAS_MC6850
+    ZaphodMC6850State   *mc6850;
+#endif
 };
 
 #ifdef ZAPHOD_HAS_SERCON
@@ -74,6 +86,10 @@ ZaphodSerConState *zaphod_new_sercon(ZaphodState *zs, CharDriverState* sercon);
  
 #ifdef ZAPHOD_HAS_SCREEN
 ZaphodScreenState *zaphod_new_screen(ZaphodState *zs);
+#endif
+
+#ifdef ZAPHOD_HAS_MC6850
+ZaphodMC6850State *zaphod_new_mc6850(ZaphodState *s);
 #endif
 
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);

@@ -93,12 +93,12 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 
     zaphod_load_kernel(kernel_filename);
 
-    /* TODO
-     * Board-specific init, with:
-     * - basic "stdio" I/O mechanism, with 'inkey' state variable
-     */
+    /* TODO: API for 'inkey' access by devices */
 #ifdef ZAPHOD_HAS_SERCON
     zs->sercon= zaphod_new_sercon(zs, serial_hds[0]);
+#endif
+#ifdef ZAPHOD_HAS_MC6850
+    zs->mc6850= zaphod_new_mc6850(zs);
 #endif
 #ifdef ZAPHOD_HAS_SCREEN
     zs->screen= zaphod_new_screen(zs);
@@ -111,6 +111,9 @@ static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
     {
 #ifdef ZAPHOD_HAS_SCREEN
     case ZAPHOD_SIMPLE_SCREEN:
+#endif
+#ifdef ZAPHOD_HAS_MC6850
+    case ZAPHOD_FEATURE_MC6850:
 #endif
         zs->features|= 1 << n;
         break;
@@ -131,7 +134,7 @@ int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n)
 static void zaphod_init_dev_machine(QEMUMachineInitArgs *args)
 {
     ZaphodState *zs= g_new0(ZaphodState, 1);
-    /* No board-specific "features" at this time */
+    zaphod_add_feature(zs, ZAPHOD_FEATURE_MC6850);
     zaphod_init_common(zs, args);
 }
 
