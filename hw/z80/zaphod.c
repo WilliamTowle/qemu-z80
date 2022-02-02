@@ -108,7 +108,12 @@ static void zaphod_generic_board_init(MachineState *ms)
     /* Initialise ports/devices */
 
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
+#ifdef ZAPHOD_HAS_MACHINE_SELECTION
     zms->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+#else
+    if (object_property_get_bool(OBJECT(zmc), "has-simple-screen", &error_fatal))
+        zaphod_screen_init();
+#endif
 #endif
 
     if (serial_hds[0])
