@@ -14,6 +14,7 @@
 /* Feature configuration - see also z80-softmmu.mak */
 #define ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_SERCON
+#define ZAPHOD_HAS_MC6850
 
 
 #include "exec/address-spaces.h"
@@ -35,8 +36,16 @@
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
 
+#ifdef ZAPHOD_HAS_MC6850
+typedef struct {
+    PortioList *ports;
+} ZaphodMC6850State;
+#endif
+
+
 typedef enum {                  /* "features" bit map bit offsets */
-    ZAPHOD_SIMPLE_SCREEN = 0
+    ZAPHOD_SIMPLE_SCREEN = 0,
+    ZAPHOD_FEATURE_MC6850 = 1
 } zaphod_feature_t;
 
 
@@ -49,7 +58,9 @@ struct ZaphodState {
 #ifdef ZAPHOD_HAS_SCREEN
     ZaphodScreenState    *screen;
 #endif
-
+#ifdef ZAPHOD_HAS_MC6850
+    ZaphodMC6850State   *mc6850;
+#endif
 #ifdef ZAPHOD_HAS_SERCON
     ZaphodSerConState   *sercon;
 #endif
