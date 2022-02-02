@@ -7,7 +7,7 @@
 
 #include "zaphod.h"
 
-#include "console.h"
+#include "ui/console.h"
 
 /* Implements a CGI-like display at 25x80 text resolution [ie. one
  * more line than QEmu's serial console]. Phil Brown calls his
