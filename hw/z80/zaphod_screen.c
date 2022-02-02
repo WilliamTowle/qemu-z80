@@ -78,11 +78,12 @@ static void zaphod_screen_update_display(void *opaque)
 
             /* since visibility changed - was zaphod_consolegui_blink_cursor() */
             {
-                int       bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+                DisplaySurface *surface = qemu_console_surface(zss->screen_con);
+                int       bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
                 uint8_t *dmem;
                 int ix, iy;
 
-                dmem= ds_get_data(zss->ds);
+                dmem= surface_data(surface);
                 /* TODO: adjust dmem for cursor position */
 
                 for (ix= 0; ix < FONT_HEIGHT; ix++)
@@ -94,11 +95,11 @@ static void zaphod_screen_update_display(void *opaque)
                         *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
                         *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
                     }
-                    dmem+= ds_get_linesize(zss->ds);
+                    dmem+= surface_stride(surface);
                 }
 
                 /* current update region is where the cursor is */
-                dpy_update(zss->ds,
+                dpy_gfx_update(zss->screen_con,
                         0, 0,                       /* ulx, uly */
                         FONT_WIDTH, FONT_HEIGHT);   /* xsz, ysz */
             }
@@ -137,7 +138,7 @@ ZaphodScreenState *zaphod_new_screen(void)
 {
     ZaphodScreenState *zss= g_new(ZaphodScreenState, 1);
 
-	zss->ds= graphic_console_init(
+	zss->screen_con= graphic_console_init(
 		NULL,	/* no ISA bus bus to emulate */
 		&zaphod_screen_ops,
 		zss);
@@ -151,7 +152,7 @@ ZaphodScreenState *zaphod_new_screen(void)
     zss->curs_blink_time= 0;
 
 
-	qemu_console_resize(zss->ds,
+	qemu_console_resize(zss->screen_con,
 		FONT_WIDTH * TEXT_COLS, FONT_HEIGHT * TEXT_ROWS);
 
     return zss;
