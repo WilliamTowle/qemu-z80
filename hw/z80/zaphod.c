@@ -104,14 +104,23 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
     zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new(zs, serial_hds[0]));
 #endif
 #ifdef ZAPHOD_HAS_SCREEN
-    //zs->screen= zaphod_new_screen();
-    zs->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+    //zs->screen= zaphod_new_screen(zs);
+    zs->screen= ZAPHOD_SCREEN(zaphod_screen_new(zs));
 #endif
 }
 
 static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
 {
-    zs->features|= 1 << n;
+    switch(n)
+    {
+#ifdef ZAPHOD_HAS_SCREEN
+    case ZAPHOD_SIMPLE_SCREEN:
+#endif
+        zs->features|= 1 << n;
+        break;
+    default:
+        DPRINTF("%s(): unsupported/missing feature with n=%d requested\n", __func__, n);
+    }
 }
 
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n)
@@ -148,7 +157,7 @@ static QEMUMachine zaphod_dev_machine= {
 
 static void zaphod_init_pb_machine(QEMUMachineInitArgs *args)
 {
-    ZaphodState *zs= g_new(ZaphodState, 1);
+    ZaphodState *zs= g_new0(ZaphodState, 1);
     zaphod_add_feature(zs, ZAPHOD_SIMPLE_SCREEN);
     zaphod_init_common(zs, args);
 }
