@@ -40,7 +40,7 @@ typedef struct {
 
 #ifdef ZAPHOD_HAS_SCREEN
 typedef struct {
-    DisplayState    *ds;
+    QemuConsole     *screen_con;
     bool            curs_visible;
     int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
