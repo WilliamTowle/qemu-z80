@@ -64,5 +64,6 @@ struct ZaphodState {
 
 
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
+void zaphod_putchar(ZaphodState *zs, const unsigned char ch);
 
 #endif	/*  HW_Z80_ZAPHOD_H  */

@@ -59,6 +59,19 @@ static MemoryRegion *zaphod_init_ram(void)
 }
 
 
+void zaphod_putchar(ZaphodState *zs, const unsigned char ch)
+{
+#ifdef ZAPHOD_HAS_SERCON
+    if (zs->sercon)
+        zaphod_sercon_putchar(zs->sercon, ch);
+#endif
+#ifdef ZAPHOD_HAS_SCREEN
+    if (zs->screen)
+        zaphod_screen_putchar(zs->screen, ch);
+#endif
+}
+
+
 static void zaphod_load_kernel(const char *filename)
 {
     if (!filename || !filename[0])
