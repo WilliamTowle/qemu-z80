@@ -35,11 +35,8 @@
 
 uint8_t zaphod_rgb_palette[][3]= {
     { 0x00, 0x00, 0x00 },   /* background - black */
-#if 1   /* select green or amber screen (TODO: make machine-specific) */
-    { 0x05, 0xf3, 0x05 }    /* foreground - green */
-#else
+    { 0x05, 0xf3, 0x05 },   /* foreground - green */
     { 0xff, 0x91, 0x00 }    /* foreground - amber */
-#endif
 };
 
 
@@ -105,9 +102,9 @@ static void zaphod_screen_update_display(void *opaque)
                     /* for bypp = 4 */
                     for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
                     {
-                        *(dmem + iy)^= zaphod_rgb_palette[0][2] ^ zaphod_rgb_palette[1][2];
-                        *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
-                        *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
+                        *(dmem + iy)^= zss->rgb_bg[2] ^ zss->rgb_fg[2];
+                        *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
+                        *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
                     }
                     dmem+= surface_stride(ds);
                 }
@@ -160,6 +157,9 @@ static void zaphod_screen_reset(void *opaque)
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(dev);
+    MachineClass        *mc= MACHINE_GET_CLASS(qdev_get_machine());
+    ZaphodMachineClass  *zmc= ZAPHOD_MACHINE_CLASS(OBJECT_CLASS(mc));
+
 
     /* NB. our text mode is essentially VGA-like; is QEmu's
      * common display code useful?
@@ -167,6 +167,13 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
     zss->display= graphic_console_init(
                         NULL,   /* no ISA bus to emulate */
                         0, &zaphod_screen_ops, zss);
+
+    /* Distinguish machine type by text color */
+    zss->rgb_bg= zaphod_rgb_palette[0];
+    if (zmc->has_simple_screen)
+        zss->rgb_fg= zaphod_rgb_palette[1];
+    else
+        zss->rgb_fg= zaphod_rgb_palette[2];
 
     qemu_console_resize(zss->display,
                         FONT_WIDTH * ZAPHOD_TEXT_COLS,
