@@ -129,8 +129,9 @@ static void zaphod_screen_invalidate_display(void *opaque)
 static
 void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
 {
-    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
-    int                 bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+    ZaphodScreenState   *zss= (ZaphodScreenState *)opaque;
+    DisplaySurface      *surface = qemu_console_surface(zss->screen_con);
+    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
     int                 r_incr, c_incr, ix;
     uint8_t             *dmem_start;
     const uint8_t       *font_ptr;
@@ -158,9 +159,9 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
      */
 
     c_incr= FONT_WIDTH * bypp;
-    r_incr= FONT_HEIGHT * ds_get_linesize(zss->ds);
+    r_incr= FONT_HEIGHT * surface_stride(surface);
 
-    dmem_start= ds_get_data(zss->ds);
+    dmem_start= surface_data(surface);
     dmem_start+= col * c_incr;
     dmem_start+= row * r_incr;
     font_ptr= vgafont16 + FONT_HEIGHT * ch;
@@ -183,11 +184,11 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
         }
 
         font_ptr++;
-        dmem_start+= ds_get_linesize(zss->ds);
+        dmem_start+= surface_stride(surface);
     }
 
     /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_update(zss->ds,
+    dpy_gfx_update(zss->screen_con,
                     col*FONT_WIDTH, row*FONT_HEIGHT,
                     FONT_WIDTH, FONT_HEIGHT);
 }
@@ -196,7 +197,8 @@ static
 void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
 {
     ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
-    int                 bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+    DisplaySurface      *surface = qemu_console_surface(zss->screen_con);
+    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
     int                 r_incr, c_incr, ix;
     uint8_t             *dmem_start;
 
@@ -206,9 +208,9 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
      */
 
     c_incr= FONT_WIDTH * bypp;
-    r_incr= FONT_HEIGHT * ds_get_linesize(zss->ds);
+    r_incr= FONT_HEIGHT * surface_stride(surface);
 
-    dmem_start= ds_get_data(zss->ds);
+    dmem_start= surface_data(surface);
     dmem_start+= col * c_incr;
     dmem_start+= row * r_incr;
 
@@ -233,12 +235,12 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
             *(dmem++)=      0;
         }
 
-        dmem_start+= ds_get_linesize(zss->ds);
+        dmem_start+= surface_stride(surface);
         if ((ix & 0x03) == 3) data>>= 2;
     }
 
     /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_update(zss->ds,
+    dpy_gfx_update(zss->screen_con,
                     col*FONT_WIDTH, row*FONT_HEIGHT,
                     FONT_WIDTH, FONT_HEIGHT);
 }
