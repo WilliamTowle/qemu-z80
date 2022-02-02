@@ -14,6 +14,8 @@ typedef DeviceClass ZaphodScreenClass;
 
 typedef struct {
     DeviceState     parent;
+
+    QemuConsole     *screen_con;
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
