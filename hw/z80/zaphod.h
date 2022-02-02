@@ -41,6 +41,8 @@ typedef struct {
 
 #ifdef ZAPHOD_HAS_SCREEN
 typedef struct {
+    ZaphodState     *super;
+
     QemuConsole     *screen_con;
     uint8_t         *rgb_bg, *rgb_fg;
     bool            curs_visible;
@@ -50,6 +52,8 @@ typedef struct {
 
 #ifdef ZAPHOD_HAS_MC6850
 typedef struct {
+    ZaphodState     *super;
+
     PortioList *ports;
 } ZaphodMC6850State;
 #endif
@@ -85,6 +89,8 @@ ZaphodSerConState *zaphod_new_sercon(ZaphodState *zs, CharDriverState* sercon);
 #endif
  
 #ifdef ZAPHOD_HAS_SCREEN
+void zaphod_screen_putchar(void *opaque, uint8_t ch);
+
 ZaphodScreenState *zaphod_new_screen(ZaphodState *zs);
 #endif
 
@@ -93,4 +99,6 @@ ZaphodMC6850State *zaphod_new_mc6850(ZaphodState *s);
 #endif
 
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
+void zaphod_putchar(ZaphodState *zs, const unsigned char ch);
+
 #endif	/*  _ZAPHOD_H_  */
