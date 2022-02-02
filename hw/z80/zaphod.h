@@ -12,6 +12,7 @@
 
 #include "config.h"
 /* Feature configuration - see also z80-softmmu.mak */
+#define ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_SERCON
 
 #include "exec/address-spaces.h"
