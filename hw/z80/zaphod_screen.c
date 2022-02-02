@@ -29,7 +29,7 @@
 #endif
 
 
-//#include "vgafont.h"		/* vgafont16 - 16x8 */
+#include "ui/vgafont.h"		/* vgafont16 - 16x8 */
 #define FONT_HEIGHT	16
 #define FONT_WIDTH	8
 #define TEXT_ROWS	25
@@ -126,6 +126,176 @@ static void zaphod_screen_invalidate_display(void *opaque)
      */
 }
 
+static
+void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
+{
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    int                 bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+    const uint8_t       *font_ptr;
+
+    /* TODO: this function is for normal height/width characters.
+     * The Grant Searle SBC has per-line text attributes as follows:
+     * - 0x80: graphics characters (bit 0 top left, bit 7 bottom right)
+     * - 0x04: double height (internally, top half/bottom half)
+     * - 0x02: bold
+     * - 0x01: use 80 chars (40 otherwise)
+     */
+
+    /* FIXME: bail on unexpected state:
+     * if is_graphic_console() is false (ie. HMI/serial console shown)
+     *  ...this possibility looks like a bug, now fixed
+       if (!is_graphic_console())
+       {       /X* Avoid rendering onto the HMI/serial console *X/
+               return;
+       }
+     * if bypp is unexpected (since we assume BGRA format):
+       if (bypp != 4)
+       { /X* BAIL *X/ }
+       else if (is_surface_bgr(zcs->ds->surface))
+       { /X* BAIL *X/ }
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * ds_get_linesize(zss->ds);
+
+    dmem_start= ds_get_data(zss->ds);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+    font_ptr= vgafont16 + FONT_HEIGHT * ch;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t bitmask;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - sets BGR+A */
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        font_ptr++;
+        dmem_start+= ds_get_linesize(zss->ds);
+    }
+
+    /* TODO: mark updated coords as dirty and update in callback? */
+    dpy_update(zss->ds,
+                    col*FONT_WIDTH, row*FONT_HEIGHT,
+                    FONT_WIDTH, FONT_HEIGHT);
+}
+
+static
+void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
+{
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    int                 bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+
+    /* FIXME: bail on unexpected state:
+     * if is_graphic_console() is false (ie. HMI/serial console shown)
+     * if bypp is unexpected - we assume 4-byte BGRA format
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * ds_get_linesize(zss->ds);
+
+    dmem_start= ds_get_data(zss->ds);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t line;
+        uint8_t bitmask;
+
+        line= (data & 0x01)? 0xf0 : 0x00;
+        line+= (data & 0x02)? 0x0f : 0x00;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - assumes BGR+A */
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        dmem_start+= ds_get_linesize(zss->ds);
+        if ((ix & 0x03) == 3) data>>= 2;
+    }
+
+    /* TODO: mark updated coords as dirty and update in callback? */
+    dpy_update(zss->ds,
+                    col*FONT_WIDTH, row*FONT_HEIGHT,
+                    FONT_WIDTH, FONT_HEIGHT);
+}
+
+void zaphod_screen_putchar(void *opaque, uint8_t ch)
+{
+    ZaphodState *super= (ZaphodState *)((ZaphodScreenState *)opaque)->super;
+
+    /* TODO: need to handle escape sequences sanely - Phil Brown's
+     * documentation says "an OUT to port 1 will display the
+     * appropriate character on the console screen" and lists
+     * "escape codes" of:
+     * - ESC 0 - to clear the console screen
+     * - ESC 1 x y - to move the cursor position to x,y
+     * - ESC 2 - to clear to end of line from the current position
+     * Grant Searle has custom codes including changing [per-line]
+     * attributes and set/unset/toggle pixels
+     */
+    if (zaphod_has_feature(super, ZAPHOD_SIMPLE_SCREEN))
+    {
+        uint8_t nyb_hi, nyb_lo;
+
+        nyb_hi= (ch & 0xf0) >> 4;
+        nyb_lo= ch & 0x0f;
+        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+
+        zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
+        zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
+        zaphod_screen_draw_char(opaque, 0,2, ch);
+    }
+    else
+    {
+        uint8_t nyb_hi, nyb_lo;
+
+        nyb_hi= (ch & 0xf0) >> 4;
+        nyb_lo= ch & 0x0f;
+        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+
+        zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
+        zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
+        zaphod_screen_draw_graphic(opaque, 0,2, ch);
+    }
+
+    /* TODO: In our earlier hack, this function *called itself*
+     * multiple times to ensure only single printable characters
+     * needed to be stored in the character grid at this point;
+     * it was then possible to update the cursor position and
+     * manage scrolling.
+     * Having then noted the region where the grid is dirty, a
+     * subsequent dpy_update() in zaphod_screen_update_display()
+     * takes care of presentation
+     */
+}
+
+
 static const GraphicHwOps zaphod_screen_ops= {
     .invalidate     = zaphod_screen_invalidate_display,
     .gfx_update     = zaphod_screen_update_display,
@@ -134,6 +304,8 @@ static const GraphicHwOps zaphod_screen_ops= {
 ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 {
     ZaphodScreenState *zss= g_new(ZaphodScreenState, 1);
+
+    zss->super= super;
 
 	zss->screen_con= graphic_console_init(
 		NULL,	/* no ISA bus bus to emulate */
