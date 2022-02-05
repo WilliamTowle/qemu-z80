@@ -290,13 +290,14 @@ static void zaphod_screen_update_display(void *opaque)
     if (zss->curs_dirty)
     {
         /* cursor moved, was erased, or curs_visible changed state */
-        int       bypp= (ds_get_bits_per_pixel(zss->ds) + 7) >> 3;
+        DisplaySurface *surface = qemu_console_surface(zss->screen_con);
+        int       bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
         uint8_t *dmem;
         int ix, iy;
 
-        dmem= ds_get_data(zss->ds);
+        dmem= surface_data(surface);
         dmem+= zss->curs_posc * FONT_WIDTH * bypp;
-        dmem+= zss->curs_posr * FONT_HEIGHT * ds_get_linesize(zss->ds);
+        dmem+= zss->curs_posr * FONT_HEIGHT * surface_stride(surface);
 
         for (ix= 0; ix < FONT_HEIGHT; ix++)
         {
@@ -307,10 +308,10 @@ static void zaphod_screen_update_display(void *opaque)
                 *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
                 *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
             }
-            dmem+= ds_get_linesize(zss->ds);
+            dmem+= surface_stride(surface);
         }
 
-            dpy_update(zss->ds,
+            dpy_gfx_update(zss->screen_con,
                 zss->curs_posc * FONT_WIDTH,
                 zss->curs_posr * FONT_HEIGHT,
                 FONT_WIDTH, FONT_HEIGHT);
