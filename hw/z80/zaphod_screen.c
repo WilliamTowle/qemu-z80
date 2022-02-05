@@ -330,41 +330,27 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
-#if 0   /* HACK enabling write/test of basic rendering routines:
-         * For each character, display corresponding hex nybbles
-         * and the corresponding graphic mode "character"
+#if 1   /* HACK enabling write/test of basic rendering routines:
+         * reveal unhandled control codes
          */
-    uint8_t nyb_hi, nyb_lo;
+    if (!isprint(ch))
+    {
+        uint8_t nyb_hi, nyb_lo;
 
-    nyb_hi= (ch & 0xf0) >> 4;
-    nyb_lo= ch & 0x0f;
-    nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
-    nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
+        nyb_hi= (ch & 0xf0) >> 4;
+        nyb_lo= ch & 0x0f;
+        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
+        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-    zss->char_grid[0][0]= nyb_hi;
-    zss->char_grid[0][1]= nyb_lo;
+        zaphod_screen_putchar(opaque, '[');
+        zaphod_screen_putchar(opaque, nyb_hi);
+        zaphod_screen_putchar(opaque, nyb_lo);
+        zaphod_screen_putchar(opaque, ']');
+        zaphod_screen_putchar(opaque, '*');
+        return;
+   }
+#endif
 
-    if (zmc->has_simple_screen)
-    {   /* show requested character */
-        zss->char_grid[0][2]= ch;
-
-        /* mark region [from 0,0 to 0,2] for redraw */
-        zaphod_screen_mark_dirty(zss, 0,0);
-        zaphod_screen_mark_dirty(zss, 0,2);
-    }
-    else
-    {   /* show requested character with graphics glyph */
-        /* ...graphics not included in automatic redraw :( */
-        zaphod_screen_draw_graphic(zss, ZAPHOD_TEXT_ROWS-1,0, ch);
-        dpy_gfx_update(zss->display,
-                0, (ZAPHOD_TEXT_ROWS - 1) * FONT_HEIGHT,
-                FONT_WIDTH, FONT_HEIGHT);
-
-        /* mark region [from 0,0 to 0,1] for redraw */
-        zaphod_screen_mark_dirty(zss, 0,0);
-        zaphod_screen_mark_dirty(zss, 0,1);
-    }
-#else
     /* update grid and state for dirty region */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: Reached putchar for ch=0x%02x at r=%d,c=%d\n", ch, zss->curs_posr, zss->curs_posc);
@@ -387,7 +373,6 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
             zss->curs_posr= ZAPHOD_TEXT_ROWS-1;
         }
     }
-#endif
 }
 
 
