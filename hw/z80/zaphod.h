@@ -25,6 +25,10 @@
 #define ZAPHOD_HAS_KEYBIO
 #endif
 
+#ifdef ZAPHOD_HAS_SCREEN
+#include "hw/irq.h"
+#endif
+
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
@@ -67,6 +71,7 @@ typedef struct {
     int             curs_posr, curs_posc;
     bool            curs_visible, curs_dirty;
     int64_t         curs_blink_time;    /* millisec */
+    qemu_irq        *rxint_irq;
 } ZaphodScreenState;
 #endif
 
@@ -122,6 +127,8 @@ void zaphod_set_inkey(void *opaque, uint8_t val, bool is_data);
 uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear);
 
 
+/* zaphod.c */
+void zaphod_interrupt(void *opaque, int source, int level);
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
 void zaphod_putchar(ZaphodState *zs, const unsigned char ch);
 
