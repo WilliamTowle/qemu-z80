@@ -423,13 +423,17 @@ DPRINTF("INFO: Screen dirty from %d,%d to %d,%d\n", zss->dirty_minr, zss->dirty_
         {
             int row, col;
 
-            /* Display full - scroll and repaint it */
+            /* Display full - scroll */
             for (col= 0; col < MAX_TEXT_COLS; col++)
             {
                 for (row= 0; row < MAX_TEXT_ROWS - 1; row++)
                     zss->char_grid[row][col]= zss->char_grid[row+1][col];
                 zss->char_grid[MAX_TEXT_ROWS-1][col]= 0;
             }
+
+            /* Adjust attributes - duplicating last row's */
+            for (row= 0; row < MAX_TEXT_ROWS - 1; row++)
+                zss->row_attr[row]= zss->row_attr[row+1];
 
             zss->curs_posr= MAX_TEXT_ROWS-1;
             zaphod_screen_invalidate_display(zss);
