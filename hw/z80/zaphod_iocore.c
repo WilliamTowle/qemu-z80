@@ -12,6 +12,7 @@
 #include "qemu/error-report.h"
 #include "qapi/error.h"
 #include "exec/address-spaces.h"
+#include "ui/console.h"
 
 
 #define DPRINTF(fmt, ...) \
@@ -203,6 +204,73 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
     PORTIO_END_OF_LIST(),
 };
 
+
+#if 1	/* keyboard I/O (EXPERIMENTAL) */
+static const unsigned char keycode_to_asciilc[128]= {
+    /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
+     * callback to translate keycode to row and column [as per the
+     * Spectrum's keyboard electronics]. When feeding input to our
+     * sercon or MC6850 input streams, we want ASCII.
+     * (FIXME: this is (unintentionally) partial, and the handler
+     * (also) lacks code to sense/track/apply modifier keys)
+     */
+      0,  0,'1','2','3','4','5','6',
+    '7','8','9','0',  0,  0,  0,  0,
+    'q','w','e','r','t','y','u','i',
+    'o','p',  0,  0, 13,  0,'a','s',
+    'd','f','g','h','j','k','l',  0,
+      0,  0,  0,  0,'z','x','c','v',
+    'b','n','m',  0,  0,  0,  0,  0,
+      0,' ',  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+static void zaphod_iocore_put_keycode(void *opaque, int keycode)
+{
+    //ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
+    int	release= keycode & 0x80;
+
+    if (release)
+    {
+        /* FIXME: handle XT scancode 0xe0 properly */
+        /* TODO: resetting cs_inkey on key release is risky if
+         * systems without an IRQ sent on keypress don't poll
+         * the port promptly enough. Do we want to implement key
+         * repeat (in which case we start a timer elsewhere that
+         * should get stopped here)?
+         */
+#if 1
+;DPRINTF("INFO: %s() - key with keycode=0x%02x released\n", __func__, keycode);
+#else   /* inkey API missing - TODO: is this stdio or ACAI input? */
+        zaphod_set_inkey(zss->super, 0, false);
+#endif
+    }
+    else
+    {
+      int	ch= keycode_to_asciilc[keycode & 0x7f];
+#if 1
+;DPRINTF("INFO: %s() - keypress -> BAIL: : keycode=0x%02x (ch %d)\n", __func__, keycode, ch);
+;exit(1);
+#else
+	/* TODO:
+	 * - determine the "muxed" UART (ACIA, if defined)
+	 * - check can-receive
+	 * - calling receive will trigger IRQ as required
+	 */
+#endif
+    }
+}
+#endif
+
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
@@ -252,6 +320,11 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
         zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
     }
+
+#if 1	/* TODO: avoid under legacy KEYBIO? */
+    /* FIXME: rework with QemuInputHandler */
+    qemu_add_kbd_event_handler(zaphod_iocore_put_keycode, zis);
+#endif
 }
 
 #if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
