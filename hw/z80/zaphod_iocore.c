@@ -13,6 +13,7 @@
 #include "qemu/error-report.h"
 #include "qapi/error.h"
 #include "exec/address-spaces.h"
+#include "ui/console.h"
 
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
@@ -239,6 +240,100 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
     PORTIO_END_OF_LIST()
 };
 
+
+#if 1   /* keyboard I/O */
+/* Tables for mapping qcode of keypress to corresponding ascii
+ * TODO: must account for modifier keys
+ */
+static const uint8_t keycode_to_asciilc[128]= {
+    /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
+     * callback to translate keycode to row and column [as per the
+     * Spectrum's keyboard electronics]. When feeding input to our
+     * sercon or MC6850 input streams, we want ASCII.
+     * (FIXME: this is (unintentionally) partial, and the handler
+     * (also) lacks code to sense/track/apply modifier keys)
+     */
+      0,  0,'1','2','3','4','5','6',
+    '7','8','9','0',  0,  0,  0,  0,
+    'q','w','e','r','t','y','u','i',
+    'o','p',  0,  0, 13,  0,'a','s',
+    'd','f','g','h','j','k','l',  0,
+      0,  0,  0,  0,'z','x','c','v',
+    'b','n','m',  0,  0,  0,  0,  0,
+      0,' ',  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
+                             InputEvent *evt)
+{
+    InputKeyEvent *key;
+    int scancodes[3], count;
+
+    assert(evt->type == INPUT_EVENT_KIND_KEY);
+    key= evt->u.key.data;
+
+    /* TODO:
+     * 1. check qcode value for modifier keys; if pressed, prepare to:
+     * - adjust bit 0x1 in 'modifiers' for left shift
+     * - adjust bit 0x2 in 'modifiers' for right shift
+     * - (...etc)
+     * 2. depending on whether a modifier was pressed, either:
+     * - align modifier state bit to up/down state of key, or
+     * - map qcodes to ASCII and pass to relevant (stdio/ACIA) UART
+     */
+
+    count = qemu_input_key_value_to_scancode(key->key,
+                                             key->down,
+                                             scancodes);
+
+    if (count == 1) /* single-byte XT scancode */
+    {
+        ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+        ZaphodMachineState  *zms= zis->board;
+
+        if (!key->down)
+        {
+            if (zms->uart_acia)
+                zaphod_uart_set_inkey(zms->uart_acia, 0, false);
+            else
+                zaphod_uart_set_inkey(zms->uart_stdio, 0, false);
+        }
+        else
+        {
+          uint8_t           ch= keycode_to_asciilc[scancodes[0] & 0x7f];
+          ZaphodUARTState   *uart_mux;
+
+            if ( (uart_mux= zms->uart_acia) != NULL )
+            {
+                if (zaphod_iocore_can_receive_acia(zms->iocore))
+                    zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
+            }
+            else if ( (uart_mux= zms->uart_stdio) != NULL )
+            {
+                if (zaphod_iocore_can_receive_stdio(zms->iocore))
+                    zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
+            }
+        }
+    }
+}
+
+static QemuInputHandler zaphod_kbd_handler = {
+    .name  = "zaphod-kbd",
+    .mask  = INPUT_EVENT_MASK_KEY,
+    .event = zaphod_kbd_event,
+};
+#endif
+
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
@@ -285,6 +380,11 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
         zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
     }
+
+#if 1   /* keyboard I/O */
+    zis->ihs= qemu_input_handler_register(dev, &zaphod_kbd_handler);
+    qemu_input_handler_activate(zis->ihs);
+#endif
 
     /* TODO: correlate screen(s) to stdio/acia input; enable (and
      * configure) screen to suit command line arguments

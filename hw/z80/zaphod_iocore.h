@@ -14,6 +14,9 @@
 
 #include "exec/ioport.h"
 #include "hw/irq.h"
+#if 1   /* IOCORE-KEYBIO */
+#include "ui/input.h"
+#endif
 
 typedef struct ZaphodMachineState ZaphodMachineState;
 
@@ -29,6 +32,9 @@ typedef struct {
     PortioList          *ioports_acia;
     qemu_irq            *irq_acia;
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
+#if 1   /* IOCORE-KEYBIO */
+    QemuInputHandlerState *ihs;
+#endif
     /* TODO: correlate screen(s) to stdio/acia input */
     ZaphodScreenState   *screen;
 } ZaphodIOCoreState;
