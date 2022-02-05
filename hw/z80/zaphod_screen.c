@@ -48,7 +48,7 @@ uint8_t zaphod_rgb_palette[][3]= {
 static const unsigned char keycode_to_asciilc[128]= {
     /* keymap for UK QWERTY keyboard */
     /* FIXME: this is (unintentionally) partial, and the handler
-     * (also) lacks code to sense/track/apply modifier keys
+     * only has limited code to sense/track/apply modifier keys
      */
       0,  0,'1','2','3','4','5','6',
     '7','8','9','0',  0,  0,  0,  0,
@@ -73,9 +73,18 @@ static const unsigned char keycode_to_asciilc[128]= {
 static void zaphod_put_keycode(void *opaque, int keycode)
 {
     ZaphodScreenState	*zss= (ZaphodScreenState *)opaque;
-    int	release= keycode & 0x80;
 
-    if (release)
+    switch(keycode & 0x7f)
+    {
+    case 0x2a:  /* Shift_L */
+        zss->modifiers^= 1;
+        return;
+    case 0x36:  /* Shift_R */
+        zss->modifiers^= 2;
+        return;
+    }
+
+    if (keycode & 0x80) /* key released */
     {
         /* TODO: resetting cs_inkey on key release is risky if
          * systems without an IRQ sent on keypress don't poll
@@ -88,7 +97,14 @@ static void zaphod_put_keycode(void *opaque, int keycode)
     else
     {
       int	ch= keycode_to_asciilc[keycode & 0x7f];
-            zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
+
+        /* TODO: modifiers also affect other keys; this should
+         * be how we handle caps-lock-active state
+         */
+        if (zss->modifiers & 3)
+            ch= toupper(ch);
+
+        zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
 #ifdef ZAPHOD_DEBUG
 ;DPRINTF("DEBUG: %s() stored keycode %d to inkey as ch=%02x\n", __func__, keycode, ch);
 #endif
@@ -526,6 +542,7 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 
 #ifdef ZAPHOD_HAS_KEYBIO
     /* provide keycode to ASCII translation for zaphod_io_read() */
+    zss->modifiers= 0;
     qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
