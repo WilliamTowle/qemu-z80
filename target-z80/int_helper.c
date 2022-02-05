@@ -14,18 +14,13 @@ void z80_cpu_do_interrupt(CPUState *cs)
     CPUZ80State *env = &cpu->env;
 ;fprintf(stderr, "INFO: using cpu %p, env %p\n", cpu, env);
 
-    /* TARGET_Z80: The Zaphod binary execution layer doesn't set
-     * up IRQs, so there are no I/O interrupts but there are
-     * still exceptions (ILLOP, KERNEL_TRAP)
-     * For the CONFIG_USER_ONLY case, target-x86
-     * calls do_interrupt_user()
+    /* Handle the ILLOP exception as thrown by disas_insn() by
+     * bailing cleanly. For z80-bblbrx-user there are no I/O
+     * interrupts
      */
-    if (env->exception_index != -1)
-    {   /* TODO: catch EXCP_ILLOP and cpu_abort() here */
-        /* we can ignore KERNEL_TRAP; the magic_ramloc test will
-         * execute in due course
-         */
-;fprintf(stderr, "exception_index set - is %d\n", env->exception_index);
+    if (env->exception_index == EXCP06_ILLOP)
+    {
+        cpu_abort(env, "EXCP_ILLOP at pc=0x%04x", env->pc);
     }
 
 #if defined(CONFIG_USER_ONLY)
@@ -35,6 +30,7 @@ void z80_cpu_do_interrupt(CPUState *cs)
      */
 #else
 ;fprintf(stderr, "** about to do_interrupt() ** passing env=%p\n", env);
+    /* Interrupt the CPU */
     do_interrupt(env);  /* target-i386: do_interrupt_all() */
 #endif
 #if 0	/* never implemented for target-z80 */
