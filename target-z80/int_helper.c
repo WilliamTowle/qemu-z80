@@ -18,8 +18,12 @@ void z80_cpu_do_interrupt(CPUState *cs)
      * For the CONFIG_USER_ONLY case, target-x86 calls
      * do_interrupt_user()
      */
-
-#if 0
+    if (env->exception_index)
+    {
+;fprintf(stderr, "INFO: Non-zero exception_index %d flagged\n", env->exception_index);
+    }
+;fprintf(stderr, "AKK\n"); exit(1);
+#if 0	/* never in target-z80 */
     /* successfully delivered */
     env->old_exception = -1;
 #endif
