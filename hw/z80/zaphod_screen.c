@@ -323,6 +323,18 @@ static void zaphod_screen_mark_dirty(void *opaque, int r,int c)
         zss->dirty_minc= zss->curs_posc;
 }
 
+static void zaphod_screen_clear(ZaphodScreenState *zss)
+{
+  int row, col;
+    for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
+	{
+        zss->row_attr[row]= ZAPHOD_SCREEN_ATTR_80COL;
+        for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
+            zss->char_grid[row][col]= '\0';
+    }
+    zss->curs_posr= zss->curs_posc= 0;
+}
+
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
     /* this 'opaque' is the MachineState from zaphod_io_write() */
@@ -366,6 +378,13 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
             zaphod_screen_scroll(zss);
             zss->curs_posr= ZAPHOD_TEXT_ROWS-1;
         }
+        return;
+    case '\f':  /* FF (formfeed, 0x0C) */
+        if (zss->cursor_visible)
+            zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
+        zaphod_screen_clear(zss);
+        zaphod_screen_mark_dirty(zss, 0,0);
+        zaphod_screen_mark_dirty(zss, ZAPHOD_TEXT_ROWS-1,ZAPHOD_TEXT_COLS-1);
         return;
 #if 1   /* HACK - reveal unhandled control codes */
     default:
@@ -423,22 +442,14 @@ DeviceState *zaphod_screen_new(void)
 static void zaphod_screen_reset(void *opaque)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
-    int row, col;
 
-    zss->curs_posr= zss->curs_posc= 0;
+    zaphod_screen_clear(zss);
+
     zss->cursor_visible= zss->curs_dirty= false;
     zss->cursor_blink_time= 0;
 
     zss->dirty_minr= zss->dirty_maxr= -1;
     zss->dirty_minc= zss->dirty_maxc= -1;
-
-    /* TODO: "screen clear" escape should reset everything too */
-    for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
-    {
-        zss->row_attr[row]= ZAPHOD_SCREEN_ATTR_80COL;
-        for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
-            zss->char_grid[row][col]= '\0';
-    }
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
