@@ -196,7 +196,6 @@ static void zaphod_screen_invalidate_display(void *opaque)
 static void zaphod_screen_update_display(void *opaque)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
-    bool cursor_dirty= false;
     int64_t now;
 
     /* align QEmu window content with the simulated display */
@@ -219,12 +218,15 @@ static void zaphod_screen_update_display(void *opaque)
                 (zss->dirty_maxr - zss->dirty_minr + 1) * FONT_HEIGHT
                 );
 
-        /* If row-redraw "erased" a visible cursor, it must get
-         * redrawn too. The early putchar() implementation leaves
-         * the cursor on row 0 (and in column 0).
-         */
-        if (zss->dirty_minr == 0)
-            cursor_dirty|= zss->cursor_visible;
+        /* prepare to redraw cursor if it was erased? */
+        if ( (zss->curs_posr >= zss->dirty_minr)
+            && (zss->curs_posr <= zss->dirty_maxr)
+            && (zss->curs_posc >= zss->dirty_minc)
+            && (zss->curs_posc <= zss->dirty_maxc)
+            )
+        {
+            zss->cursor_dirty|= zss->cursor_visible;
+        }
 
         zss->dirty_minr= zss->dirty_maxr= -1;
         zss->dirty_minc= zss->dirty_maxc= -1;
@@ -247,16 +249,15 @@ static void zaphod_screen_update_display(void *opaque)
          *   - in non-dirty state? always trigger state change next
          *   - dirty (was just erased)? unset flag [do nothing below]
          */
-        cursor_dirty^= !cursor_dirty || !zss->cursor_visible;
+        zss->cursor_dirty^= !zss->cursor_dirty || !zss->cursor_visible;
     }
 
-    if (cursor_dirty)
+    if (zss->cursor_dirty)
     {
-        /* cursor was erased or changed visibility status above */
+        /* cursor moved, was erased, or changed visibility status */
         zaphod_screen_toggle_cursor(opaque,
-                            0,  /* TODO: zss->curs_posr */
-                            0   /* TODO: zss->curs_posc */
-                            );
+                             zss->curs_posr, zss->curs_posc);
+        zss->cursor_dirty= false;
     }
 }
 
@@ -331,6 +332,16 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zaphod_screen_mark_dirty(zss, 0,0);
         zaphod_screen_mark_dirty(zss, 0,1);
     }
+
+    zss->curs_posr= zss->dirty_maxr;
+    zss->curs_posc= zss->dirty_maxc + 1;
+
+    /* TODO: if the cursor position changes when flagged visible,
+     * mark it as dirty; the next update will put new text in its
+     * old position but it will need rendering immediately where it
+     * moved to
+     */
+    zss->cursor_dirty|= zss->cursor_visible;
 #endif
     /* TODO: printing should move the cursor, and if visible when
      * moved we need to toggle it on/off in new and old positions */
@@ -353,7 +364,8 @@ static void zaphod_screen_reset(void *opaque)
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
     int row, col;
 
-    zss->cursor_visible= false;
+    zss->curs_posr= zss->curs_posc= 0;
+    zss->cursor_visible= zss->cursor_dirty= false;
     zss->cursor_blink_time= 0;
 
     zss->dirty_minr= zss->dirty_maxr= -1;
