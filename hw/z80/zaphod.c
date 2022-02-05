@@ -227,14 +227,11 @@ static QEMUMachine zaphod_pb_machine= {
  *  Output: screen enabled, with extended control codes
  */
 
-static void zaphod_init_gs_machine(ram_addr_t ram_size,
-                     const char *boot_device,
-                     const char *kernel_filename, const char *kernel_cmdline,
-                     const char *initrd_filename, const char *cpu_model)
+static void zaphod_init_gs_machine(QEMUMachineInitArgs *args)
 {
     ZaphodState *zs= g_new0(ZaphodState, 1);
     zaphod_add_feature(zs, ZAPHOD_FEATURE_MC6850);
-    zaphod_init_common(zs, kernel_filename, cpu_model);
+    zaphod_init_common(zs, args);
 }
 
 static QEMUMachine zaphod_gs_machine= {
