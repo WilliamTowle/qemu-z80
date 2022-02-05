@@ -35,6 +35,9 @@ typedef struct {
     bool            cursor_visible, curs_dirty;
     int64_t         cursor_blink_time;    /* millisec */
     qemu_irq        *rxint_irq;
+#ifdef ZAPHOD_HAS_KEYBIO
+    int             modifiers;
+#endif
 } ZaphodScreenState;
 
 
