@@ -342,6 +342,16 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      */
     switch(ch)
     {
+    case '\a':  /* BEL (bell, 0x07) */
+        /* ignore */
+        return;
+    case '\b':  /* BS (backspace, 0x08) */
+        if (zss->cursor_visible)
+            zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
+        if (zss->curs_posc > 0)
+            zss->curs_posc--;
+        zss->curs_dirty|= zss->cursor_visible;
+        return;
     case '\r':  /* CR (carriage return, 0x0D) */
         if (zss->cursor_visible)
             zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
