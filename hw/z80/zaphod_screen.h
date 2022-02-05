@@ -22,6 +22,8 @@ typedef struct {
     uint8_t         *rgb_bg, *rgb_fg;
     bool            curs_visible;
     int64_t         curs_blink_time;    /* millisec */
+    int             dirty_minr, dirty_maxr;
+    int             dirty_minc, dirty_maxc;
 } ZaphodScreenState;
 
 
