@@ -85,11 +85,6 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
         font_ptr++;
         dmem_start+= surface_stride(ds);
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 static
@@ -138,22 +133,20 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
         dmem_start+= surface_stride(ds);
         if ((ix & 0x03) == 3) data>>= 2;
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
-;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
-    /* TODO: implement full redraw of the window.
-     * QEmu's VGACommonState tracks 'last_{width|height}' and sets
-     * both to -1 here [...which leads to a full update in
-     * vga_update_text()]
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    /* Implement full redraw of the window.
+     * Earlier content from our DisplayState is no longer visible
+     * for some reason. Set state to trigger full update in
+     * zaphod_screen_update_display()
      */
+    zss->dirty_minr= zss->dirty_minc= 0;
+    zss->dirty_maxr= ZAPHOD_TEXT_ROWS-1;
+    zss->dirty_maxc= ZAPHOD_TEXT_COLS-1;
 }
 
 static void zaphod_screen_update_display(void *opaque)
@@ -232,13 +225,12 @@ static const GraphicHwOps zaphod_screen_ops= {
 };
 
 
-/* character processing */
-
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
     /* this 'opaque' is the MachineState from zaphod_io_write() */
     ZaphodMachineState *zms= ZAPHOD_MACHINE(opaque);
     ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
+    ZaphodScreenState  *zss= zms->screen;
 
 #if 1	/* HACK enabling write/test of basic rendering routines:
          * For each character, display corresponding hex nybbles
@@ -262,8 +254,14 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
     {   /* show requested graphics glyph */
         zaphod_screen_draw_graphic(zms->screen, 0,2, ch);
     }
+
+    /* mark region from 0,0 to 0,2 dirty */
+    zss->dirty_minr= zss->dirty_maxr= 0;
+    zss->dirty_minc= 0;
+    zss->dirty_maxc= 2;
 #endif
 }
+
 
 DeviceState *zaphod_screen_new(void)
 {
@@ -284,6 +282,9 @@ static void zaphod_screen_reset(void *opaque)
 
     zss->cursor_visible= false;
     zss->cursor_blink_time= 0;
+
+    zss->dirty_minr= zss->dirty_maxr= -1;
+    zss->dirty_minc= zss->dirty_maxc= -1;
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
