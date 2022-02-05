@@ -117,11 +117,6 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
         font_ptr++;
         dmem_start+= surface_stride(ds);
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 static
@@ -169,30 +164,51 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
         dmem_start+= surface_stride(ds);
         if ((ix & 0x03) == 3) data>>= 2;
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
-;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
-    /* TODO: trigger full redraw of the window by setting state
-     * appropriately here - marking all cell locations as dirty
-     */
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+
+    /* set state to trigger full update later */
+    zss->dirty_minr= zss->dirty_minc= 0;
+    zss->dirty_maxr= ZAPHOD_TEXT_ROWS-1;
+    zss->dirty_maxc= ZAPHOD_TEXT_COLS-1;
 }
 
 static void zaphod_screen_update_display(void *opaque)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+    bool cursor_dirty= false;
     int64_t now;
 
     /* align QEmu window content with the simulated display */
 
-    /* ... */
+    if (zss->dirty_minr > -1)
+    {
+        /* Update the display surface where "dirty" region applies.
+         * TODO: implement character grid (with attributes) and
+         * repaint with reference to the content when redrawing.
+         */
+        dpy_gfx_update(zss->display,
+                zss->dirty_minc * FONT_WIDTH,
+                zss->dirty_minr * FONT_HEIGHT,
+                (zss->dirty_maxc - zss->dirty_minc + 1) * FONT_WIDTH,
+                (zss->dirty_maxr - zss->dirty_minr + 1) * FONT_HEIGHT
+                );
+
+        /* If row-redraw "erased" a visible cursor, it must get
+         * redrawn too. The early putchar() implementation leaves
+         * the cursor on row 0 (and in column 0).
+         */
+        if (zss->dirty_minr == 0)
+            cursor_dirty|= zss->cursor_visible;
+
+        zss->dirty_minr= zss->dirty_maxr= -1;
+        zss->dirty_minc= zss->dirty_maxc= -1;
+    }
+
 
     /* Handle cursor blink if its timer expired */
 
@@ -205,8 +221,21 @@ static void zaphod_screen_update_display(void *opaque)
         zss->cursor_visible= !zss->cursor_visible;
 ;DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
 
-        /* effect "blink" step (toggle cursor visibility) */
-        zaphod_screen_toggle_cursor(opaque, 0, 0);
+        /* Adjust 'cursor_dirty' state here so the "blink" step is
+         * performed as needed - ie. if the cursor is:
+         *   - in non-dirty state? always trigger state change next
+         *   - dirty (was just erased)? unset flag [do nothing below]
+         */
+        cursor_dirty^= !cursor_dirty || !zss->cursor_visible;
+    }
+
+    if (cursor_dirty)
+    {
+        /* cursor was erased or changed visibility status above */
+        zaphod_screen_toggle_cursor(opaque,
+                            0,  /* TODO: zss->curs_posr */
+                            0   /* TODO: zss->curs_posc */
+                            );
     }
 }
 
@@ -217,6 +246,18 @@ static const GraphicHwOps zaphod_screen_ops= {
 
 
 /* character processing */
+
+static void zaphod_screen_mark_dirty(ZaphodScreenState *zss, int r,int c)
+{
+    if (zss->dirty_maxr < r)
+        zss->dirty_maxr= r;
+    if (zss->dirty_maxc < c)
+        zss->dirty_maxc= c;
+    if ((zss->dirty_minr > r) || (zss->dirty_minr == -1))
+        zss->dirty_minr= r;
+    if ((zss->dirty_minc > c) || (zss->dirty_minc == -1))
+        zss->dirty_minc= c;
+}
 
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
@@ -257,6 +298,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
     {   /* show requested character with graphics glyph */
         zaphod_screen_draw_graphic(zss, 0,2, ch);
     }
+
+    /* mark region [from 0,0 to 0,2] for redraw */
+    zaphod_screen_mark_dirty(zss, 0,0);
+    zaphod_screen_mark_dirty(zss, 0,2);
 #endif
     /* TODO: printing should move the cursor, and if visible when
      * moved we need to toggle it on/off in new and old positions */
@@ -281,6 +326,9 @@ static void zaphod_screen_reset(void *opaque)
 
     zss->cursor_visible= false;
     zss->cursor_blink_time= 0;
+
+    zss->dirty_minr= zss->dirty_maxr= -1;
+    zss->dirty_minc= zss->dirty_maxc= -1;
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
