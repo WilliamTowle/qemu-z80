@@ -30,7 +30,11 @@
  */
 #define	Z80_MAX_RAM_SIZE	(64 * 1024) /* 64KiB */
 
+#define MAX_TEXT_ROWS	25
+#define MAX_TEXT_COLS	80
+
 typedef struct ZaphodState ZaphodState;
+
 
 #ifdef ZAPHOD_HAS_SERCON
 typedef struct {
@@ -49,10 +53,11 @@ typedef struct {
 
     QemuConsole     *screen_con;
     uint8_t         *rgb_bg, *rgb_fg;
-    bool            curs_visible;
-    int64_t         curs_blink_time;    /* millisec */
+    uint8_t         char_grid[MAX_TEXT_ROWS][MAX_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
+    bool            curs_visible;
+    int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
 #endif
 
