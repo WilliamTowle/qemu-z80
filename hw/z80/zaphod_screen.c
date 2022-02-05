@@ -499,6 +499,8 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
     zss->cursor_visible= zss->curs_dirty= false;
     zss->cursor_blink_time= 0;
 
+    zss->rxint_irq= qemu_allocate_irqs(zaphod_interrupt, zss->super, 1);
+
     qemu_console_resize(zss->display,
         FONT_WIDTH * MAX_TEXT_COLS, FONT_HEIGHT * MAX_TEXT_ROWS);
 
