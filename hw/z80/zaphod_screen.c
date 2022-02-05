@@ -162,11 +162,6 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
         font_ptr++;
         dmem_start+= surface_stride(surface);
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 static
@@ -211,24 +206,20 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
         dmem_start+= surface_stride(surface);
         if ((ix & 0x03) == 3) data>>= 2;
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
-
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
-;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
-    /* TODO: implement full redraw of the window.
-     * QEmu's VGACommonState tracks 'last_{width|height}' and sets
-     * both to -1 here [...which leads to a full update in
-     * vga_update_text()]
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    /* Implement full redraw of the window.
+     * Earlier content from our DisplayState is no longer visible
+     * for some reason. Set state to trigger full update in
+     * zaphod_screen_update_display()
      */
+    zss->dirty_minr= zss->dirty_minc= 0;
+    zss->dirty_maxr= ZAPHOD_TEXT_ROWS-1;
+    zss->dirty_maxc= ZAPHOD_TEXT_COLS-1;
 }
-
 
 static void zaphod_screen_update_display(void *opaque)
 {
@@ -323,6 +314,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
         zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
         zaphod_screen_draw_char(opaque, 0,2, ch);
+
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 2;
     }
     else
     {
@@ -336,6 +331,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
         zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
         zaphod_screen_draw_graphic(opaque, 0,2, ch);
+
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 2;
     }
 
     /* TODO: In our earlier hack, this function *called itself*
@@ -369,6 +368,9 @@ static void zaphod_screen_reset(void *opaque)
 
     zss->cursor_visible= false;
     zss->cursor_blink_time= 0;
+
+    zss->dirty_minr= zss->dirty_maxr= -1;
+    zss->dirty_minc= zss->dirty_maxc= -1;
 }
 
 
@@ -395,6 +397,8 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
         zss->rgb_fg= zaphod_rgb_palette[1];
     else
         zss->rgb_fg= zaphod_rgb_palette[2];
+
+
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
 
