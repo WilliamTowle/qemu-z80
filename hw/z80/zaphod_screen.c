@@ -46,6 +46,69 @@ uint8_t zaphod_rgb_palette[][3]= {
 };
 
 
+#ifdef ZAPHOD_HAS_KEYBIO
+/* EXPERIMENTAL */
+static const unsigned char keycode_to_asciilc[128]= {
+    /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
+     * callback to translate keycode to row and column [as per the
+     * Spectrum's keyboard electronics]. When feeding input to our
+     * sercon or MC6850 input streams, we want ASCII.
+     * (FIXME: this is (unintentionally) partial, and the handler
+     * (also) lacks code to sense/track/apply modifier keys)
+     */
+      0,  0,'1','2','3','4','5','6',
+    '7','8','9','0',  0,  0,  0,  0,
+    'q','w','e','r','t','y','u','i',
+    'o','p',  0,  0, 13,  0,'a','s',
+    'd','f','g','h','j','k','l',  0,
+      0,  0,  0,  0,'z','x','c','v',
+    'b','n','m',  0,  0,  0,  0,  0,
+      0,' ',  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+
+static void zaphod_put_keycode(void *opaque, int keycode)
+{
+    ZaphodScreenState	*zss= (ZaphodScreenState *)opaque;
+    int	release= keycode & 0x80;
+
+    if (release)
+    {
+        /* FIXME: handle XT scancode 0xe0 properly */
+        /* TODO: resetting cs_inkey on key release is risky if
+         * systems without an IRQ sent on keypress don't poll
+         * the port promptly enough. Do we want to implement key
+         * repeat (in which case we start a timer elsewhere that
+         * should get stopped here)?
+         */
+        zaphod_set_inkey(zss->super, 0, false);
+    }
+    else
+    {
+      int	ch= keycode_to_asciilc[keycode & 0x7f];
+            zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
+#ifdef ZAPHOD_DEBUG
+;DPRINTF("DEBUG: %s() stored keycode %d to inkey as ch=%02x\n", __func__, keycode, ch);
+#endif
+#ifdef ZAPHOD_HAS_RXINT_IRQ
+        if (zss->rxint_irq)
+            qemu_irq_raise(*zss->rxint_irq);
+#endif
+    }
+}
+#endif	/* ZAPHOD_HAS_KEYBIO */
+
+
 static void zaphod_screen_invalidate_display(void *opaque)
 {
 ;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
@@ -350,7 +413,13 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
+
+#ifdef ZAPHOD_HAS_KEYBIO
+    /* provide keycode to ASCII translation for zaphod_io_read() */
+    qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
+#endif	/* ZAPHOD_HAS_KEYBIO */
 }
+
 
 #if 0  /* TODO: v1 init support */
 //static Property zaphod_screen_properties[] = {
