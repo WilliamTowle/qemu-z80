@@ -111,23 +111,15 @@ static void zaphod_put_keycode(void *opaque, int keycode)
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
-;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
-    /* FIXME:
-     * Calls here mean the window needs to be fully redrawn as
-     * earlier content from our DisplayState is no longer visible
-     * for some reason. This is particularly noticeable if QEmu
-     * "suddenly" [? bug?] applies scaling to everything, at which
-     * point we need to do work to account for graphical damage the
-     * HMI or serial console causes.
-     * Given that our dpy_update() for the cursor seems to behave,
-     * the buffer in zss->ds is intact and we just need to put
-     * content back on screen here.
-     */
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
 
-    /* TODO: VGACommonState tracks 'last_{width|height}' and
-     * sets both to -1 here [...which forces a full update in
-     * vga_update_text()]
+    /* Earlier content from our DisplayState is no longer visible
+     * for some reason (eg. console switch). Trigger full update
+     * in zaphod_screen_update_display()
      */
+    zss->dirty_minr= zss->dirty_minc= 0;
+    zss->dirty_maxr= MAX_TEXT_ROWS-1;
+    zss->dirty_maxc= MAX_TEXT_COLS-1;
 }
 
 
@@ -149,7 +141,30 @@ static void zaphod_screen_update_display(void *opaque)
      *   - passes 'full_update' to vga_draw_{text|graphic|blank}()
      */
 
+    if (zss->dirty_minr > -1)
+    {
+;DPRINTF("TODO: DisplayState was marked dirty from %d,%d to %d,%d\n", zss->dirty_minr,zss->dirty_minc, zss->dirty_maxr, zss->dirty_maxc);
+
+        /* FIXME: calls to the repaint functions for the dirty
+         * region belong here [ie. immediately prior to our
+         * dpy_update()]; we risk blanking the screen otherwise. If
+         * this obliterates the cursor we may need to repaint it too
+         */
+        dpy_gfx_update(zss->display,
+                zss->dirty_minc * FONT_WIDTH,
+                zss->dirty_minr * FONT_HEIGHT,
+                (zss->dirty_maxc - zss->dirty_minc + 1) * FONT_WIDTH,
+                (zss->dirty_maxr - zss->dirty_minr + 1) * FONT_HEIGHT
+                );
+
+        zss->dirty_minr= zss->dirty_maxr= -1;
+        zss->dirty_minc= zss->dirty_maxc= -1;
+    }
+
 #if 1
+    /* Handle cursor blink. If redrawing the screen blanked its
+     * location we will also need to make it reappear.
+     */
     {
         int64_t now= qemu_clock_get_ms(QEMU_CLOCK_REALTIME);
 
@@ -252,11 +267,6 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
         font_ptr++;
         dmem_start+= surface_stride(surface);
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 static
@@ -304,11 +314,6 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
         dmem_start+= surface_stride(surface);
         if ((ix & 0x03) == 3) data>>= 2;
     }
-
-    /* TODO: mark updated coords as dirty and update in callback? */
-    dpy_gfx_update(zss->display,
-                    col*FONT_WIDTH, row*FONT_HEIGHT,
-                    FONT_WIDTH, FONT_HEIGHT);
 }
 
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
@@ -337,6 +342,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
         zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
         zaphod_screen_draw_char(opaque, 0,2, ch);
+
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 2;
     }
     else
     {
@@ -350,6 +359,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
         zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
         zaphod_screen_draw_graphic(opaque, 0,2, ch);
+
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 2;
     }
 
     /* TODO: In our earlier hack, this function *called itself*
@@ -410,6 +423,8 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
         zss->rgb_fg= zaphod_rgb_palette[2];
     zss->cursor_visible= 0;
     zss->cursor_blink_time= 0;
+    zss->dirty_minr= zss->dirty_maxr= -1;
+    zss->dirty_minc= zss->dirty_maxc= -1;
 
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
