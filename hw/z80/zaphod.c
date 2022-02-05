@@ -127,7 +127,11 @@ void zaphod_set_inkey(void *opaque, uint8_t val, bool is_data)
 {
     ZaphodState *zs= (ZaphodState *)opaque;
     zs->inkey= val;
-    /* TODO: raise MC6850's interrupt, if this was data */
+#ifdef ZAPHOD_HAS_SCREEN
+;if (is_data) DPRINTF("INFO: %s() raising interrupt %s (zs=%p, new char 0x%02x)...\n", __func__, is_data?"Y":"N", zs, val);
+    if (is_data && zs->screen->rxint_irq)
+        qemu_irq_raise(*zs->screen->rxint_irq);
+#endif
 }
 
 uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear)
@@ -136,11 +140,23 @@ uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear)
     uint8_t val= zs->inkey;
 
     if (read_and_clear) zs->inkey= 0;
-    /* TODO: lower MC6850's interrupt, if present */
+#ifdef ZAPHOD_HAS_SCREEN
+    if (zs->screen->rxint_irq)
+        qemu_irq_lower(*zs->screen->rxint_irq);
+#endif
 
   return val;
 }
 
+#ifdef ZAPHOD_HAS_SCREEN
+void zaphod_interrupt(void *opaque, int source, int level)
+{
+    ZaphodState  *zs= (ZaphodState *)opaque;
+
+
+    cpu_interrupt(zs->cpu, CPU_INTERRUPT_HARD);
+}
+#endif
 
 static void zaphod_add_feature(ZaphodState *zs, zaphod_feature_t n)
 {
