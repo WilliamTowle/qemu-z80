@@ -33,8 +33,6 @@
 #include "ui/vgafont.h"		/* vgafont16 - 16x8 */
 #define FONT_HEIGHT	16
 #define FONT_WIDTH	8
-#define TEXT_ROWS	25
-#define TEXT_COLS	80
 
 #define ZAPHOD_TEXT_CURSOR_PERIOD_MS       (1000 * 2 * 16 / 60)
 
@@ -104,6 +102,125 @@ static void zaphod_put_keycode(void *opaque, int keycode)
 #endif	/* ZAPHOD_HAS_KEYBIO */
 
 
+static
+void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
+{
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    DisplaySurface *surface = qemu_console_surface(zss->screen_con);
+    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+    const uint8_t       *font_ptr;
+
+    /* FIXME: zaphod_screen_draw_char() bailed on unexpected state
+     * due to assumption of 4-byte BGRA format:
+     * if is_graphic_console() is false (ie. HMI/serial console shown)
+     *  ...this possibility looks like a bug, now fixed
+       if (!is_graphic_console())
+       {       /X* Avoid rendering onto the HMI/serial console *X/
+               return;
+       }
+     * if bypp is unexpected (since we assume BGRA format):
+       if (bypp != 4)
+       { /X* BAIL *X/ }
+       else if (is_surface_bgr(zcs->ds->surface))
+       { /X* BAIL *X/ }
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * surface_stride(surface);
+
+    dmem_start= surface_data(surface);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+    font_ptr= vgafont16 + FONT_HEIGHT * ch;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t bitmask;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - sets BGR+A */
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (*font_ptr & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        font_ptr++;
+        dmem_start+= surface_stride(surface);
+    }
+}
+
+static
+void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
+{
+    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
+    DisplaySurface *surface = qemu_console_surface(zss->screen_con);
+    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
+    int                 r_incr, c_incr, ix;
+    uint8_t             *dmem_start;
+
+    /* FIXME: bail on unexpected state - see
+     * zaphod_screen_draw_char()
+     */
+
+    c_incr= FONT_WIDTH * bypp;
+    r_incr= FONT_HEIGHT * surface_stride(surface);
+
+    dmem_start= surface_data(surface);
+    dmem_start+= col * c_incr;
+    dmem_start+= row * r_incr;
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        uint8_t *dmem= dmem_start;
+        uint8_t line;
+        uint8_t bitmask;
+
+        line= (data & 0x01)? 0xf0 : 0x00;
+        line+= (data & 0x02)? 0x0f : 0x00;
+
+        for (bitmask= 0x80; bitmask; bitmask>>= 1)
+        {
+            /* for depth 32 - assumes BGR+A */
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[2] : zss->rgb_bg[2];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[1] : zss->rgb_bg[1];
+            *(dmem++)=      (line & bitmask)?
+                      zss->rgb_fg[0] : zss->rgb_bg[0];
+            *(dmem++)=      0;
+        }
+
+        dmem_start+= surface_stride(surface);
+        if ((ix & 0x03) == 3) data>>= 2;
+    }
+}
+
+static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
+                            int row, int minc, int maxc)
+{
+    int col;
+
+    /* FIXME: We assume 80 columns, and the graphics character
+     * implementation is a hack for now. The following (per-line)
+     * attributes are documented:
+     * - 0x80: graphics characters (bit 0 top left, bit 7 bottom right)
+     * - 0x04: double height (internally, top half/bottom half)
+     * - 0x02: bold
+     * - 0x01: use 80 chars (40 otherwise)
+     */
+
+    for (col= minc; col <= maxc; col++)
+        zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+}
+
 static void zaphod_screen_update_display(void *opaque)
 {
     ZaphodScreenState *zss= (ZaphodScreenState *)opaque;
@@ -124,13 +241,17 @@ static void zaphod_screen_update_display(void *opaque)
 
     if (zss->dirty_minr > -1)
     {
-;DPRINTF("TODO: DisplayState was marked dirty from %d,%d to %d,%d\n", zss->dirty_minr,zss->dirty_minc, zss->dirty_maxr, zss->dirty_maxc);
+        int row;
 
         /* FIXME: calls to the repaint functions for the dirty
          * region belong here [ie. immediately prior to our
          * dpy_update()]; we risk blanking the screen otherwise. If
          * this obliterates the cursor we may need to repaint it too
          */
+        for (row= zss->dirty_minr; row <= zss->dirty_maxr; row++)
+            zaphod_screen_redraw_row(zss, row,
+                                zss->dirty_minc, zss->dirty_maxc);
+
         dpy_gfx_update(zss->screen_con,
                 zss->dirty_minc * FONT_WIDTH,
                 zss->dirty_minr * FONT_HEIGHT,
@@ -196,118 +317,10 @@ static void zaphod_screen_invalidate_display(void *opaque)
      * in zaphod_screen_update_display()
      */
     zss->dirty_minr= zss->dirty_minc= 0;
-    zss->dirty_maxr= TEXT_ROWS-1;
-    zss->dirty_maxc= TEXT_COLS-1;
+    zss->dirty_maxr= MAX_TEXT_ROWS-1;
+    zss->dirty_maxc= MAX_TEXT_COLS-1;
 }
 
-static
-void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
-{
-    ZaphodScreenState   *zss= (ZaphodScreenState *)opaque;
-    DisplaySurface      *surface = qemu_console_surface(zss->screen_con);
-    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
-    int                 r_incr, c_incr, ix;
-    uint8_t             *dmem_start;
-    const uint8_t       *font_ptr;
-
-    /* TODO: this function is for normal height/width characters.
-     * The Grant Searle SBC has per-line text attributes as follows:
-     * - 0x80: graphics characters (bit 0 top left, bit 7 bottom right)
-     * - 0x04: double height (internally, top half/bottom half)
-     * - 0x02: bold
-     * - 0x01: use 80 chars (40 otherwise)
-     */
-
-    /* FIXME: bail on unexpected state:
-     * if is_graphic_console() is false (ie. HMI/serial console shown)
-     *  ...this possibility looks like a bug, now fixed
-       if (!is_graphic_console())
-       {       /X* Avoid rendering onto the HMI/serial console *X/
-               return;
-       }
-     * if bypp is unexpected (since we assume BGRA format):
-       if (bypp != 4)
-       { /X* BAIL *X/ }
-       else if (is_surface_bgr(zcs->ds->surface))
-       { /X* BAIL *X/ }
-     */
-
-    c_incr= FONT_WIDTH * bypp;
-    r_incr= FONT_HEIGHT * surface_stride(surface);
-
-    dmem_start= surface_data(surface);
-    dmem_start+= col * c_incr;
-    dmem_start+= row * r_incr;
-    font_ptr= vgafont16 + FONT_HEIGHT * ch;
-
-    for (ix= 0; ix < FONT_HEIGHT; ix++)
-    {
-        uint8_t *dmem= dmem_start;
-        uint8_t bitmask;
-
-        for (bitmask= 0x80; bitmask; bitmask>>= 1)
-        {
-            /* for depth 32 - sets BGR+A */
-            *(dmem++)=      (*font_ptr & bitmask)?
-                      zss->rgb_fg[2] : zss->rgb_bg[2];
-            *(dmem++)=      (*font_ptr & bitmask)?
-                      zss->rgb_fg[1] : zss->rgb_bg[1];
-            *(dmem++)=      (*font_ptr & bitmask)?
-                      zss->rgb_fg[0] : zss->rgb_bg[0];
-            *(dmem++)=      0;
-        }
-
-        font_ptr++;
-        dmem_start+= surface_stride(surface);
-    }
-}
-
-static
-void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
-{
-    ZaphodScreenState  *zss= (ZaphodScreenState *)opaque;
-    DisplaySurface      *surface = qemu_console_surface(zss->screen_con);
-    int                 bypp= (surface_bits_per_pixel(surface) + 7) >> 3;
-    int                 r_incr, c_incr, ix;
-    uint8_t             *dmem_start;
-
-    /* FIXME: bail on unexpected state:
-     * if is_graphic_console() is false (ie. HMI/serial console shown)
-     * if bypp is unexpected - we assume 4-byte BGRA format
-     */
-
-    c_incr= FONT_WIDTH * bypp;
-    r_incr= FONT_HEIGHT * surface_stride(surface);
-
-    dmem_start= surface_data(surface);
-    dmem_start+= col * c_incr;
-    dmem_start+= row * r_incr;
-
-    for (ix= 0; ix < FONT_HEIGHT; ix++)
-    {
-        uint8_t *dmem= dmem_start;
-        uint8_t line;
-        uint8_t bitmask;
-
-        line= (data & 0x01)? 0xf0 : 0x00;
-        line+= (data & 0x02)? 0x0f : 0x00;
-
-        for (bitmask= 0x80; bitmask; bitmask>>= 1)
-        {
-            /* for depth 32 - assumes BGR+A */
-            *(dmem++)=      (line & bitmask)?
-                      zss->rgb_fg[2] : zss->rgb_bg[2];
-            *(dmem++)=      (line & bitmask)?
-                      zss->rgb_fg[1] : zss->rgb_bg[1];
-            *(dmem++)=      (line & bitmask)?
-                      zss->rgb_fg[0] : zss->rgb_bg[0];
-            *(dmem++)=      0;
-        }
-
-        dmem_start+= surface_stride(surface);
-        if ((ix & 0x03) == 3) data>>= 2;
-    }
-}
 
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
@@ -332,9 +345,9 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
         nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-        zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
-        zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
-        zaphod_screen_draw_char(opaque, 0,2, ch);
+        zss->char_grid[0][0]= nyb_hi;
+        zss->char_grid[0][1]= nyb_lo;
+        zss->char_grid[0][2]= ch;
 
         zss->dirty_minr= zss->dirty_maxr= 0;
         zss->dirty_minc= 0;
@@ -349,13 +362,18 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
         nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-        zaphod_screen_draw_char(opaque, 0,0, nyb_hi);
-        zaphod_screen_draw_char(opaque, 0,1, nyb_lo);
-        zaphod_screen_draw_graphic(opaque, 0,2, ch);
+        /* graphics not included in automatic redraw :( */
+        zaphod_screen_draw_graphic(zss, MAX_TEXT_ROWS-1,0, ch);
+        dpy_gfx_update(zss->screen_con,
+                0, (MAX_TEXT_ROWS - 1) * FONT_HEIGHT,
+                FONT_WIDTH, FONT_HEIGHT);
+
+        zss->char_grid[0][0]= nyb_hi;
+        zss->char_grid[0][1]= nyb_lo;
 
         zss->dirty_minr= zss->dirty_maxr= 0;
         zss->dirty_minc= 0;
-        zss->dirty_maxc= 2;
+        zss->dirty_maxc= 1;
     }
 
     /* TODO: In our earlier hack, this function *called itself*
@@ -393,6 +411,7 @@ DeviceState *zaphod_screen_new(ZaphodState *super)
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(dev);
+    int row, col;
 
     /* Strictly speaking we are a CGA text display with custom
      * graphics features and 160x100 resolution, but might still
@@ -416,11 +435,16 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
         zss->rgb_fg= zaphod_rgb_palette[2];
     zss->curs_visible= 0;
     zss->curs_blink_time= 0;
+
+    /* TODO: "screen clear" escape should reset everything too */
+    for (row= 0; row < MAX_TEXT_ROWS; row++)
+        for (col= 0; col < MAX_TEXT_COLS; col++)
+            zss->char_grid[row][col]= '\0';
     zss->dirty_minr= zss->dirty_maxr= -1;
     zss->dirty_minc= zss->dirty_maxc= -1;
 
     qemu_console_resize(zss->screen_con,
-        FONT_WIDTH * TEXT_COLS, FONT_HEIGHT * TEXT_ROWS);
+        FONT_WIDTH * MAX_TEXT_COLS, FONT_HEIGHT * MAX_TEXT_ROWS);
 
 #ifdef ZAPHOD_HAS_KEYBIO
     /* provide keycode to ASCII translation for zaphod_io_read() */

@@ -20,10 +20,11 @@ typedef struct {
     ZaphodState     *super;
     QemuConsole     *screen_con;
     uint8_t         *rgb_bg, *rgb_fg;
-    bool            curs_visible;
-    int64_t         curs_blink_time;    /* millisec */
+    uint8_t         char_grid[MAX_TEXT_ROWS][MAX_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
+    bool            curs_visible;
+    int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
 
 

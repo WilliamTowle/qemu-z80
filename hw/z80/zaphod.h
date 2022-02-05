@@ -19,9 +19,6 @@
 #include "exec/address-spaces.h"
 #include "exec/ioport.h"
 
-#ifdef ZAPHOD_HAS_SCREEN
-#include "zaphod_screen.h"
-#endif
 #define ZAPHOD_HAS_MC6850
 #ifdef ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_KEYBIO
@@ -40,6 +37,14 @@
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
 #define	Z80_MAX_RAM_SIZE	(64 * 1024) /* 64KiB */
+
+#define MAX_TEXT_ROWS	25
+#define MAX_TEXT_COLS	80
+
+#ifdef ZAPHOD_HAS_SCREEN
+#include "zaphod_screen.h"
+#endif
+
 
 
 
