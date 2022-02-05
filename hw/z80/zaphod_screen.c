@@ -54,6 +54,16 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
      * - 0x02: bold
      * - 0x01: use 80 chars (40 otherwise)
      */
+    if (unlikely (bypp != 4))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - bypp != 4\n", __func__);
+        return;
+    }
+    else if (unlikely(is_surface_bgr(ds)))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - is_surface_bgr() true\n", __func__);
+        return;
+    }
 
     c_incr= FONT_WIDTH * bypp;
     r_incr= FONT_HEIGHT * surface_stride(ds);
@@ -99,6 +109,16 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
      * each "character" represents 2x4 pixel blocks (in which bit 0 is
      * top left and bit 7 bottom right)
      */
+    if (unlikely (bypp != 4))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - bypp != 4\n", __func__);
+        return;
+    }
+    else if (unlikely(is_surface_bgr(ds)))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - is_surface_bgr() true\n", __func__);
+        return;
+    }
 
     c_incr= FONT_WIDTH * bypp;
     r_incr= FONT_HEIGHT * surface_stride(ds);
