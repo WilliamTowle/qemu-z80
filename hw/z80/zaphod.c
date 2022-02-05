@@ -152,9 +152,8 @@ uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear)
 void zaphod_interrupt(void *opaque, int source, int level)
 {
     ZaphodState  *zs= (ZaphodState *)opaque;
-
-
-    cpu_interrupt(zs->cpu, CPU_INTERRUPT_HARD);
+    CPUState *cs = CPU(z80_env_get_cpu(zs->cpu));
+    cpu_interrupt(cs, CPU_INTERRUPT_HARD);
 }
 #endif
 
