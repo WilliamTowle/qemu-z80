@@ -42,30 +42,10 @@ void zaphod_sercon_putchar(ZaphodSerConState *zss, const unsigned char ch)
         return;
     }
 
-    if (isprint(ch))
-    {
-        zss->sercon->chr_write(zss->sercon, &ch, 1);
-    }
-    else
-    {   /* Render non-printable characters as corresponding hex.
-         * TODO: pass all characters to device-specific handler to
-         * interpret appropriately
-         */
-        uint8_t nyb_hi, nyb_lo;
-
-        nyb_hi= (ch & 0xf0) >> 4;
-        nyb_lo= ch & 0x0f;
-
-        zaphod_sercon_putchar(zss, '[');
-        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
-        //zss->sercon->chr_write(zss->sercon, &nyb_hi, 1);
-        zaphod_sercon_putchar(zss, nyb_hi);
-        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
-        //zss->sercon->chr_write(zss->sercon, &nyb_lo, 1);
-        zaphod_sercon_putchar(zss, nyb_lo);
-        zaphod_sercon_putchar(zss, ']');
-        zaphod_sercon_putchar(zss, '*');
-    }
+    /* TODO: standard control codes are handled by the serial
+     * console - non-standard ones will need to be treated specially
+     */
+    zss->sercon->chr_write(zss->sercon, &ch, 1);
 }
 
 static uint32_t zaphod_sercon_read(void *opaque, uint32_t addr)
