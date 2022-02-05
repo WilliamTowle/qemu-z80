@@ -48,11 +48,19 @@ typedef struct {
 
 
 #ifdef ZAPHOD_HAS_SCREEN
+typedef enum {
+    ZAPHOD_SCREEN_ATTR_80COL = 0x01,
+    ZAPHOD_SCREEN_ATTR_GRAPH = 0x80
+} zaphod_screen_attr_t;
+
+#define ROW_ATTR
+
 typedef struct {
     ZaphodState     *super;
 
     QemuConsole     *screen_con;
     uint8_t         *rgb_bg, *rgb_fg;
+    zaphod_screen_attr_t row_attr[MAX_TEXT_ROWS];
     uint8_t         char_grid[MAX_TEXT_ROWS][MAX_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
