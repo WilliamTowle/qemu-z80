@@ -23,6 +23,10 @@
 #ifdef ZAPHOD_HAS_SCREEN
 #include "zaphod_screen.h"
 #endif
+#ifdef ZAPHOD_HAS_SCREEN
+#define ZAPHOD_HAS_KEYBIO
+#endif
+
 #ifdef ZAPHOD_HAS_SERCON
 #include "zaphod_sercon.h"
 #endif
