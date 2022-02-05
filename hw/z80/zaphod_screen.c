@@ -46,6 +46,64 @@ uint8_t zaphod_rgb_palette[][3]= {
 };
 
 
+#ifdef ZAPHOD_HAS_KEYBIO
+/* EXPERIMENTAL */
+static const unsigned char keycode_to_asciilc[128]= {
+    /* keymap for UK QWERTY keyboard */
+    /* FIXME: this is (unintentionally) partial, and the handler
+     * (also) lacks code to sense/track/apply modifier keys
+     */
+      0,  0,'1','2','3','4','5','6',
+    '7','8','9','0',  0,  0,  0,  0,
+    'q','w','e','r','t','y','u','i',
+    'o','p',  0,  0, 13,  0,'a','s',
+    'd','f','g','h','j','k','l',  0,
+      0,  0,  0,  0,'z','x','c','v',
+    'b','n','m',  0,  0,  0,  0,  0,
+      0,' ',  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+static void zaphod_put_keycode(void *opaque, int keycode)
+{
+    ZaphodScreenState	*zss= (ZaphodScreenState *)opaque;
+    int	release= keycode & 0x80;
+
+    if (release)
+    {
+        /* TODO: resetting cs_inkey on key release is risky if
+         * systems without an IRQ sent on keypress don't poll
+         * the port promptly enough. Do we want to implement key
+         * repeat (in which case we start a timer elsewhere that
+         * should get stopped here)?
+         */
+        zaphod_set_inkey(zss->super, 0, false);
+    }
+    else
+    {
+      int	ch= keycode_to_asciilc[keycode & 0x7f];
+            zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
+#ifdef ZAPHOD_DEBUG
+;DPRINTF("DEBUG: %s() stored keycode %d to inkey as ch=%02x\n", __func__, keycode, ch);
+#endif
+#ifdef ZAPHOD_HAS_RXINT_IRQ
+        if (zss->rxint_irq)
+            qemu_irq_raise(*zss->rxint_irq);
+#endif
+    }
+}
+#endif	/* ZAPHOD_HAS_KEYBIO */
+
+
 static void zaphod_screen_update_display(void *opaque)
 {
     ZaphodScreenState *zss= (ZaphodScreenState *)opaque;
@@ -248,7 +306,7 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
 
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
-    ZaphodState *super= (ZaphodState *)((ZaphodScreenState *)opaque)->super;
+    ZaphodScreenState *zss= opaque;
 
     /* TODO: need to handle escape sequences sanely - Phil Brown's
      * documentation says "an OUT to port 1 will display the
@@ -260,7 +318,7 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
-    if (zaphod_has_feature(super, ZAPHOD_SIMPLE_SCREEN))
+    if (zaphod_has_feature(zss->super, ZAPHOD_SIMPLE_SCREEN))
     {
         uint8_t nyb_hi, nyb_lo;
 
@@ -348,7 +406,13 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 
     qemu_console_resize(zss->screen_con,
         FONT_WIDTH * TEXT_COLS, FONT_HEIGHT * TEXT_ROWS);
+
+#ifdef ZAPHOD_HAS_KEYBIO
+    /* provide keycode to ASCII translation for zaphod_io_read() */
+    qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
+#endif	/* ZAPHOD_HAS_KEYBIO */
 }
+
 
 #if 0  /* TODO: v1 init support */
 //static Property zaphod_screen_properties[] = {
