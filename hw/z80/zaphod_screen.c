@@ -476,7 +476,7 @@ static void zaphod_screen_reset(void *opaque)
     /* TODO: "screen clear" escape should reset everything too */
     for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
     {
-        zss->row_attr[row]= 0;
+        zss->row_attr[row]= ZAPHOD_SCREEN_ATTR_80COL;
         for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
             zss->char_grid[row][col]= '\0';
     }
