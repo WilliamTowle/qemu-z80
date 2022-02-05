@@ -361,13 +361,17 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         {
             int row, col;
 
-            /* Display full - scroll and repaint it */
+            /* Display full - scroll */
             for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
             {
                 for (row= 0; row < ZAPHOD_TEXT_ROWS - 1; row++)
                     zss->char_grid[row][col]= zss->char_grid[row+1][col];
                 zss->char_grid[ZAPHOD_TEXT_ROWS-1][col]= 0;
             }
+
+            /* Adjust attributes (leaving last row as set) */
+            for (row= 0; row < ZAPHOD_TEXT_ROWS - 1; row++)
+                zss->row_attr[row]= zss->row_attr[row+1];
 
             zss->curs_posr= ZAPHOD_TEXT_ROWS-1;
             zaphod_screen_invalidate_display(zss);
