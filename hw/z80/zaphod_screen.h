@@ -14,12 +14,20 @@ typedef struct ZaphodState ZaphodState;
 
 typedef DeviceClass ZaphodScreenClass;
 
+
+typedef enum {
+    ZAPHOD_SCREEN_ATTR_80COL = 0x01,
+    ZAPHOD_SCREEN_ATTR_GRAPH = 0x80
+} zaphod_screen_attr_t;
+
+
 typedef struct {
     DeviceState     parent;
 
     ZaphodState     *super;
     QemuConsole     *display;
     uint8_t         *rgb_bg, *rgb_fg;
+    zaphod_screen_attr_t row_attr[MAX_TEXT_ROWS];
     uint8_t         char_grid[MAX_TEXT_ROWS][MAX_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
