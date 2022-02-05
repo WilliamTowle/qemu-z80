@@ -24,6 +24,10 @@
 #include "exec/address-spaces.h"
 #include "exec/ioport.h"
 
+#ifdef ZAPHOD_HAS_SCREEN
+#include "hw/irq.h"
+#endif
+
 #ifdef ZAPHOD_HAS_SERCON
 #include "zaphod_sercon.h"
 #endif
@@ -77,6 +81,7 @@ void zaphod_set_inkey(void *opaque, uint8_t val, bool is_data);
 uint8_t zaphod_get_inkey(void *opaque, bool read_and_clear);
 
 
+void zaphod_interrupt(void *opaque, int source, int level);
 int zaphod_has_feature(ZaphodState *zs, zaphod_feature_t n);
 void zaphod_putchar(ZaphodState *zs, const unsigned char ch);
 
