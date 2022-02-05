@@ -183,16 +183,6 @@ void raise_exception(CPUZ80State *env, int exception_index)
 void do_interrupt(CPUZ80State *env)
 {
 // printf("z80: do_interrupt()\n");
-    /* Handle the ILLOP exception as thrown by disas_insn() by
-     * bailing cleanly
-     */
-    if (env->exception_index == EXCP06_ILLOP)
-    {
-        cpu_abort(env, "EXCP_ILLOP at pc=0x%04x", env->pc);
-    }
-    /* Interrupt the CPU. For the usermode case QEmu exits the
-     * execution loop (returning the exception number) later
-     */
 
     if (!env->iff1) {
         return;
