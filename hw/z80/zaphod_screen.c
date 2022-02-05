@@ -502,6 +502,7 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
     else
         zss->rgb_fg= zaphod_rgb_palette[2];
 
+    zss->rxint_irq= qemu_allocate_irqs(zaphod_interrupt, zss->super, 1);
 
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
