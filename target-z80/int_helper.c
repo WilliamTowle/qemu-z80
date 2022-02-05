@@ -13,11 +13,17 @@ void z80_cpu_do_interrupt(CPUState *cs)
     //Z80CPU *cpu = Z80_CPU(cs);
 
     /* TARGET_Z80: The Zaphod binary execution layer doesn't set
-     * up IRQs (ignores I/O, therefore), so we shouldn't get
-     * interrupts. For the CONFIG_USER_ONLY case, target-x86
+     * up IRQs, so there are no I/O interrupts but there are
+     * still exceptions (ILLOP, KERNEL_TRAP)
+     * For the CONFIG_USER_ONLY case, target-x86
      * calls do_interrupt_user()
      */
-#if 0
+    if (env->exception_index)
+    {
+;fprintf(stderr, "exception_index %d\n", env->exception_index);
+    }
+;fprintf(stderr, "AKK\n"); exit(1);
+#if 0	/* never in target-z80 */
     /* successfully delivered */
     env->old_exception = -1;
 #endif

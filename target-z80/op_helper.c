@@ -195,7 +195,8 @@ void do_interrupt(CPUZ80State *env)
         target_ulong sp;
         sp = (uint16_t)(env->regs[R_SP] - 2);
         env->regs[R_SP] = sp;
-        stw_kernel(sp, env->pc);
+        //stw_kernel(sp, env->pc);
+        stw_raw(sp, env->pc);
     }
 
     /* IM0 = execute data on bus (0xff == rst $38) */
@@ -217,7 +218,8 @@ void do_interrupt(CPUZ80State *env)
     case 2:
         /* XXX: assuming 0xff on data bus */
         d = 0xff;
-        env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
+        //env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
+        env->pc = lduw_raw((env->regs[R_I] << 8) | d);
         break;
     }
 }
