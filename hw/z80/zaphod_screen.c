@@ -128,20 +128,21 @@ void zaphod_screen_draw_char(void *opaque, int row, int col, char ch)
     uint8_t             *dmem_start;
     const uint8_t       *font_ptr;
 
-    /* FIXME: zaphod_screen_draw_char() bailed on unexpected state
-     * due to assumption of 4-byte BGRA format:
-     * if is_graphic_console() is false (ie. HMI/serial console shown)
-     *  ...this possibility looks like a bug, now fixed
-       if (!is_graphic_console())
-       {       /X* Avoid rendering onto the HMI/serial console *X/
-               return;
-       }
-     * if bypp is unexpected (since we assume BGRA format):
-       if (bypp != 4)
-       { /X* BAIL *X/ }
-       else if (is_surface_bgr(zcs->ds->surface))
-       { /X* BAIL *X/ }
+    /* Previously the unexpected state tests included whether
+     * is_graphic_console() was false. This could be the case if
+     * the HMI or serial console was visible, and appears to have
+     * been a bug
      */
+    if (unlikely (bypp != 4))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - bypp != 4\n", __func__);
+        return;
+    }
+    else if (unlikely (is_surface_bgr(zss->ds->surface)))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - is_surface_bgr() true\n", __func__);
+        return;
+    }
 
     c_incr= FONT_WIDTH * bypp;
     r_incr= FONT_HEIGHT * surface_stride(surface);
@@ -182,9 +183,21 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
     int                 r_incr, c_incr, ix;
     uint8_t             *dmem_start;
 
-    /* FIXME: bail on unexpected state - see
-     * zaphod_screen_draw_char()
+    /* Previously the unexpected state tests included whether
+     * is_graphic_console() was false. This could be the case if
+     * the HMI or serial console was visible, and appears to have
+     * been a bug
      */
+    if (unlikely (bypp != 4))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - bypp != 4\n", __func__);
+        return;
+    }
+    else if (unlikely (is_surface_bgr(zss->ds->surface)))
+    {
+        DPRINTF("INFO: Unexpected state in %s() - is_surface_bgr() true\n", __func__);
+        return;
+    }
 
     c_incr= FONT_WIDTH * bypp;
     r_incr= FONT_HEIGHT * surface_stride(surface);
