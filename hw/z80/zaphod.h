@@ -16,6 +16,10 @@
 #define ZAPHOD_HAS_SERCON
 #define ZAPHOD_HAS_MC6850
 
+#ifdef ZAPHOD_HAS_SCREEN
+#define ZAPHOD_HAS_KEYBIO
+#endif
+
 
 #include "exec/address-spaces.h"
 #include "exec/ioport.h"
