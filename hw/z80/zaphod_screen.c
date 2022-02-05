@@ -216,8 +216,19 @@ static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
      * - 0x01: use 80 chars (40 otherwise)
      */
 
+;DPRINTF("INFO: Reached %s(), with row=%d/col=%d...%d\n", __func__, row, minc, maxc);
     for (col= minc; col <= maxc; col++)
-        zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+        switch(zss->row_attr[row])
+        {
+        case ZAPHOD_SCREEN_ATTR_80COL:
+            zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+            break;
+        case ZAPHOD_SCREEN_ATTR_GRAPH:
+
+            zaphod_screen_draw_graphic(zss, row, col, zss->char_grid[row][col]);
+            break;
+        /* INCOMPLETE */
+        }
 }
 
 static void zaphod_screen_update_display(void *opaque)
@@ -281,8 +292,6 @@ static void zaphod_screen_update_display(void *opaque)
         {
             zss->curs_blink_time= now + ZAPHOD_TEXT_CURSOR_PERIOD_MS / 2;
             zss->curs_visible= !zss->curs_visible;
-            DPRINTF("INFO: Cursor visible -> %s\n", zss->curs_visible?"ON":"OFF");
-
             zss->curs_dirty= true;
         }
     }
@@ -348,6 +357,7 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
+#if 0   /* HACK */
     if (zaphod_has_feature(zss->super, ZAPHOD_SIMPLE_SCREEN))
     {
         uint8_t nyb_hi, nyb_lo;
@@ -357,13 +367,13 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
         nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
+        zss->dirty_minr= zss->dirty_minc= 0;
         zss->char_grid[0][0]= nyb_hi;
         zss->char_grid[0][1]= nyb_lo;
-        zss->char_grid[0][2]= ch;
 
-        zss->dirty_minr= zss->dirty_maxr= 0;
-        zss->dirty_minc= 0;
-        zss->dirty_maxc= 2;
+        /* fall through for 'ch' at 0,2 */
+        zss->curs_posr= 0;
+        zss->curs_posc= 2;
     }
     else
     {
@@ -380,31 +390,50 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
                 0, (MAX_TEXT_ROWS - 1) * FONT_HEIGHT,
                 FONT_WIDTH, FONT_HEIGHT);
 
+        zss->dirty_minr= zss->dirty_minc= 0;
         zss->char_grid[0][0]= nyb_hi;
-        zss->char_grid[0][1]= nyb_lo;
 
-        zss->dirty_minr= zss->dirty_maxr= 0;
-        zss->dirty_minc= 0;
-        zss->dirty_maxc= 1;
+        /* fall through for 'nyb_lo' at 0,1 */
+        ch= nyb_lo;
+        zss->curs_posr= 0;
+        zss->curs_posc= 1;
     }
+#endif
 
-    /* TODO: In our earlier hack, this function *called itself*
-     * multiple times to ensure only single printable characters
-     * needed to be stored in the character grid at this point;
-     * it was then possible to update the cursor position and
-     * manage scrolling.
-     * Having then noted the region where the grid is dirty, a
-     * subsequent dpy_update() in zaphod_screen_update_display()
-     * takes care of presentation
-     */
-    zss->curs_posr= zss->dirty_maxr;
-    zss->curs_posc= zss->dirty_maxc + 1;
+    /* update grid and state for dirty region */
+DPRINTF("INFO: Reached putchar for ch=0x%02x at r=%d,c=%d\n", ch, zss->curs_posr, zss->curs_posc);
+    zss->row_attr[zss->curs_posr]= ZAPHOD_SCREEN_ATTR_80COL;
+    zss->char_grid[zss->curs_posr][zss->curs_posc]= ch;
+    if (zss->dirty_maxr < zss->curs_posr)
+        zss->dirty_maxr= zss->curs_posr;
+    if (zss->dirty_maxc < zss->curs_posc)
+        zss->dirty_maxc= zss->curs_posc;
+    if ((zss->dirty_minr > zss->curs_posr) || (zss->dirty_minr == -1))
+        zss->dirty_minr= zss->curs_posr;
+    if ((zss->dirty_minc > zss->curs_posc) || (zss->dirty_minc == -1))
+        zss->dirty_minc= zss->curs_posc;
+DPRINTF("INFO: Screen dirty from %d,%d to %d,%d\n", zss->dirty_minr, zss->dirty_minc, zss->dirty_maxr, zss->dirty_maxc);
 
-    /* TODO: if the cursor position changes when flagged visible,
-     * mark it as dirty; the next update will put new text in its
-     * old position but it will need rendering immediately where it
-     * moved to
-     */
+    /* move cursor and ensure it gets redrawn */
+    if (++zss->curs_posc == MAX_TEXT_COLS)
+    {
+        zss->curs_posc= 0;
+        if (++zss->curs_posr == MAX_TEXT_ROWS)
+        {
+            int row, col;
+
+            /* Display full - scroll and repaint it */
+            for (col= 0; col < MAX_TEXT_COLS; col++)
+            {
+                for (row= 0; row < MAX_TEXT_ROWS - 1; row++)
+                    zss->char_grid[row][col]= zss->char_grid[row+1][col];
+                zss->char_grid[MAX_TEXT_ROWS-1][col]= 0;
+            }
+
+            zss->curs_posr= MAX_TEXT_ROWS-1;
+            zaphod_screen_invalidate_display(zss);
+        }
+    }
     zss->curs_dirty|= zss->curs_visible;
 }
 
@@ -426,11 +455,6 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 		&zaphod_screen_ops,
 		zss);
 
-    /* TODO: calls to zaphod_consolegui_invalidate_display() (eg.
-     * on switch to HMI and back) need to prompt a full redraw of
-     * previous output
-     */
-
     /* Distinguish machine type by text color */
     zss->rgb_bg= zaphod_rgb_palette[0];
     if (zaphod_has_feature(super, ZAPHOD_SIMPLE_SCREEN))
@@ -440,8 +464,11 @@ ZaphodScreenState *zaphod_new_screen(ZaphodState *super)
 
     /* TODO: "screen clear" escape should reset everything too */
     for (row= 0; row < MAX_TEXT_ROWS; row++)
+    {
+        zss->row_attr[row]= 0;
         for (col= 0; col < MAX_TEXT_COLS; col++)
             zss->char_grid[row][col]= '\0';
+    }
     zss->dirty_minr= zss->dirty_maxr= -1;
     zss->dirty_minc= zss->dirty_maxc= -1;
  
