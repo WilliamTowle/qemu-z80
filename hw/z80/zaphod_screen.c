@@ -301,6 +301,28 @@ static void zaphod_screen_scroll(void *opaque)
     zaphod_screen_invalidate_display(zss);
 }
 
+static void zaphod_screen_mark_dirty(void *opaque, int r,int c)
+{
+    ZaphodScreenState *zss= (ZaphodScreenState *)opaque;
+
+//    if (zss->dirty_maxr < r)
+//        zss->dirty_maxr= r;
+//    if (zss->dirty_maxc < c)
+//        zss->dirty_maxc= c;
+//    if ((zss->dirty_minr > r) || (zss->dirty_minr == -1))
+//        zss->dirty_minr= r;
+//    if ((zss->dirty_minc > c) || (zss->dirty_minc == -1))
+//        zss->dirty_minc= c;
+    if (zss->dirty_maxr < zss->curs_posr)
+        zss->dirty_maxr= zss->curs_posr;
+    if (zss->dirty_maxc < zss->curs_posc)
+        zss->dirty_maxc= zss->curs_posc;
+    if ((zss->dirty_minr > zss->curs_posr) || (zss->dirty_minr == -1))
+        zss->dirty_minr= zss->curs_posr;
+    if ((zss->dirty_minc > zss->curs_posc) || (zss->dirty_minc == -1))
+        zss->dirty_minc= zss->curs_posc;
+}
+
 void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
     /* this 'opaque' is the MachineState from zaphod_io_write() */
@@ -321,15 +343,19 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
     switch(ch)
     {
     case '\r':  /* CR (carriage return, 0x0D) */
+        if (zss->cursor_visible)
+            zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
         zss->curs_posc= 0;
+        zss->curs_dirty|= zss->cursor_visible;
         return;
     case '\n':  /* NL (newline, 0x0A) */
+        if (zss->cursor_visible)
+            zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
         if (++zss->curs_posr == ZAPHOD_TEXT_ROWS)
         {
             zaphod_screen_scroll(zss);
             zss->curs_posr= ZAPHOD_TEXT_ROWS-1;
         }
-        /* TODO: redraw cursor if visible? */
         return;
 #if 1   /* HACK - reveal unhandled control codes */
     default:
@@ -356,14 +382,7 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
 ;DPRINTF("INFO: Reached putchar for ch=0x%02x at r=%d,c=%d\n", ch, zss->curs_posr, zss->curs_posc);
     zss->row_attr[zss->curs_posr]= ZAPHOD_SCREEN_ATTR_80COL;
     zss->char_grid[zss->curs_posr][zss->curs_posc]= ch;
-    if (zss->dirty_maxr < zss->curs_posr)
-        zss->dirty_maxr= zss->curs_posr;
-    if (zss->dirty_maxc < zss->curs_posc)
-        zss->dirty_maxc= zss->curs_posc;
-    if ((zss->dirty_minr > zss->curs_posr) || (zss->dirty_minr == -1))
-        zss->dirty_minr= zss->curs_posr;
-    if ((zss->dirty_minc > zss->curs_posc) || (zss->dirty_minc == -1))
-        zss->dirty_minc= zss->curs_posc;
+    zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
 ;DPRINTF("INFO: Screen dirty from %d,%d to %d,%d\n", zss->dirty_minr, zss->dirty_minc, zss->dirty_maxr, zss->dirty_maxc);
 
     /* move cursor and ensure it gets redrawn */
