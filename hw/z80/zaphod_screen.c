@@ -78,9 +78,18 @@ static const unsigned char keycode_to_asciilc[128]= {
 static void zaphod_put_keycode(void *opaque, int keycode)
 {
     ZaphodScreenState	*zss= (ZaphodScreenState *)opaque;
-    int	release= keycode & 0x80;
 
-    if (release)
+    switch(keycode & 0x7f)
+    {
+    case 0x2a:  /* Shift_L */
+        zss->modifiers^= 1;
+        return;
+    case 0x36:  /* Shift_R */
+        zss->modifiers^= 2;
+        return;
+    }
+
+    if (keycode & 0x80) /* key released */
     {
         /* FIXME: handle XT scancode 0xe0 properly */
         /* TODO: resetting cs_inkey on key release is risky if
@@ -94,7 +103,14 @@ static void zaphod_put_keycode(void *opaque, int keycode)
     else
     {
       int	ch= keycode_to_asciilc[keycode & 0x7f];
-            zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
+
+        /* TODO: modifiers also affect other keys; this should
+         * be how we handle caps-lock-active state
+         */
+        if (zss->modifiers & 3)
+            ch= toupper(ch);
+
+        zaphod_set_inkey(zss->super, ch, (ch != 0)?true : false);
 #ifdef ZAPHOD_DEBUG
 ;DPRINTF("DEBUG: %s() stored keycode %d to inkey as ch=%02x\n", __func__, keycode, ch);
 #endif
@@ -550,6 +566,7 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 
 #ifdef ZAPHOD_HAS_KEYBIO
     /* provide keycode to ASCII translation for zaphod_io_read() */
+    zss->modifiers= 0;
     qemu_add_kbd_event_handler(zaphod_put_keycode, zss);
 #endif	/* ZAPHOD_HAS_KEYBIO */
 }
