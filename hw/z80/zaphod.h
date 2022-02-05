@@ -21,6 +21,10 @@
 #define ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_MC6850
 
+#ifdef ZAPHOD_HAS_SCREEN
+#define ZAPHOD_HAS_KEYBIO
+#endif
+
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
