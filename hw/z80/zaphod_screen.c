@@ -307,14 +307,16 @@ static void zaphod_screen_mark_dirty(void *opaque, int r,int c)
 {
     ZaphodScreenState *zss= (ZaphodScreenState *)opaque;
 
-//    if (zss->dirty_maxr < r)
-//        zss->dirty_maxr= r;
-//    if (zss->dirty_maxc < c)
-//        zss->dirty_maxc= c;
-//    if ((zss->dirty_minr > r) || (zss->dirty_minr == -1))
-//        zss->dirty_minr= r;
-//    if ((zss->dirty_minc > c) || (zss->dirty_minc == -1))
-//        zss->dirty_minc= c;
+#if 1
+    if (zss->dirty_maxr < r)
+        zss->dirty_maxr= r;
+    if (zss->dirty_maxc < c)
+        zss->dirty_maxc= c;
+    if ((zss->dirty_minr > r) || (zss->dirty_minr == -1))
+        zss->dirty_minr= r;
+    if ((zss->dirty_minc > c) || (zss->dirty_minc == -1))
+        zss->dirty_minc= c;
+#else
     if (zss->dirty_maxr < zss->curs_posr)
         zss->dirty_maxr= zss->curs_posr;
     if (zss->dirty_maxc < zss->curs_posc)
@@ -323,6 +325,7 @@ static void zaphod_screen_mark_dirty(void *opaque, int r,int c)
         zss->dirty_minr= zss->curs_posr;
     if ((zss->dirty_minc > zss->curs_posc) || (zss->dirty_minc == -1))
         zss->dirty_minc= zss->curs_posc;
+#endif
 }
 
 static void zaphod_screen_clear(ZaphodScreenState *zss)
@@ -382,11 +385,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         }
         return;
     case '\f':  /* FF (formfeed, 0x0C) */
-        if (zss->cursor_visible)
-            zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
         zaphod_screen_clear(zss);
         zaphod_screen_mark_dirty(zss, 0,0);
         zaphod_screen_mark_dirty(zss, ZAPHOD_TEXT_ROWS-1,ZAPHOD_TEXT_COLS-1);
+        zss->curs_dirty|= zss->cursor_visible;
         return;
 #if 1   /* HACK - reveal unhandled control codes */
     default:
