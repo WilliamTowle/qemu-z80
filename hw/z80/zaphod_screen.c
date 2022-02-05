@@ -202,6 +202,14 @@ static void zaphod_screen_update_display(void *opaque)
                 (zss->dirty_maxc - zss->dirty_minc + 1) * FONT_WIDTH,
                 (zss->dirty_maxr - zss->dirty_minr + 1) * FONT_HEIGHT
                 );
+        if ( (zss->curs_posr >= zss->dirty_minr)
+            && (zss->curs_posr <= zss->dirty_maxr)
+            && (zss->curs_posc >= zss->dirty_minc)
+            && (zss->curs_posc <= zss->dirty_maxc)
+            )
+        {
+            zss->curs_dirty|= zss->cursor_visible;    /* was erased? */
+        }
 
         zss->dirty_minr= zss->dirty_maxr= -1;
         zss->dirty_minc= zss->dirty_maxc= -1;
@@ -220,35 +228,40 @@ static void zaphod_screen_update_display(void *opaque)
             zss->cursor_visible= !zss->cursor_visible;
             DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
 
-            /* since visibility changed - was zaphod_consolegui_blink_cursor() */
-            {
-                DisplaySurface *ds = qemu_console_surface(zss->display);
-                int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
-                uint8_t *dmem;
-                int ix, iy;
-
-                dmem= surface_data(ds);
-                /* TODO: adjust dmem for cursor position */
-
-                for (ix= 0; ix < FONT_HEIGHT; ix++)
-                {
-                    /* for bypp = 4 */
-                    for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
-                    {
-                        *(dmem + iy)^= zss->rgb_bg[2] ^ zss->rgb_fg[2];
-                        *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
-                        *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
-                    }
-
-                    dmem+= surface_stride(ds);
-                }
-
-                /* redraw cursor in its present location */
-                dpy_gfx_update(zss->display,
-                        0, 0,                       /* ulx, uly */
-                        FONT_WIDTH, FONT_HEIGHT);   /* xsz, ysz */
-            }
+            zss->curs_dirty= true;
         }
+    }
+
+    if (zss->curs_dirty)
+    {
+        /* cursor moved, was erased, or changed visibility status */
+        DisplaySurface *ds = qemu_console_surface(zss->display);
+        int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
+        uint8_t *dmem;
+        int ix, iy;
+
+        dmem= surface_data(ds);
+        dmem+= zss->curs_posc * FONT_WIDTH * bypp;
+        dmem+= zss->curs_posr * FONT_HEIGHT * surface_stride(ds);
+
+        for (ix= 0; ix < FONT_HEIGHT; ix++)
+        {
+            /* for bypp = 4 */
+            for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
+            {
+                *(dmem + iy)^= zss->rgb_bg[2] ^ zss->rgb_fg[2];
+                *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
+                *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
+            }
+
+            dmem+= surface_stride(ds);
+        }
+
+        dpy_gfx_update(zss->display,
+                zss->curs_posc * FONT_WIDTH,
+                zss->curs_posr * FONT_HEIGHT,
+                FONT_WIDTH, FONT_HEIGHT);
+        zss->curs_dirty= false;
     }
 #endif
 }
@@ -307,6 +320,16 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         zss->dirty_minc= 0;
         zss->dirty_maxc= 1;
     }
+
+    zss->curs_posr= zss->dirty_maxr;
+    zss->curs_posc= zss->dirty_maxc + 1;
+
+    /* TODO: if the cursor position changes when flagged visible,
+     * mark it as dirty; the next update will put new text in its
+     * old position but it will need rendering immediately where it
+     * moved to
+     */
+    zss->curs_dirty|= zss->cursor_visible;
 #endif
 }
 
@@ -328,7 +351,8 @@ static void zaphod_screen_reset(void *opaque)
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
     int row, col;
 
-    zss->cursor_visible= false;
+    zss->curs_posr= zss->curs_posc= 0;
+    zss->cursor_visible= zss->curs_dirty= false;
     zss->cursor_blink_time= 0;
 
     zss->dirty_minr= zss->dirty_maxr= -1;

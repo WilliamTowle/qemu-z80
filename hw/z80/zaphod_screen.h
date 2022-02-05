@@ -23,7 +23,8 @@ typedef struct {
     uint8_t         char_grid[ZAPHOD_TEXT_ROWS][ZAPHOD_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
-    bool            cursor_visible;
+    int             curs_posr, curs_posc;
+    bool            cursor_visible, curs_dirty;
     int64_t         cursor_blink_time;    /* millisec */
 } ZaphodScreenState;
 
