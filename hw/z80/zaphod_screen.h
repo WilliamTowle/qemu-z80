@@ -16,18 +16,21 @@
 typedef DeviceClass ZaphodScreenClass;
 
 
-/* TODO: enum for screen attributes
- * Grant Searle's ATmega328 supports:
- * - 0x01: use 80 chars (40 otherwise)
- * - 0x02: bold
- * - 0x04: double height (internally, top half/bottom half)
- * - 0x80: 2x4 graphics block (bit 0 top left, bit 7 bottom right)
- */
+typedef enum {
+    ZAPHOD_SCREEN_ATTR_80COL = 0x01,
+    /* TODO:
+     * - 0x02: bold
+     * - 0x04: double height (internally, top half/bottom half)
+     * - 0x80: 2x4 graphics block (bit 0 top left, bit 7 bottom right)
+     */
+    ZAPHOD_SCREEN_ATTR_GRAPH = 0x80
+} zaphod_screen_attr_t;
 
 typedef struct {
     DeviceState     parent;
 
     QemuConsole     *display;
+    zaphod_screen_attr_t row_attr[ZAPHOD_TEXT_ROWS];
     uint8_t         *rgb_bg, *rgb_fg;
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
