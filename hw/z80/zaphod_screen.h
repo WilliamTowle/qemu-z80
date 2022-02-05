@@ -23,7 +23,8 @@ typedef struct {
     uint8_t         char_grid[MAX_TEXT_ROWS][MAX_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
-    bool            curs_visible;
+    int             curs_posr, curs_posc;
+    bool            curs_visible, curs_dirty;
     int64_t         curs_blink_time;    /* millisec */
 } ZaphodScreenState;
 
