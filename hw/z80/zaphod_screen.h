@@ -31,6 +31,8 @@ typedef struct {
     bool            cursor_visible;
     int64_t         cursor_blink_time;    /* millisec */
     uint8_t         *rgb_bg, *rgb_fg;
+    int             dirty_minr, dirty_maxr;
+    int             dirty_minc, dirty_maxc;
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
