@@ -195,8 +195,10 @@ void do_interrupt(CPUZ80State *env)
         target_ulong sp;
         sp = (uint16_t)(env->regs[R_SP] - 2);
         env->regs[R_SP] = sp;
+;fprintf(stderr, "z80: attempting store of PC=0x%04x at SP=0x%04x\n", env->pc, sp);
         //stw_kernel(sp, env->pc);
-        stw_raw(sp, env->pc);
+        //stw_raw(sp, env->pc);	/* is stw_p() */
+        cpu_stw_data(env, sp, env->pc);
     }
 
     /* IM0 = execute data on bus (0xff == rst $38) */
@@ -213,13 +215,16 @@ void do_interrupt(CPUZ80State *env)
     case 0:
         /* XXX: assuming 0xff on data bus */
     case 1:
+;fprintf(stderr, "z80: setting PC to 0x0038 due to %s\n", (env->imode == 1)? "imode=1":"imode=0 [fallthrough]");
         env->pc = 0x0038;
         break;
     case 2:
         /* XXX: assuming 0xff on data bus */
         d = 0xff;
         //env->pc = lduw_kernel((env->regs[R_I] << 8) | d);
-        env->pc = lduw_raw((env->regs[R_I] << 8) | d);
+        //env->pc = lduw_raw((env->regs[R_I] << 8) | d);
+;fprintf(stderr, "z80: attempting cpu_lduw_data() based on R_I=%d\n", env->regs[R_I]);
+        env->pc = cpu_lduw_data(env, (env->regs[R_I] << 8) | d);
         break;
     }
 }
