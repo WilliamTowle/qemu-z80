@@ -388,8 +388,8 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
-#if 0   /* HACK */
-    if (zaphod_has_feature(zss->super, ZAPHOD_SIMPLE_SCREEN))
+#if 1   /* HACK - reveal unhandled control codes */
+    if (!isprint(ch))
     {
         uint8_t nyb_hi, nyb_lo;
 
@@ -398,37 +398,13 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
         nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
         nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-        zss->dirty_minr= zss->dirty_minc= 0;
-        zss->char_grid[0][0]= nyb_hi;
-        zss->char_grid[0][1]= nyb_lo;
-
-        /* fall through for 'ch' at 0,2 */
-        zss->curs_posr= 0;
-        zss->curs_posc= 2;
-    }
-    else
-    {
-        uint8_t nyb_hi, nyb_lo;
-
-        nyb_hi= (ch & 0xf0) >> 4;
-        nyb_lo= ch & 0x0f;
-        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
-        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
-
-        /* graphics not included in automatic redraw :( */
-        zaphod_screen_draw_graphic(zss, ZAPHOD_TEXT_ROWS-1,0, ch);
-        dpy_gfx_update(zss->display,
-                0, (ZAPHOD_TEXT_ROWS - 1) * FONT_HEIGHT,
-                FONT_WIDTH, FONT_HEIGHT);
-
-        zss->dirty_minr= zss->dirty_minc= 0;
-        zss->char_grid[0][0]= nyb_hi;
-
-        /* fall through for 'nyb_lo' at 0,1 */
-        ch= nyb_lo;
-        zss->curs_posr= 0;
-        zss->curs_posc= 1;
-    }
+        zaphod_screen_putchar(zss, '[');
+        zaphod_screen_putchar(zss, nyb_hi);
+        zaphod_screen_putchar(zss, nyb_lo);
+        zaphod_screen_putchar(zss, ']');
+        zaphod_screen_putchar(zss, '*');
+        return;
+   }
 #endif
 
     /* update grid and state for dirty region */
