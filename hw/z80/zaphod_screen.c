@@ -181,7 +181,17 @@ static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
      */
 
     for (col= minc; col <= maxc; col++)
-        zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+        switch(zss->row_attr[row])
+        {
+        case ZAPHOD_SCREEN_ATTR_80COL:
+            zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+            break;
+        case ZAPHOD_SCREEN_ATTR_GRAPH:
+
+            zaphod_screen_draw_graphic(zss, row, col, zss->char_grid[row][col]);
+            break;
+        /* INCOMPLETE */
+        }
 }
 
 
@@ -294,7 +304,7 @@ void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
      * Grant Searle has custom codes including changing [per-line]
      * attributes and set/unset/toggle pixels
      */
-#if 1   /* HACK enabling write/test of basic rendering routines:
+#if 0   /* HACK enabling write/test of basic rendering routines:
          * For each character, display corresponding hex nybbles
          * and the corresponding graphic mode "character"
          */
@@ -328,19 +338,37 @@ void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
         zaphod_screen_mark_dirty(zss, 0,0);
         zaphod_screen_mark_dirty(zss, 0,1);
     }
-
-    zss->curs_posr= zss->dirty_maxr;
-    zss->curs_posc= zss->dirty_maxc + 1;
+#else
+    /* update grid and state for dirty region */
+    zss->row_attr[zss->curs_posr]= ZAPHOD_SCREEN_ATTR_80COL;
+    zss->char_grid[zss->curs_posr][zss->curs_posc]= ch;
+    zaphod_screen_mark_dirty(zss, zss->curs_posr, zss->curs_posc);
 
     /* TODO: if the cursor position changes when flagged visible,
      * mark it as dirty; the next update will put new text in its
      * old position but it will need rendering immediately where it
      * moved to
      */
-    zss->cursor_dirty|= zss->cursor_visible;
+    if (++zss->curs_posc == ZAPHOD_TEXT_COLS)
+    {
+        zss->curs_posc= 0;
+        if (++zss->curs_posr == ZAPHOD_TEXT_ROWS)
+        {
+            int row, col;
+
+            /* Display full - scroll and repaint it */
+            for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
+            {
+                for (row= 0; row < ZAPHOD_TEXT_ROWS - 1; row++)
+                    zss->char_grid[row][col]= zss->char_grid[row+1][col];
+                zss->char_grid[ZAPHOD_TEXT_ROWS-1][col]= 0;
+            }
+
+            zss->curs_posr= ZAPHOD_TEXT_ROWS-1;
+            zaphod_screen_invalidate_display(zss);
+        }
+    }
 #endif
-    /* TODO: printing should move the cursor, and if visible when
-     * moved we need to toggle it on/off in new and old positions */
 }
 
 
@@ -358,8 +386,11 @@ static void zaphod_screen_reset(void *opaque)
 
     /* TODO: "screen clear" escape should reset everything too */
     for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
+    {
+        zss->row_attr[row]= ZAPHOD_SCREEN_ATTR_80COL;
         for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
             zss->char_grid[row][col]= '\0';
+    }
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
