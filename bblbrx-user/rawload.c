@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include "qemu.h"
+#include "cpu-all.h"
 
 
 #if 1	/* debug */
