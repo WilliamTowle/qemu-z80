@@ -48,7 +48,7 @@ static void handle_arg_cpu(char *arg)
 #elif defined(cpu_list)
 	cpu_list(stdout, &fprintf); /* deprecated */
 #endif
-	exit(1);
+        exit(1);
     }
 }
 

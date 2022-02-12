@@ -22,6 +22,7 @@
 #define CPU_Z80_H
 
 #include "config.h"
+#include "qemu-common.h"
 
 #define TARGET_LONG_BITS 32
 
@@ -155,6 +156,7 @@ typedef struct CPUZ80State {
 CPUZ80State *cpu_z80_init(const char *cpu_model);
 void z80_translate_init(void);
 int cpu_z80_exec(CPUZ80State *s);
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf);
 
 #define Z80_CPU_Z80  1
 #define Z80_CPU_R800 2
@@ -176,6 +178,7 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 #define cpu_init cpu_z80_init
 #define cpu_exec cpu_z80_exec
 #define cpu_signal_handler cpu_z80_signal_handler
+#define cpu_list z80_cpu_list
 
 #define MMU_USER_IDX 1
 
