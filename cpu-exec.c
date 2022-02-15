@@ -583,9 +583,8 @@ int cpu_exec(CPUArchState *env)
 //                        env->exception_index = EXCP_IRQ;
                         do_interrupt(env);
 #else   /* TODO: might want NMI support? */
-;fprintf(stderr, "[%s:%d] TRACE: v1 interrupt handle, with 'next_tb' assign 0 [NONE]\n", __FILE__, __LINE__);
-                        env->interrupt_request &= ~CPU_INTERRUPT_HARD;
-                        do_interrupt(env);
+                        cpu->interrupt_request &= ~CPU_INTERRUPT_HARD;
+                        cc->do_interrupt(cpu);
                         next_tb = 0;
 #endif
                     }
