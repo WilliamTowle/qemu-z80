@@ -60,6 +60,7 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
      * translation block has non-zero size
      */
     b = ldub_code(s->pc);
+    s->pc++;
 ;DPRINTF("HACK: all insns temporarily illegal (...value read: 0x%02x)\n", b);
     goto illegal_op;
 ;exit(1);
