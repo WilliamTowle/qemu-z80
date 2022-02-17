@@ -74,6 +74,7 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
      * translation block has non-zero size
      */
     b = cpu_ldub_code(env, s->pc);
+    s->pc++;
 ;DPRINTF("HACK: all insns temporarily illegal (...value read: 0x%02x)\n", __func__, b);
     goto illegal_op;
 ;exit(1);
