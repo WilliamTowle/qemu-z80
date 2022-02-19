@@ -8,4 +8,8 @@
 #ifndef CPU_Z80_H
 #define CPU_Z80_H
 
+#define TARGET_LONG_BITS 32
+
+#include "exec/cpu-defs.h"
+
 #endif /* !defined (CPU_Z80_H) */
