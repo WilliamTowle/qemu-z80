@@ -145,10 +145,7 @@
 #define CPU_NB_REGS 15
 
 
-/* TODO: NB_MMU_MODES define */
-
-//#define NB_MMU_MODES 1	/* no kernel/userland distinction */
-
+#define NB_MMU_MODES 1	/* no kernel/userland distinction */
 
 typedef struct CPUZ80State {
 #if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
@@ -209,6 +206,7 @@ int cpu_z80_handle_mmu_fault(CPUZ80State *env, target_ulong addr,
 /* TARGET_PAGE_BITS required by exec-all.h cache */
 #define TARGET_PAGE_BITS 12	/* from target-x86 */
 
+
 #define TARGET_PHYS_ADDR_SPACE_BITS 32 /* min TCG register size? */
 #define TARGET_VIRT_ADDR_SPACE_BITS 32 /* min TCG register size? */
 
@@ -227,13 +225,13 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 #define cpu_list z80_cpu_list
 
 
-/* TODO: cpu_mmu_index() */
+/* MMU modes definitions */
 // No modes to define? - unlike x86 there is no kernel/usr/SMAP distinction
 #define MMU_USER_IDX 1
-//static inline int cpu_mmu_index (CPUZ80State *env)
-//{
-//    return 0;	/* verbatim from target-lm32 */
-//}
+static inline int cpu_mmu_index (CPUZ80State *env)
+{
+    return 0;	/* verbatim from target-lm32 */
+}
 
 #include "exec/cpu-all.h"
 
