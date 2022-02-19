@@ -49,10 +49,9 @@ Z80CPU *cpu_z80_init(const char *cpu_model);
 Z80CPU *cpu_z80_create(const char *cpu_model, DeviceState *icc_bridge,
                        Error **errp);
 
-/* TODO: TARGET_{PAGE|PHYS_ADDR_SPACE|VIRT_ADDR_SPACE}_BITS */
 
-///* TARGET_PAGE_BITS required by exec-all.h cache */
-//#define TARGET_PAGE_BITS 12	/* from target-x86 */
+/* TARGET_PAGE_BITS required by exec-all.h cache */
+#define TARGET_PAGE_BITS 12	/* from target-x86 */
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 32 /* min TCG register size? */
 #define TARGET_VIRT_ADDR_SPACE_BITS 32 /* min TCG register size? */
@@ -78,6 +77,6 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 
 #include "exec/cpu-all.h"
 
-//#include "exec/exec-all.h"
+#include "exec/exec-all.h"
 
 #endif /* !defined (CPU_Z80_H) */
