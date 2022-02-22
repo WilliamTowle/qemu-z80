@@ -19,8 +19,8 @@
 #endif
 
 
-//#include "config.h"
-//#include "qemu-common.h"
+#include "config.h"
+#include "qemu-common.h"
 
 
 #define TARGET_LONG_BITS 32
