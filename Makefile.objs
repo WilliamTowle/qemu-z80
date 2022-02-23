@@ -61,9 +61,9 @@ common-obj-$(CONFIG_POSIX) += migration-exec.o migration-unix.o migration-fd.o
 common-obj-$(CONFIG_SPICE) += spice-qemu-char.o
 
 common-obj-y += audio/
-ifneq (${TARGET_BASE_ARCH},z80)
+#ifneq (${TARGET_BASE_ARCH},z80)
 common-obj-y += hw/
-endif
+#endif
 
 common-obj-y += ui/
 common-obj-y += bt-host.o bt-vhci.o
@@ -96,9 +96,9 @@ common-obj-y += qapi-visit.o qapi-types.o
 # Target-independent parts used in system and user emulation
 common-obj-y += qemu-log.o
 common-obj-y += tcg-runtime.o
-ifndef CONFIG_BBLBRX_USER
+#ifndef CONFIG_BBLBRX_USER
 common-obj-y += hw/
-endif
+#endif
 common-obj-y += qom/
 ifndef CONFIG_BBLBRX_USER
 common-obj-y += disas/
