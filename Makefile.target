@@ -108,6 +108,7 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 ## build subset (or none) of cpu emulator library
 obj-y=
 obj-y += exec.o translate-all.o
+obj-y += tcg/tcg.o tcg/optimize.o
 obj-y += target-$(TARGET_BASE_ARCH)/
 #obj-$(call notempty,$(TARGET_XML_FILES)) += gdbstub-xml.o
 obj-$(call lnot,$(CONFIG_KVM)) += kvm-stub.o
