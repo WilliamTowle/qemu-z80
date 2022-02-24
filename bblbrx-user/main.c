@@ -10,8 +10,8 @@
 #include <string.h>
 #include <sys/mman.h>
 
-#include "config-target.h"
 #include "qemu.h"
+#include "qemu-common.h"
 #include "cpu.h"
 #include "tcg.h"
 
