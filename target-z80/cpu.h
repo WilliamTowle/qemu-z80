@@ -124,14 +124,6 @@
 #define NB_MMU_MODES 1	/* more in target-x86 */
 
 typedef struct CPUZ80State {
-    /* Z80 registers */
-    target_ulong regs[CPU_NB_REGS];
-    uint16_t pc;    /* Program Counter (referencing 64KiB RAM) */
-
-    int iff1;
-    int iff2;
-    int imode;
-
 #if 1	/* was: TARGET_LONG_BITS > HOST_LONG_BITS
 	 * but can't compile else cases
 	 */
@@ -142,8 +134,11 @@ typedef struct CPUZ80State {
 
     /* Z80 registers */
     uint16_t pc;    /* Program Counter (referencing 64KiB main RAM) */
+    target_ulong regs[CPU_NB_REGS];
 
-    /* FIXME: need data registers, index registers, interrupt registers */
+    int iff1;
+    int iff2;
+    int imode;
 
     /* emulator internal eflags handling */
     uint32_t hflags; /* hidden flags, see HF_xxx constants */
