@@ -1361,7 +1361,7 @@ next_byte:
                     s->base.is_jmp = DISAS_NORETURN;
                     break;
                 case 1:
-                    zprintf("cb prefix\n");
+                    //zprintf("cb prefix\n");
                     prefixes |= PREFIX_CB;
                     goto next_byte;
                     break;
@@ -1429,17 +1429,17 @@ next_byte:
                         s->base.is_jmp = DISAS_NORETURN;
                         break;
                     case 1:
-                        zprintf("dd prefix\n");
+                        //zprintf("dd prefix\n");
                         prefixes |= PREFIX_DD;
                         goto next_byte;
                         break;
                     case 2:
-                        zprintf("ed prefix\n");
+                        //zprintf("ed prefix\n");
                         prefixes |= PREFIX_ED;
                         goto next_byte;
                         break;
                     case 3:
-                        zprintf("fd prefix\n");
+                        //zprintf("fd prefix\n");
                         prefixes |= PREFIX_FD;
                         goto next_byte;
                         break;
