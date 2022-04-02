@@ -78,11 +78,12 @@ int main(int argc, char **argv)
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 1/3...\n", __func__);
 #endif
-    /* PARTIAL - prior to argument parse v1.0.1 has:
-     * 1. Setup for QEmu and target's environment/stack
-     * 2. cpu_model is set to NULL
-     * 3. Call to cpudef_setup() happens, if defined
-     * 4. Logging is initialised
+    /* PARTIAL - prior to argument parse v1.7.2 has:
+     * 1. module_call_init() for QOM
+     * 2. qemu_cache_utils_init()
+     * 3. initialisation for target's environment/stack
+     * 4. global cpu_model is set to NULL
+     * 5. cpudef_setup() called [if defined - for x86 support]
      */
 
     optind= parse_args(argc, argv);
@@ -93,18 +94,17 @@ int main(int argc, char **argv)
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 2/3...\n", __func__);
 #endif
-    /* PARTIAL - in v1.0.1 here:
-     * 1. CPU register/image info/paths are prepared
-     * 2. cpu_model default value is set based on platform
-     * 3. TCG and exec subsystems are initialised with:
-     *    1. call to tcg_exec_init(0);
-     *    2. call to cpu_exec_init_all();
-     * 4. Call to cpu_init();
-     * 5. Optional call to cpu_reset(env) for I386/SPARC/PPC targets
-     * 6. Initialise 'thread_env' (externed via qemu.h)
-     * 7. Set 'do_strace', if supported
-     * 8. Initialisation of 'target_environ'
-     * 9. Handling of CONFIG_USE_GUEST_BASE
+    /* PARTIAL - following argument parse v1.7.5 has:
+     * 1. CPU register, binary image info, paths are prepared
+     * 2. 'cpu_model' is defaulted based on target CPU
+     * 3. TCG and exec subsystems are initialised:
+     *    1. with call to tcg_exec_init(0);
+     *    2. with call to cpu_exec_init_all();
+     * 4. CPU is initialised, and reset called
+     * 5. Local variable 'thread_cpu' is set
+     * 6. 'do_strace' is enabled, if environment variable set
+     * 7. There is final environment configuration
+     * 9. Handling of CONFIG_USE_GUEST_BASE/target_ram setup
      */
 
     ret= bblbrx_exec(filename);
@@ -119,16 +119,16 @@ int main(int argc, char **argv)
 #if 1	/* WmT - TRACE */
 ;DPRINTF("%s(): PARTIAL - missing initialisation 3/3...\n", __func__);
 #endif
-    /* PARTIAL - in v1.0.1 here:
-     * 1. before loader_exec(),
-     * - guest_base reservation is logged
+    /* PARTIAL - v1.7.5 has:
+     * 1. before loader_exec():
+     * - guest_base reservation is made, logged
      * - command line for target is managed
      * - TaskState is initialised
      * 2. prior to cpu_loop() call:
      * - calls to target_set_brk(), {syscall|signal}_init()
      * - call to tcg_prologue_init() is made if using GUEST_BASE
      * - registers/flags/interrupts are set up based on loaded file
-     * - stack and heap are set up in the TaskState
+     * - stack and heap settings are recorded in the TaskState
      * - GDB stub initialisation happens if port configured
      */
 
