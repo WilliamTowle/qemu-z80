@@ -149,6 +149,7 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 
 ## build subset (or none) of cpu emulator library
 obj-y=
+obj-y += trace/
 obj-y += exec.o
 obj-y += accel/
 obj-$(CONFIG_TCG) += tcg/tcg.o tcg/tcg-op.o tcg/tcg-op-vec.o tcg/tcg-op-gvec.o
