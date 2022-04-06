@@ -131,6 +131,7 @@ QEMU_CFLAGS+=-I$(SRC_PATH)/bblbrx-user
 obj-y=
 obj-y += exec.o
 obj-y += accel/
+obj-y += disas.o
 
 obj-y += bblbrx-user/
 #obj-y += gdbstub.o user-exec.o
