@@ -180,8 +180,6 @@ endif #CONFIG_BSD_USER
 #########################################################
 # System emulator target
 ifdef CONFIG_SOFTMMU
-TRACE:= $(shell echo "*** CONFIG_SOFTMMU build with base arch of '$(TARGET_BASE_ARCH)' ***" 1>&2)
-ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += softmmu/
 obj-y += gdbstub.o
 obj-y += dump/
@@ -189,7 +187,6 @@ obj-y += hw/
 obj-y += monitor/
 obj-y += qapi/
 obj-y += migration/ram.o
-endif
 LIBS := $(libs_softmmu) $(LIBS)
 
 # Hardware support
