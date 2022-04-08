@@ -236,12 +236,10 @@ dummy := $(call unnest-vars,.., \
                common-obj-m)
 all-obj-y += $(common-obj-y)
 all-obj-y += $(qom-obj-y)
-#ifneq (${TARGET_BASE_ARCH},z80)
 all-obj-$(CONFIG_SOFTMMU) += $(authz-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(block-obj-y) $(chardev-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(crypto-obj-y)
 all-obj-$(CONFIG_SOFTMMU) += $(io-obj-y)
-#endif
 
 ifdef CONFIG_SOFTMMU
 $(QEMU_PROG_BUILD): config-devices.mak
