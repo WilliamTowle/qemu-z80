@@ -105,7 +105,9 @@ common-obj-y += migration/
 
 common-obj-y += audio/
 common-obj-m += audio/
+ifneq (${TARGET_BASE_ARCH},z80)
 common-obj-y += hw/
+endif
 
 common-obj-y += replay/
 
