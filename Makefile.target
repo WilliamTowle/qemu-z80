@@ -77,7 +77,9 @@ obj-y += tcg/tcg.o tcg/optimize.o
 obj-$(CONFIG_TCG_INTERPRETER) += tci.o
 obj-$(CONFIG_TCG_INTERPRETER) += disas/tci.o
 obj-y += fpu/softfloat.o
+ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += target-$(TARGET_BASE_ARCH)/
+endif
 obj-y += disas.o
 obj-$(call notempty,$(TARGET_XML_FILES)) += gdbstub-xml.o
 obj-$(call lnot,$(CONFIG_KVM)) += kvm-stub.o
@@ -109,6 +111,8 @@ endif #CONFIG_BSD_USER
 #########################################################
 # System emulator target
 ifdef CONFIG_SOFTMMU
+TRACE:= $(shell echo "*** CONFIG_SOFTMMU build with base arch of '$(TARGET_BASE_ARCH)' ***" 1>&2)
+ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += arch_init.o cpus.o monitor.o gdbstub.o balloon.o ioport.o
 obj-y += qtest.o
 obj-y += hw/
@@ -117,6 +121,7 @@ obj-$(CONFIG_KVM) += kvm-all.o
 obj-y += memory.o savevm.o cputlb.o
 obj-y += memory_mapping.o
 obj-y += dump.o
+endif
 LIBS+=$(libs_softmmu)
 
 # xen support
@@ -127,7 +132,9 @@ obj-$(call lnot,$(CONFIG_XEN)) += xen-stub.o
 ifeq ($(TARGET_NAME), sparc64)
 obj-y += hw/sparc64/
 else
+ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += hw/$(TARGET_BASE_ARCH)/
+endif
 endif
 
 main.o: QEMU_CFLAGS+=$(GPROF_CFLAGS)
