@@ -1,15 +1,12 @@
 #######################################################################
 # Common libraries for tools and emulators
-ifneq (${TARGET_BASE_ARCH},z80)
 stub-obj-y = stubs/
 util-obj-y = crypto/ util/ qobject/ qapi/
-endif
 qom-obj-y = qom/
 
 #######################################################################
 # code used by both qemu system emulation and qemu-img
 
-ifneq (${TARGET_BASE_ARCH},z80)
 ifeq ($(call lor,$(CONFIG_SOFTMMU),$(CONFIG_TOOLS)),y)
 
 chardev-obj-y = chardev/
@@ -28,7 +25,6 @@ crypto-obj-y = crypto/
 io-obj-y = io/
 
 endif # CONFIG_SOFTMMU or CONFIG_TOOLS
-endif
 
 #######################################################################
 # storage-daemon-obj-y is code used by qemu-storage-daemon (these objects are
@@ -44,7 +40,6 @@ storage-daemon-obj-$(CONFIG_POSIX) += os-posix.o
 # suppress *all* target specific code in case of system emulation, i.e. a
 # single QEMU executable should support all CPUs and machines.
 
-ifneq (${TARGET_BASE_ARCH},z80)
 ifeq ($(CONFIG_SOFTMMU),y)
 common-obj-y = blockdev.o blockdev-nbd.o block/
 common-obj-y += bootdevice.o iothread.o
@@ -87,7 +82,6 @@ common-obj-$(CONFIG_FDT) += device_tree.o
 common-obj-y += qapi/
 
 endif # CONFIG_SOFTMMU
-endif
 
 #######################################################################
 # Target-independent parts used in system and user emulation
@@ -129,7 +123,6 @@ vhost-user-gpu-obj-y = contrib/vhost-user-gpu/
 virtiofsd-obj-y = tools/virtiofsd/
 
 ######################################################################
-ifneq (${TARGET_BASE_ARCH},z80)
 trace-events-subdirs =
 trace-events-subdirs += accel/kvm
 trace-events-subdirs += accel/tcg
@@ -212,7 +205,6 @@ trace-events-subdirs += target/riscv
 trace-events-subdirs += target/s390x
 trace-events-subdirs += target/sparc
 trace-events-subdirs += util
-endif
 
 trace-events-files = $(SRC_PATH)/trace-events $(trace-events-subdirs:%=$(SRC_PATH)/%/trace-events)
 
