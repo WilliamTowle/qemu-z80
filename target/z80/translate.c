@@ -1212,9 +1212,6 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
     TaskState       *ts = cpu->opaque;
     target_ulong    magic= ts->bprm->magic_ramloc;
 #endif
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-#endif
 /* TODO: v2 sets:
     ...dc->mem_index to 0, or cpu_mmu_index() result [CONFIG_SOFTMMU]
     ...dc->flags
