@@ -134,8 +134,6 @@ endif #CONFIG_BSD_USER
 #########################################################
 # System emulator target
 ifdef CONFIG_SOFTMMU
-TRACE:= $(shell echo "*** CONFIG_SOFTMMU build with base arch of '$(TARGET_BASE_ARCH)' ***" 1>&2)
-ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += arch_init.o cpus.o monitor.o gdbstub.o balloon.o ioport.o
 obj-y += qtest.o
 obj-y += hw/
@@ -144,7 +142,6 @@ obj-$(CONFIG_KVM) += kvm-all.o
 obj-y += memory.o savevm.o cputlb.o
 obj-y += memory_mapping.o
 obj-y += dump.o
-endif
 LIBS+=$(libs_softmmu)
 
 # xen support

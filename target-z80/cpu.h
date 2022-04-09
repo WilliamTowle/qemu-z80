@@ -14,12 +14,6 @@
 //    /* Temporarily bail from builds of z80-bblbrx-user while partial */
 //#error "CONFIG_USER_ONLY for z80 has incomplete support"
 //#endif
-#ifdef CONFIG_SOFTMMU
-    /* Temporarily bail from builds of z80-softmmu while partial */
-#error "z80-softmmu support incomplete"
-#endif
-
-
 #include "config.h"
 #include "qemu-common.h"
 
