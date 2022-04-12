@@ -61,32 +61,72 @@ void helper_raise_exception(CPUZ80State *env, int exception_index)
 }
 
 
-bool z80_cpu_tlb_fill(CPUState *cs, vaddr address, int size,
+/* return value:
+ * -1 = cannot handle fault
+ * 0  = nothing more to do
+ * 1  = generate PF fault
+ */
+#if QEMU_VERSION_MAJOR >= 5
+static int handle_mmu_fault(CPUState *cs, vaddr addr, int size,
+                            int is_write1, int mmu_idx)
+#else
+int z80_cpu_handle_mmu_fault(CPUState *cs, vaddr addr, int size,
+                             int is_write1, int mmu_idx)
+#endif
+{
+#if ! ( !defined(CONFIG_USER_ONLY) && defined(CONFIG_TCG) )
+;DPRINTF("*** DEBUG: no tlb_set_page() ***\n");	/* not called? */
+;exit(1);
+#else
+    int prot, page_size /* , ret, is_write */;
+    unsigned long paddr, page_offset;
+    target_ulong vaddr, virt_addr;
+    //int is_user = 0;
+
+    //is_write = is_write1 & 1;
+
+    virt_addr = addr & TARGET_PAGE_MASK;
+    prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
+    page_size = TARGET_PAGE_SIZE;
+
+    /* TODO: port, handle memory mapping (env->mapaddr) support? */
+
+    page_offset = (addr & TARGET_PAGE_MASK) & (page_size - 1);
+    paddr = (addr & TARGET_PAGE_MASK) + page_offset;
+    vaddr = virt_addr + page_offset;
+
+    tlb_set_page(cs, vaddr, paddr, prot, mmu_idx, page_size);
+#endif
+    return 0;
+}
+
+#if QEMU_VERSION_MAJOR >= 5
+bool z80_cpu_tlb_fill(CPUState *cs, vaddr addr, int size,
                       MMUAccessType access_type, int mmu_idx,
                       bool probe, uintptr_t retaddr)
+#else
+void tlb_fill(CPUState *cs, target_ulong addr, int size,
+              MMUAccessType access_type, int mmu_idx, uintptr_t retaddr)
+#endif
 {
-#ifdef CONFIG_USER_ONLY
-    /* [QEmu v5] Calls here are unexpected; x86 triggers EXCP0E_PAGE */
-;DPRINTF("*** HERE ***\n");
-;exit(1);
-#else   /* !CONFIG_USER_ONLY */
-    int prot = 0;
-    //MemTxAttrs attrs = {};
-    //uint32_t paddr;
+    int ret;
 
-    /* Z80 can write to its pages, and has self-modifying code. */
-    //prot = PAGE_READ | PAGE_WRITE;
-    prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
-
-    /* TODO: assume that for systems without MMU, all virtual and physical
-     * addresses match at all times (and tlb_set_{page|page_with_attrs}()
-     * may be overkill). Otherwise, we need exceptions and handlers.
-     */
-//    tlb_set_page_with_attrs(cs, address, paddr, attrs, prot,
-//                            mmu_idx, TARGET_PAGE_SIZE);
-    tlb_set_page(cs, address /* virt */, address /* phys */,
-                    prot, mmu_idx, TARGET_PAGE_SIZE);
-
+    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+#if QEMU_VERSION_MAJOR >= 5
+    ret = handle_mmu_fault(cs, addr, size, access_type, mmu_idx);
+#else
+    ret = z80_cpu_handle_mmu_fault(cs, addr, size, access_type, mmu_idx);
+#endif
+    if (unlikely(ret)) {    /* never a fault if no MMU */
+        if (retaddr) {
+            /* [QEmu v2] 'retaddr' of NULL indicates a call from
+             * C code (and generated code/from helper.c otherwise). An
+             * exception is always raised.
+             */
+            cpu_loop_exit_restore(cs, retaddr);
+        }
+    }
+#if QEMU_VERSION_MAJOR >= 5
     return true;
-#endif  /* !CONFIG_USER_ONLY */
+#endif
 }
