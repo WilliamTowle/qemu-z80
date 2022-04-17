@@ -21,6 +21,13 @@
     do { if (ZAPHOD_DEBUG) error_printf("zaphod: " fmt , ## __VA_ARGS__); } while(0)
 
 
+/* ZAPHOD_RAM_SIZE:
+ * Ensure Zaphod boards have 64KiB RAM
+ * Other system emulations might want more or less RAM
+ */
+#define ZAPHOD_RAM_SIZE         Z80_MAX_RAM_SIZE
+
+
 static void zaphod_load_kernel(const char *kernel_filename)
 {
     if (!kernel_filename || !kernel_filename[0])
@@ -57,7 +64,6 @@ static void main_cpu_reset(void *opaque)
 
 static void zaphod_sample_board_init(MachineState *ms)
 {
-    ram_addr_t ram_size = ms->ram_size;
     const char *kernel_filename = ms->kernel_filename;
     Z80CPU *cpu = NULL;
     MemoryRegion *address_space_mem;
@@ -70,8 +76,12 @@ static void zaphod_sample_board_init(MachineState *ms)
     /* Init RAM */
     address_space_mem= get_system_memory();
     ram= g_new(MemoryRegion, 1);
+
+    /* Override any '-m <memsize>' option.
+     * NB: '-m <n>K' is valid, we should permit <= 64K
+     */
     memory_region_init_ram(ram, NULL, "zaphod.ram",
-                            ram_size, &error_fatal);
+                            ZAPHOD_RAM_SIZE, &error_fatal);
     /* Leaving the entire 64KiB memory space writable supports
      * self-modifying test code. Call memory_region_set_readonly()
      * for ROM regions,
@@ -100,7 +110,12 @@ static void zaphod_machine_init(MachineClass *mc)
     mc->init = zaphod_sample_board_init;
     mc->is_default = 1;
 
-    mc->default_cpu_type = TYPE_Z80_CPU;
+    //mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
+    mc->default_cpu_type= TARGET_DEFAULT_CPU_TYPE;
+    mc->default_cpus = 1;
+    mc->min_cpus = mc->default_cpus;
+    mc->max_cpus = mc->default_cpus;
+    //mc->default_ram_size = ZAPHOD_RAM_SIZE;
 
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
