@@ -8,6 +8,8 @@
 #ifndef HW_Z80_ZAPHOD_H
 #define HW_Z80_ZAPHOD_H
 
+#include "hw/boards.h"
+
 
 #define ZAPHOD_DEBUG    1
 
@@ -22,6 +24,30 @@
 #endif
 #define Z80_MAX_RAM_SIZE    (64 * KiB)
 
-/* TODO: ZaphodMachineClass, ZaphodMachineState types here */
+
+typedef struct {
+    /*< private >*/
+    MachineClass parent;
+
+    /*< public >*/
+    /* TODO: board configuration here */
+} ZaphodMachineClass;
+
+typedef struct {
+    /*< private >*/
+    MachineState parent;
+
+    /*< public >*/
+    /* TODO: device state here */
+} ZaphodMachineState;
+
+
+#define TYPE_ZAPHOD_MACHINE \
+    MACHINE_TYPE_NAME("zaphod")
+#define ZAPHOD_MACHINE(obj) \
+    OBJECT_CHECK(ZaphodMachineState, (obj), TYPE_ZAPHOD_MACHINE)
+#define ZAPHOD_MACHINE_GET_CLASS(obj) \
+    OBJECT_GET_CLASS(ZaphodMachineClass, (obj), TYPE_ZAPHOD_MACHINE)
+
 
 #endif  /*  HW_Z80_ZAPHOD_H  */
