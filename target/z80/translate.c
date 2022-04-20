@@ -22,8 +22,19 @@
     do { if (EMIT_DEBUG) error_printf("Z80 translate: " fmt , ## __VA_ARGS__); } while(0)
 
 
+/* Placeholder for prefixes and parsing mode defines */
+
+
 typedef struct DisasContext {
     DisasContextBase base;
+    /* [WmT] repo.or.cz does not implement:
+     *  dc->cc_{op|op_dirty}
+     *  dc->tf ("TF cpu flag") [but HF_INHIBIT_IRQ is present]
+     */
+
+    /* current insn context */
+    target_ulong        pc;
+    //int model;
 
     /* current block context */
     uint32_t        flags; /* all execution flags */
@@ -33,10 +44,57 @@ typedef struct DisasContext {
 /* Convert one instruction and return the next PC value */
 static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 {
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
+#if 1   /* WmT - TRACE */
+;DPRINTF("** ENTER %s() [PARTIAL] **\n", __func__);
 #endif
+#if 1   /* WmT - PARTIAL */
+    /* PARTIAL. For testing purposes, we implement:
+     * 1. Reading of a byte (at least one ensures TB has non-zero size)
+     * 2. Triggering of ILLOP exception for missing translation cases
+     * 3. Unprefixed and prefixed instruction parse/CPU differentiation
+     */
+    unsigned int b;     /* instruction byte */
+    target_ulong    pc_start = s->base.pc_next;
+
+    //s->pc_start = s->pc = pc_start;
+    s->pc = pc_start;
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, pc_start);
+#endif
+    //b= ldub_code(s->pc);
+    //s->pc++;
+;exit(1);
+
+    switch (b)
+    {
+    case 0xc9:  /* unconditional 'ret' */
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
+        /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
+#endif
+        break;
+    default:    /* other op */
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: read byte OK, was non-ret op with value 0x%02x\n", b);
+        /* TODO: trigger ILLOP if translation is unimplemented */
+#endif
+    }
+#else   /* normal parsing continues ... */
+    /* For Z80, there are no "illegal" instructions to signal here.
+     * After parsing either we have acted on a fetch; we saw a 'nop'
+     * and should do nothing; or we should otherwise simulate a 'nop'
+     * [by not acting further]. In the last case, the fetch is allowed
+     * to have side effects on internal state/interrupt configuration
+     */
+    return s->pc;
+
+ unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
+    gen_unknown_opcode(env, s);
+#endif
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() returning s->pc value 0x%04x **\n", __func__, s->pc);
+#endif
+    return s->pc;
 }
 
 
@@ -63,7 +121,6 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
     ...dc->jmp_opt, based on singlestepping configuration
     ...initialisation of relevant 'static TCGv's
  */
-
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 //    CPUX86State *env = cpu->env_ptr;
     uint32_t flags = dc->base.tb->flags;
