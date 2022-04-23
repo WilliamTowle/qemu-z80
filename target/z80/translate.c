@@ -433,8 +433,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 6: /* 0x3e */
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
-                    d = ldsb_code(s->pc);
-                    s->pc++;
+                    d = z80_ldsb_code(env, s);
+                    //s->pc++;
                 }
                 n = z80_ldub_code(env, s);
                 //s->pc++;
