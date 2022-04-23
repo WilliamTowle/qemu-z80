@@ -459,6 +459,28 @@ static const char *const regpairnames[]= {
 };
 
 
+static gen_mov_func *const gen_movw_reg_v_tbl[]= {
+    [OR2_AF]    = gen_movw_AF_v,
+    [OR2_BC]    = gen_movw_BC_v,
+    [OR2_DE]    = gen_movw_DE_v,
+    [OR2_HL]    = gen_movw_HL_v,
+
+    [OR2_IX]    = gen_movw_IX_v,
+    [OR2_IY]    = gen_movw_IY_v,
+    [OR2_SP]    = gen_movw_SP_v,
+
+    [OR2_AFX]   = gen_movw_AFX_v,
+    [OR2_BCX]   = gen_movw_BCX_v,
+    [OR2_DEX]   = gen_movw_DEX_v,
+    [OR2_HLX]   = gen_movw_HLX_v
+};
+
+static inline void gen_movw_reg_v(int regpair, TCGv v)
+{
+    gen_movw_reg_v_tbl[regpair](v);
+}
+
+
 static inline int regpairmap(int regpair, int m)
 {
     switch (regpair) {
