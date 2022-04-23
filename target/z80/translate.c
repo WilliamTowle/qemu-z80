@@ -298,6 +298,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     if ((prefixes & (PREFIX_CB | PREFIX_ED)) == 0) {
         /* DD/FD/plain insns without CB/ED */
         unsigned int x, y, z, p, q;
+        int n, d;           /* immediate 'n', displacement 'd' */
+        int r1;             /* register number */
 
         b= z80_ldub_code(env, s);
         //s->pc++;
@@ -319,10 +321,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             /* TODO: case(s) for z=0 to z=5 */
 
             case 6: /* 0x3e */
-#if 1
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else   /* TODO: enable, test! */
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
                     d = ldsb_code(s->pc);
@@ -342,7 +340,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     zprintf("ld %s,$%02x\n", regnames[r1], n);
                 }
                 break;
-#endif
 
             /* TODO: case for z=7 */
 
