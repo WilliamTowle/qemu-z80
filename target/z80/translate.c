@@ -430,8 +430,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     d = ldsb_code(s->pc);
                     s->pc++;
                 }
-                n = ldub_code(s->pc);
-                s->pc++;
+                n = z80_ldub_code(env, s);
+                //s->pc++;
                 tcg_gen_movi_tl(cpu_T[0], n);
                 if (is_indexed(r1)) {
                     gen_movb_idx_v(r1, cpu_T[0], d);
