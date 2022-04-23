@@ -426,6 +426,37 @@ static const int reg[8] = {
 };
 
 
+static gen_mov_func *const gen_movw_reg_v_tbl[]= {
+    [OR2_AF]    = gen_movw_AF_v,
+    [OR2_BC]    = gen_movw_BC_v,
+    [OR2_DE]    = gen_movw_DE_v,
+    [OR2_HL]    = gen_movw_HL_v,
+
+    [OR2_IX]    = gen_movw_IX_v,
+    [OR2_IY]    = gen_movw_IY_v,
+    [OR2_SP]    = gen_movw_SP_v,
+
+    [OR2_AFX]   = gen_movw_AFX_v,
+    [OR2_BCX]   = gen_movw_BCX_v,
+    [OR2_DEX]   = gen_movw_DEX_v,
+    [OR2_HLX]   = gen_movw_HLX_v
+};
+
+static inline void gen_movw_reg_v(int regpair, TCGv v)
+{
+    gen_movw_reg_v_tbl[regpair](v);
+}
+
+
+static const int regpair[4]= {
+    /* register pairs featuring SP */
+    OR2_BC,
+    OR2_DE,
+    OR2_HL,
+    OR2_SP,
+};
+
+
 static inline void gen_jmp_im(target_ulong pc)
 {
     gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
@@ -576,8 +607,32 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
         switch (x)
         {
         case 0:      /* insn pattern 00yyyzzz */
-            switch (z) {
-            /* TODO: case(s) for z=0 to z=5 */
+            switch (z)
+            {
+            /* TODO: case for z=0 */
+
+            case 1: /* 16-bit load immediate/add */
+                switch (q) {
+                case 0:
+                    n= z80_lduw_code(env, s);
+                    //s->pc+= 2;
+                    tcg_gen_movi_tl(cpu_T[0], n);
+                    r1= regpairmap(regpair[p], m);
+                    gen_movw_reg_v(r1, cpu_T[0]);
+                    zprintf("ld %s,$%04x\n", regpairnames[r1], n);
+                    break;
+
+                /* TODO: case for q=1 */
+
+                default:    /* PARTIAL: switch(q) incomplete */
+#if 1   /* WmT - TRACE */
+;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %o) unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
+#endif
+                    goto unknown_op;
+                }
+                break;
+
+            /* TODO: case(s) for z=2 to z=5 */
 
             case 6: /* 8-bit load immediate */
                 r1= regmap(reg[y], m);
