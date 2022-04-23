@@ -823,8 +823,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     r2 = regmap(reg[y], m);
                 }
                 if (is_indexed(r1) || is_indexed(r2)) {
-                    d = ldsb_code(s->pc);
-                    s->pc++;
+                    d = z80_ldsb_code(env, s);
+                    //s->pc++;
                 }
                 if (is_indexed(r1)) {
                     gen_movb_v_idx(cpu_T[0], r1, d);
