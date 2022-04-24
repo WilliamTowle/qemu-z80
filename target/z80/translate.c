@@ -976,7 +976,15 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                     zprintf("ld %s,$%04x\n", regpairnames[r1], n);
                     break;
 
-                /* TODO: case for q=1 */
+                case 1:
+                    r1 = regpairmap(regpair[p], m);
+                    r2 = regpairmap(OR2_HL, m);
+                    gen_movw_v_reg(cpu_T[0], r1);
+                    gen_movw_v_reg(cpu_T[1], r2);
+                    gen_helper_addw_T0_T1_cc();
+                    gen_movw_reg_v(r2, cpu_T[0]);
+                    zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
+                    break;
 
                 default:    /* PARTIAL: switch(q) incomplete */
 #if 1   /* WmT - TRACE */
