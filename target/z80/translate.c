@@ -1030,12 +1030,6 @@ next_byte:
                     gen_movw_reg_v(r2, cpu_T[0]);
                     zprintf("add %s,%s\n", regpairnames[r2], regpairnames[r1]);
                     break;
-
-                default:    /* PARTIAL: switch(q) incomplete */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] FALLTHROUGH - MODE_%s op 0x%02x (x %o, y %o [p=%o/q=%o], z %d) unhandled q case\n", __FILE__, __LINE__, (m == MODE_NORMAL)?"NORMAL":"xD", b, x, y,p,q, z);
-#endif
-                    goto unknown_op;
                 }
                 break;
 
