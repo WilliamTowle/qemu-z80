@@ -159,9 +159,7 @@ endif
 #######################################################################
 # Target-independent parts used in system and user emulation
 common-obj-y += cpus-common.o
-ifndef CONFIG_BBLBRX_USER
 common-obj-y += hw/
-endif
 common-obj-y += qom/
 common-obj-y += disas/
 
