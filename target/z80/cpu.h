@@ -52,7 +52,26 @@ typedef struct CPUZ80State {
     //CPU_COMMON
 } CPUZ80State;
 
-/* TODO: struct Z80CPU */
+
+/* Z80CPU - a Z80 CPU */
+
+struct Z80CPU {
+    /*< private >*/
+    CPUState parent_obj;
+
+    /*< public >*/
+    CPUZ80State env;
+};
+
+
+static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
+{
+    return container_of(env, Z80CPU, env);
+}
+
+#define ENV_GET_CPU(e) CPU(z80_env_get_cpu(e))
+
+#define ENV_OFFSET offsetof(Z80CPU, env)
 
 
 #define TARGET_PAGE_BITS 8
