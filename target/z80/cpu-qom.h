@@ -11,4 +11,8 @@
 
 #include "qom/cpu.h"
 
+typedef struct Z80CPU Z80CPU;
+
+/* TODO: Z80CPUClass */
+
 #endif /* !QEMU_Z80_CPU_QOM_H */
