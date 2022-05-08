@@ -21,10 +21,10 @@
 
 
 unsigned long guest_base;
-//unsigned long reserved_va;
+unsigned long reserved_va;
 
 __thread CPUState *thread_cpu;
-//int singlestep;
+int singlestep;
 
 
 bool qemu_cpu_is_self(CPUState *cpu)
