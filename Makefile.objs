@@ -158,12 +158,12 @@ endif
 
 #######################################################################
 # Target-independent parts used in system and user emulation
-ifndef CONFIG_BBLBRX_USER
 common-obj-y += cpus-common.o
+ifndef CONFIG_BBLBRX_USER
 common-obj-y += hw/
+endif
 common-obj-y += qom/
 common-obj-y += disas/
-endif
 
 ######################################################################
 # Resource file for Windows executables
