@@ -21,6 +21,8 @@
 #endif
 
 
+#include "cpu-qom.h"
+
 /* Optimal host size of target-ulong. '32' leads to TARGET_FMT_lx
  * of "%08x" from cpu-defs.h
  */
@@ -30,18 +32,36 @@
 
 /* TODO: TARGET_MAX_INSN_SIZE, TARGET_HAS_PRECISE_SMC */
 
+#define CPUArchState struct CPUZ80State
 
-/* TODO: Register count/CPUZ80State, Z80CPU */
+/* TODO: hidden flags, exception/interrupt defines, register count */
+
 
 /* TODO: Register-related declarations and count */
 
 //#define NB_MMU_MODES 1
+
+
+/* CPUZ80State */
+
+typedef struct CPUZ80State {
+    /* TODO: needs support variables, other registers */
+    target_ulong    pc;
+
+    /* TODO: CPU_COMMON adds fields used by z80-softmmu */
+    //CPU_COMMON
+} CPUZ80State;
+
+/* TODO: struct Z80CPU */
+
 
 #define TARGET_PAGE_BITS 8
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 24
 #define TARGET_VIRT_ADDR_SPACE_BITS 24
 
+
+/* TODO: CPU type suffix, MMU modes list */
 
 #include "exec/cpu-all.h"
 
