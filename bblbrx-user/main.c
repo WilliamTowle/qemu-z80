@@ -124,16 +124,16 @@ int main(int argc, char **argv)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: CPU created at %p [env %p]; reset() to follow\n", cpu, env);
 #endif
-    cpu_reset(env);
+    cpu_reset(cpu);
 
 #if 1   /* WmT - TRACE */
 ;DPRINTF("%s(): INFO - CPU reset OK; initial state dump follows...\n", __func__);
-;cpu_dump_state(env, stderr, fprintf, 0);
+;cpu_dump_state(cpu, stderr, fprintf, 0);
 #endif
 
     /* Following cpu_reset(), v2 has:
      *  1. 'thread_cpu' initialise
-     *  2. set 'do_strace', if supported
+     *  2. check QEMU_{STRACE|QEMU_RAND_SEED}
      *  3. initialisation of 'target_environ' [if required]
      */
     //thread_cpu= cpu;
