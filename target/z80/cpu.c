@@ -210,7 +210,8 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     device_class_set_parent_realize(dc, z80_cpu_realizefn,
                                     &zcc->parent_realize);
     /* TODO: device_class_set_parent_unrealize(...); */
-    dc->realize = z80_cpu_realizefn;
+//    device_class_set_parent_unrealize(dc, z80_cpu_unrealizefn,
+//                                    &zcc->parent_unrealize);
 
     zcc->parent_reset= cc->reset;
     cc->reset= z80_cpu_reset;
