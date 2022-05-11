@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 {
     const char *cpu_model= NULL;
     const char *cpu_type;
-    CPUArchState *env;
+    //CPUArchState *env;
     CPUState *cpu;
     char *filename;
     void  *target_ram;
@@ -121,12 +121,12 @@ int main(int argc, char **argv)
        qemu_host_page_size */
 
     cpu= cpu_create(cpu_type);
-    env= cpu->env_ptr;
-    cpu_reset(env);
+    //env= cpu->env_ptr;
+    cpu_reset(cpu);
 #if 1   /* WmT - TRACE */
     /* v2 linux-user has this cpu_reset(), although it's overkill */
 ;DPRINTF("%s(): INFO - CPU create/reset OK; initial state dump follows...\n", __func__);
-;cpu_dump_state(env, stderr, fprintf, 0);
+;cpu_dump_state(cpu, stderr, fprintf, 0);
 #endif
 
     /* Following cpu_reset(), v2 has:
