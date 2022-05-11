@@ -192,7 +192,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
 //    cc->do_interrupt = z80_cpu_do_interrupt;
 //    cc->cpu_exec_interrupt = z80_cpu_exec_interrupt;
 //#endif
-//    cc->dump_state = z80_cpu_dump_state;
+    cc->dump_state = z80_cpu_dump_state;
     /* TODO: cc->get_crash_info() useful? or x86-specific? */
     cc->set_pc = z80_cpu_set_pc;
     cc->synchronize_from_tb = z80_cpu_synchronize_from_tb;
