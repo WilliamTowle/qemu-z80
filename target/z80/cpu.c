@@ -86,17 +86,17 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 }
 
-static void z80_cpu_reset(DeviceState *ds)
+/* CPUClass::reset() */
+static void z80_cpu_reset(CPUState *s)
 {
-    CPUState *cs = CPU(ds);
-    Z80CPU *cpu = Z80_CPU(cs);
+    Z80CPU *cpu = Z80_CPU(s);
     Z80CPUClass *zcc = Z80_CPU_GET_CLASS(cpu);
     CPUZ80State *env = &cpu->env;
 #if 1   /* WmT - TRACE */
 ;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
 #endif
 
-    zcc->parent_reset(ds);
+    zcc->parent_reset(s);
 
     /* init to reset state */
     memset(env->regs, 0, sizeof(env->regs));
@@ -209,10 +209,15 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
 #if 1   /* WmT - PARTIAL */
 ;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__);
 #endif
-    zcc->parent_realize = dc->realize;
-    dc->realize = z80_cpu_realizefn;
 
-    device_class_set_parent_reset(dc, z80_cpu_reset, &zcc->parent_reset);
+    /* v2 common class init */
+    device_class_set_parent_realize(dc, z80_cpu_realizefn,
+                                    &zcc->parent_realize);
+//    device_class_set_parent_unrealize(dc, z80_cpu_unrealizefn,
+//                                    &zcc->parent_unrealize);
+
+    zcc->parent_reset= cc->reset;
+    cc->reset= z80_cpu_reset;
     cc->reset_dump_flags = 0;   /* i386: CPU_DUMP_FPU | CPU_DUMP_CCOP */
 
     cc->class_by_name = z80_cpu_class_by_name;
