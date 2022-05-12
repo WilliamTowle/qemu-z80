@@ -130,6 +130,10 @@ static inline int cpu_mmu_index(CPUZ80State *env, bool ifetch)
 }
 
 
+/* translate.c */
+void tcg_z80_init(void);
+
+
 #include "exec/cpu-all.h"
 
 
