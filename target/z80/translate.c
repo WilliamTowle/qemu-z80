@@ -34,6 +34,16 @@ typedef struct DisasContext {
 } DisasContext;
 
 
+/* Convert one instruction and return the next PC value */
+static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
+{
+#if 1   /* WmT - PARTIAL */
+;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
+;exit(1);
+#endif
+}
+
+
 void tcg_z80_init(void)
 {
     /* CPU initialisation for i386 has:
@@ -177,15 +187,21 @@ static bool z80_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
 
 static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
-#else   /* unported */
     DisasContext *dc = container_of(dcbase, DisasContext, base);
     target_ulong pc_next;
 
+    /* TODO: for magic ramtop detect:
+     * 1a. consult z80_pre_translate_insn();
+     * 1b. return if result true [because KERNEL_TRAP was triggered]
+     * 2. call disas_insn() otherwise
+     */
     pc_next = disas_insn(dc, cpu);
 
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() got pc_next 0x%04x from disas_insn() (PARTIAL -> BAIL)\n", __func__, pc_next);
+;exit(1);
+#else
+;DPRINTF("INFO: partial implementation? Reached %s()\n", __func__);
     if (dc->tf || (dc->base.tb->flags & HF_INHIBIT_IRQ_MASK)) {
         /* if single step mode, we generate only one instruction and
            generate an exception */
