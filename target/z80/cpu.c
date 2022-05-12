@@ -255,9 +255,9 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
      * cc->cpu_exec_enter
      * cc->cpu_exec_exit
      */
-//#ifdef CONFIG_TCG
-//    cc->tcg_initialize = tcg_z80_init;
-//#endif
+#ifdef CONFIG_TCG
+    cc->tcg_initialize = tcg_z80_init;
+#endif
 //    cc->disas_set_info = z80_cpu_disas_set_info;
 }
 
