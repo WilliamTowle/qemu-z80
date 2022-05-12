@@ -14,6 +14,7 @@
 #include "qemu/error-report.h"
 #include "exec/exec-all.h"
 #include "exec/translator.h"
+#include "tcg/tcg-op.h"
 
 
 #define EMIT_DEBUG 1
@@ -140,13 +141,14 @@ static void z80_tr_tb_start(DisasContextBase *db, CPUState *cpu)
 
 static void z80_tr_insn_start(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 1   /* WmT - TRACE */
+#if 0   /* WmT - TRACE */
 ;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
 ;exit(1);
 #else
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
-    tcg_gen_insn_start(dc->base.pc_next, dc->cc_op);
+    //tcg_gen_insn_start(dc->base.pc_next, dc->cc_op);
+    tcg_gen_insn_start(dc->base.pc_next);
 #endif
 }
 
