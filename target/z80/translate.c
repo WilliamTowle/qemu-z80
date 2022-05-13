@@ -361,11 +361,9 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
     pc_next = disas_insn(dc, cpu);
 
 #if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: %s() got pc_next 0x%04x from disas_insn() (PARTIAL -> BAIL)\n", __func__, pc_next);
-;exit(1);
-#else
-;DPRINTF("INFO: partial implementation? Reached %s()\n", __func__);
-    if (dc->tf || (dc->base.tb->flags & HF_INHIBIT_IRQ_MASK)) {
+;DPRINTF("DEBUG: %s() PARTIAL - proceeding with pc_next 0x%04x from disas_insn()\n", __func__, pc_next);
+#endif
+    if (/* dc->tf || */ (dc->base.tb->flags & HF_INHIBIT_IRQ_MASK)) {
         /* if single step mode, we generate only one instruction and
            generate an exception */
         /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
@@ -389,7 +387,6 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
     }
 
     dc->base.pc_next = pc_next;
-#endif
 }
 
 static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
