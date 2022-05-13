@@ -66,9 +66,6 @@ static inline uint8_t z80_ldub_code(CPUZ80State *env, DisasContext *s)
 /* Convert one instruction and return the next PC value */
 static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 {
-#if 1   /* WmT - TRACE */
-;DPRINTF("** ENTER %s() [PARTIAL] **\n", __func__);
-#endif
     /* PARTIAL. For testing purposes, we implement:
      * 1. Reading of a byte (at least one ensures TB has non-zero size)
      * 2. Triggering of ILLOP exception for missing translation cases
@@ -104,16 +101,15 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
         case 0xc9:  /* unconditional 'ret' */
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
-            /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
-;exit(1);
 #endif
+            gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
             break;
+
         default:    /* other op */
 #if 1   /* WmT - TRACE */
-;DPRINTF("INFO: read byte OK, was non-ret op with value 0x%02x\n", b);
-            /* TODO: trigger ILLOP if translation is unimplemented */
-;exit(1);
+;DPRINTF("[%s:%d] FALLTHROUGH BAIL - byte 0x%02x unhandled\n", __FILE__, __LINE__, b);
 #endif
+            goto unknown_op;
         }
     }
     /* TODO: missing else cases:
@@ -128,16 +124,16 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
      * to have side effects on internal state/interrupt configuration
      */
 #if 1   /* WmT - TRACE */
-;DPRINTF("** EXIT %s(), with s->pc 0x%04x **\n", __func__, s->pc);
+;DPRINTF("** EXIT %s() - OK - retval from s->pc 0x%04x **\n", __func__, s->pc);
 #endif
     return s->pc;
 
-// unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
-//    gen_unknown_opcode(env, s);
-//#if 1   /* WmT - TRACE */
-//;DPRINTF("** EXIT %s() [unknown op], with s->pc 0x%04x **\n", __func__, s->pc);
-//#endif
-//    return s->pc;
+ unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
+    gen_unknown_opcode(env, s);
+#if 1   /* WmT - TRACE */
+;DPRINTF("** EXIT %s() - unknown opcode 0x%02x seen - next s->pc 0x%04x **\n", __func__, b, s->pc);
+#endif
+    return s->pc;
 }
 
 
