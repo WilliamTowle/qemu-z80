@@ -27,7 +27,7 @@
     do { if (EMIT_DEBUG) error_printf("Z80 translate: " fmt , ## __VA_ARGS__); } while(0)
 
 
-#define EMIT_INSNS 0
+#define EMIT_INSNS 1
 #define zprintf(fmt, ...) \
     do { if (EMIT_INSNS) printf(fmt , ## __VA_ARGS__); } while(0)
 
