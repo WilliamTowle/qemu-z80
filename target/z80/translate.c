@@ -394,18 +394,16 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 
 static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 1   /* WmT - PARTIAL */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
-#else
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
     if (dc->base.is_jmp == DISAS_TOO_MANY) {
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() handling DISAS_TOO_MANY - using pc_next 0x%04x for gen_jmp_im()\n", __func__, dc->base.pc_next);
+#endif
         //gen_jmp_im(dc->base.pc_next - dc->cs_base);
         gen_jmp_im(dc->base.pc_next);
         gen_eob(dc);
     }
-#endif
 }
 
 static void z80_tr_disas_log(const DisasContextBase *dcbase,
