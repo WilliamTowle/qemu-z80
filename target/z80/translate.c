@@ -395,7 +395,7 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 
 static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 1   /* WmT - TRACE */
+#if 0   /* WmT - TRACE */
 ;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
 ;exit(1);
 #else
