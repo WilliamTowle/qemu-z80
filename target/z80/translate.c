@@ -777,10 +777,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
          */
 
         case 2: /* insn pattern 10yyyzzz - arithmetic/logic */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
             r1 = regmap(reg[z], m);
             if (is_indexed(r1)) {
                 d = z80_ldsb_code(env, s);
@@ -796,7 +792,6 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 zprintf("%s%s\n", alu[y], regnames[r1]);
             }
             break;
-#endif
 
         case 3: /* insn pattern 11yyyzzz */
             switch (z) {
