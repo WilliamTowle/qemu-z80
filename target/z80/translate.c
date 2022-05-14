@@ -467,7 +467,7 @@ static bool z80_pre_translate_insn(DisasContext *dc)
 #ifdef CONFIG_USER_ONLY
     if (dc->base.pc_next == dc->magic_ramloc)
     {
-        gen_exception(dc, EXCP_KERNEL_TRAP, dc->pc_start - dc->cs_base);
+        gen_exception(dc, EXCP_KERNEL_TRAP, dc->base.pc_next);
         dc->base.is_jmp = DISAS_NORETURN;
         return true; /* "handled" */
     }
