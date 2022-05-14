@@ -676,17 +676,12 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             case 1:
                 switch (q) {
                 case 0:	/* 0x21 */
-#if 1   /* WmT - TRACE */
-;DPRINTF("[%s:%d] GETTING HERE?\n", __FILE__, __LINE__);
-;exit(1);
-#else
                     n = z80_lduw_code(env, s);
                     //s->pc+= 2;
                     tcg_gen_movi_tl(cpu_T[0], n);
                     r1 = regpairmap(regpair[p], m);
                     gen_movw_reg_v(r1, cpu_T[0]);
                     zprintf("ld %s,$%04x\n", regpairnames[r1], n);
-#endif
                     break;
 
                 /* TODO: case for q=1 */
