@@ -36,7 +36,7 @@ static void usage(int exitcode)
     /* Makefile builds QEMU_PROG, set to 'qemu-'$(TARGET_NAME)
      */
     printf(//"Usage: qemu-" TARGET_ARCH " [options] program [arguments...]\n"
-            "Usage: qemu-" TARGET_NAME " program\n"
+            "Usage: qemu-" TARGET_NAME " [options] program\n"
             );
     exit(exitcode);
 }
