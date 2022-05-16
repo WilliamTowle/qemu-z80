@@ -76,16 +76,41 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     uint8_t b;
 
     s->pc= pc_start;
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: %s() byte read will use 'pc_start' 0x%04x\n", __func__, s->pc);
-#endif
-    /* TODO: "next_byte" label and zprintf() of PC/insns */
-    b = cpu_ldub_code(env, s->pc);
-    //s->pc++;
-
-    /* TODO: full translation implementation tracks prefixes and
-     * interprets according to CPU type
+    /* TODO: "next_byte" label and zprintf() of PC/insns here.
+     * Full translation implementation tracks prefixes and accounts
+     * for CPU model (Z80 vs R800) emulation
      */
+    {
+        uint8_t x, y, z, p, q;
+
+        b = cpu_ldub_code(env, s->pc);
+        //s->pc++;
+
+        x = (b >> 6) & 0x03;
+        y = (b >> 3) & 0x07;
+        z = b & 0x07;
+        p = y >> 1;
+        q = y & 0x01;
+
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: Byte read at 0x%04x got value 0x%02x - has x=%x, y=%x [p=%x/q=%d], z=%x\n", s->pc, b, x, y,p,q, z);
+#endif
+    }
+
+    switch (b)
+    {
+    case 0xc9:  /* 'ret' */
+#if 1   /* TRACE */
+;DPRINTF("INFO: read byte is potential end-of-program 'ret'\n");
+    /* TODO: trigger KERNEL_TRAP and return if this is end-of-program */
+#endif
+        break;
+    default:    /* other op */
+#if 1   /* TRACE */
+;DPRINTF("INFO: read byte OK, was non-ret op\n");
+    /* TODO: trigger ILLOP and return if translation is not available */
+#endif
+    }
 ;exit(1);
 #else	/* legacy repo.or.cz implementation */
     int b, prefixes;
