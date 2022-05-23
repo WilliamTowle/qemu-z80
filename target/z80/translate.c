@@ -1482,8 +1482,8 @@ next_byte:
             break;
         }
     }
-    else    /* TODO: handle PREFIX_ED cases */
-    {
+    else if (prefixes & PREFIX_ED)
+    {   /* ed mode: */
         unsigned int x, y, z; /* also p, q? */
         //int d;              /* displacement 'd' */
         //int r1, r2;         /* register number */
@@ -1498,7 +1498,7 @@ next_byte:
         //q = y & 0x01;
 
 #if 1   /* WmT - PARTIAL */
-;DPRINTF("[%s:%d] FALLTHROUGH - CB or ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x with x=%d, y=%d, z=%d]\n", __FILE__, __LINE__, prefixes, m, b, x, y, z);
+;DPRINTF("[%s:%d] FALLTHROUGH - ED-prefixed opcode unhandled [prefixes=0x%02x, mode=%d, op byte=0x%02x with x=%d, y=%d, z=%d]\n", __FILE__, __LINE__, prefixes, m, b, x, y, z);
 #endif
         goto unknown_op;
     }
