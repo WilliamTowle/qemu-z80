@@ -27,6 +27,10 @@
 
 #include "qemu/error-report.h"
 #include "exec/exec-all.h"
+#ifndef CONFIG_USER_ONLY
+#include "sysemu/reset.h"
+#endif
+
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 1
@@ -76,9 +80,21 @@ static void z80_cpu_initfn(Object *obj)
     cs->env_ptr = &cpu->env;
 }
 
+#ifndef CONFIG_USER_ONLY
+/* TODO: remove me, when reset over QOM tree is implemented */
+static void z80_cpu_machine_reset_cb(void *opaque)
+{
+    Z80CPU *cpu = opaque;
+    cpu_reset(CPU(cpu));
+}
+#endif
+
 static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 {
     CPUState *cs = CPU(dev);
+#ifndef CONFIG_USER_ONLY
+    Z80CPU *cpu = Z80_CPU(dev);
+#endif
     Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
     Error *local_err = NULL;
 
@@ -89,9 +105,8 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 
 #ifndef CONFIG_USER_ONLY
-;DPRINTF("DEBUG: %s() INCOMPLETE -> BAIL\n", __func__);
-;exit(1);
-#endif  /* TODO: set machine reset callback here */
+    qemu_register_reset(z80_cpu_machine_reset_cb, cpu);
+#endif
 
     qemu_init_vcpu(cs);
 
