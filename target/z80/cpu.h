@@ -53,6 +53,11 @@
 #define CPUArchState struct CPUZ80State
 
 
+#define PG_ERROR_W_BIT     1
+
+#define EXCP0E_PAGE	14
+
+
 /* Array indexes for registers.
  * NB: corresponding z80-cpu.xml "gdb target" file with register sizes
  * has not been written
@@ -117,7 +122,7 @@ enum {
 
 #define CPU_NB_REGS 15
 
-//#define NB_MMU_MODES 1
+#define NB_MMU_MODES 1
 
 
 /* CPUZ80State */
@@ -169,6 +174,11 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 
 #define ENV_OFFSET offsetof(Z80CPU, env)
 
+
+#ifndef CONFIG_USER_ONLY
+int z80_cpu_handle_mmu_fault(CPUState *cpu, vaddr addr, int size,
+                             int is_write, int mmu_idx);
+#endif
 
 void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                         int flags);
