@@ -61,43 +61,84 @@ void helper_raise_exception(CPUZ80State *env, int exception_index)
 }
 
 
-bool z80_cpu_tlb_fill(CPUState *cs, vaddr addr, int size,
-                      MMUAccessType access_type, int mmu_idx,
-                      bool probe, uintptr_t retaddr)
+#if defined(CONFIG_USER_ONLY)
+#if QEMU_VERSION_MAJOR <= 2
+/* [QEmu v1/v2] if called, handle_cpu_signal() asserts without an
+ * MMU fault handler set. This function contains code to generate a
+ * page error (as per target/i386) for cases with an MMU.
+ */
+int z80_cpu_handle_mmu_fault(CPUState *cs, vaddr addr, int size,
+                             int is_write, int mmu_idx)
 {
-#if 1
-;DPRINTF("UNIMPLEMENTED %s() called\n", __func__);
-;exit(1);
-#else	/* repo.or.cz final */
-    TranslationBlock *tb;
-    int ret;
-    unsigned long pc;
-    CPUZ80State *saved_env;
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
 
-    /* XXX: hack to restore env in all cases, even if not called from
-generated code */
-    saved_env = env;
-    env = cpu_single_env;
-
-    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
-    if (ret) {
-        if (retaddr) {
-            /* now we have a real cpu fault */
-            pc = (unsigned long)retaddr;
-            tb = tb_find_pc(pc);
-            if (tb) {
-                    /* the PC is inside the translated code. It means that we have
-                     * a virtual CPU fault */
-                cpu_restore_state(tb, env, pc, NULL);
-                }
-            }
-
-            if (retaddr) {
-                raise_exception_err(env->exception_index, env->error_code);
-            } else {
-                raise_exception_err_norestore(env->exception_index, env->error_code);
-            }
-        }
-        env = saved_env;
+    /* user mode only emulation */
+#if QEMU_VERSION_MAJOR < 2  /* unused anyway */
+    is_write &= 1;
 #endif
+#if 0  /* target-i386 needs to flag EXP0E_PAGE */
+    env->cr[2] = addr;
+    env->error_code = (is_write << PG_ERROR_W_BIT);
+    env->error_code |= PG_ERROR_U_MASK;
+#endif
+#if QEMU_VERSION_MAJOR < 2  /* not Z80 */
+    env->exception_index = EXCP0E_PAGE;
+#endif
+    env->exception_is_int = 0;
+#if QEMU_VERSION_MAJOR < 2  /* not Z80 */
+    env->exception_next_eip = -1;
+#endif
+    return 1;
 }
+#endif
+#else   /* wrap tlb_set_page() for use by tlb_fill() */
+/* return value:
+ * -1 = cannot handle fault
+ * 0  = nothing more to do
+ * 1  = generate PF fault
+ */
+int z80_cpu_handle_mmu_fault(CPUState *cs, vaddr addr, int size,
+                             int is_write1, int mmu_idx)
+{
+    int prot, page_size /* , ret, is_write */;
+    unsigned long paddr, page_offset;
+    target_ulong vaddr, virt_addr;
+    //int is_user = 0;
+
+    //is_write = is_write1 & 1;
+
+    virt_addr = addr & TARGET_PAGE_MASK;
+    prot = PAGE_READ | PAGE_WRITE | PAGE_EXEC;
+    page_size = TARGET_PAGE_SIZE;
+
+    /* TODO: port, handle memory mapping (env->mapaddr) support? */
+
+    page_offset = (addr & TARGET_PAGE_MASK) & (page_size - 1);
+    paddr = (addr & TARGET_PAGE_MASK) + page_offset;
+    vaddr = virt_addr + page_offset;
+
+    tlb_set_page(cs, vaddr, paddr, prot, mmu_idx, page_size);
+    return 0;
+}
+#endif
+
+#if !defined(CONFIG_USER_ONLY)
+void tlb_fill(CPUState *cs, target_ulong addr, int size,
+              MMUAccessType access_type, int mmu_idx, uintptr_t retaddr)
+{
+    int ret;
+
+    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    ret = z80_cpu_handle_mmu_fault(cs, addr, size, access_type, mmu_idx);
+    if (unlikely(ret)) {    /* never a fault if no MMU */
+        if (retaddr) {
+            /* [QEmu v2] 'retaddr' of NULL indicates a call from
+             * C code (and generated code/from helper.c otherwise). An
+             * exception is always raised.
+             */
+            cpu_loop_exit_restore(cs, retaddr);
+        }
+    }
+}
+#endif  /* !defined(CONFIG_USER_ONLY) */
