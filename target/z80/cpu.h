@@ -127,8 +127,7 @@ typedef struct CPUZ80State {
     /* emulator internal flags handling */
     uint32_t hflags;    /* hidden flags, see HF_xxx constants */
 
-    /* TODO: CPU_COMMON adds fields used by z80-softmmu */
-    //CPU_COMMON
+    CPU_COMMON
 
     /* exception/interrupt handling */
     int error_code;
