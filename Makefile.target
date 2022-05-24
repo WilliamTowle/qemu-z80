@@ -172,9 +172,7 @@ endif
 ifeq ($(TARGET_NAME), sparc64)
 obj-y += hw/sparc64/
 else
-ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += hw/$(TARGET_BASE_ARCH)/
-endif
 endif
 
 GENERATED_FILES += hmp-commands.h hmp-commands-info.h
