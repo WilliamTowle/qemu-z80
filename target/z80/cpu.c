@@ -88,6 +88,9 @@ static void z80_cpu_machine_reset_cb(void *opaque)
 static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 {
     CPUState *cs = CPU(dev);
+#ifndef CONFIG_USER_ONLY
+    Z80CPU *cpu = Z80_CPU(dev);
+#endif
     Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
     Error *local_err = NULL;
 
@@ -98,9 +101,8 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 
 #ifndef CONFIG_USER_ONLY
-;DPRINTF("DEBUG: %s() INCOMPLETE -> BAIL\n", __func__);
-;exit(1);
-#endif  /* TODO: set machine reset callback here */
+    qemu_register_reset(z80_cpu_machine_reset_cb, cpu);
+#endif
 
     qemu_init_vcpu(cs);
 
