@@ -1,1 +1,1 @@
-#obj-$(CONFIG_ZAPHOD) += zaphod.o
+obj-$(CONFIG_ZAPHOD) += zaphod.o
