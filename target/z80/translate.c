@@ -1924,6 +1924,13 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
      */
     dc->flags = flags;
 
+#if 1   /* HACK */
+if (dc->base.singlestep_enabled || (flags & HF_INHIBIT_IRQ_MASK))
+{
+;DPRINTF("AKK: need dc->jmp_opt - singlestep requested\n");
+;exit(1);
+}
+#endif
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
 //    /* Do not optimize repz jumps at all in icount mode, because
