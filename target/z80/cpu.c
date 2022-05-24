@@ -27,6 +27,8 @@
 
 #include "qemu/error-report.h"
 #include "exec/exec-all.h"
+#include "sysemu/reset.h"
+
 
 #define EMIT_DEBUG 1
 #define DPRINTF(fmt, ...) \
@@ -72,9 +74,21 @@ static void z80_cpu_initfn(Object *obj)
     cs->env_ptr = &cpu->env;
 }
 
+#ifndef CONFIG_USER_ONLY
+/* TODO: remove me, when reset over QOM tree is implemented */
+static void z80_cpu_machine_reset_cb(void *opaque)
+{
+    Z80CPU *cpu = opaque;
+    cpu_reset(CPU(cpu));
+}
+#endif
+
 static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 {
     CPUState *cs = CPU(dev);
+#ifndef CONFIG_USER_ONLY
+    Z80CPU *cpu = Z80_CPU(dev);
+#endif
     Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
     Error *local_err = NULL;
 
@@ -85,9 +99,8 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 
 #ifndef CONFIG_USER_ONLY
-;DPRINTF("DEBUG: %s() INCOMPLETE -> BAIL\n", __func__);
-;exit(1);
-#endif  /* TODO: set machine reset callback here */
+    qemu_register_reset(z80_cpu_machine_reset_cb, cpu);
+#endif
 
     qemu_init_vcpu(cs);
 
@@ -140,9 +153,9 @@ static void z80_cpu_reset(CPUState *s)
     env->regs[R_SP]= 0xffff;
 
     env->hflags= 0;
+
 #ifdef CONFIG_SOFTMMU
-;DPRINTF("*** INCOMPLETE? set HF_SOFTMMU_MASK (? legacy only) here? ***\n");
-;exit(1);
+    /* TODO: not required? i386 now always just sets HF2_GIF_MASK */
     env->hflags |= HF_SOFTMMU_MASK;
 #endif
 
