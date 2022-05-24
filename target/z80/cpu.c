@@ -290,7 +290,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     /* Without an MMU fault handler, QEmu v2's accel/tcg/user-exec.c
      * asserts. Like lm32, ours just wraps tlb_set_page()
      */
-    //cc->handle_mmu_fault = z80_cpu_handle_mmu_fault;
+    cc->handle_mmu_fault = z80_cpu_handle_mmu_fault;
 #else	/* !defined(CONFIG_USER_ONLY) */
     cc->get_phys_page_debug = z80_cpu_get_phys_page_debug;
 #endif

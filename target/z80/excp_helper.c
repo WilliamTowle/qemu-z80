@@ -76,43 +76,92 @@ void helper_raise_exception(CPUZ80State *env, int exception_index)
 }
 
 
-bool z80_cpu_tlb_fill(CPUState *cs, vaddr addr, int size,
+#if defined(CONFIG_USER_ONLY)
+/* [QEmu v2] requires a handler for CONFIG_USER_ONLY (see cpu.c)
+ * Replicates target/i386, and generates a page error; without an
+ * MMU we shouldn't get here.
+ */
+int z80_cpu_handle_mmu_fault(CPUState *cs, vaddr addr, int size,
+                             int is_write, int mmu_idx)
+{
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
+
+    /* user mode only emulation */
+    is_write &= 1;
+    //env->cr[2] = addr;
+    env->error_code = (is_write << PG_ERROR_W_BIT);
+    //env->error_code |= PG_ERROR_U_MASK;
+    cs->exception_index = EXCP0E_PAGE;
+    env->exception_is_int = 0;
+    //env->exception_next_eip = -1;
+
+    return 1;
+}
+#else   /* wrap tlb_set_page() for use by tlb_fill() */
+/* return value:
+ * -1 = cannot handle fault
+ * 0  = nothing more to do
+ * 1  = generate PF fault
+ * 2  = soft MMU activation required for this block
+ */
+int z80_cpu_handle_mmu_fault(CPUState *cs, vaddr address, int size, int rw,
+                              int mmu_idx)
+{
+    //Z80CPU *cpu = Z80_CPU(cs);
+    //CPUZ80State *env = &cpu->env;
+    int prot;
+
+    address &= TARGET_PAGE_MASK;
+    prot = PAGE_BITS;
+
+#if 0   /* WmT: Spectrum 128K support not implemented */
+	if (env->mapaddr) {
+        addr = env->mapaddr(addr);  /* sic - now 'address' */
+    }
+#endif
+
+    tlb_set_page(cs, address, address, prot, mmu_idx, TARGET_PAGE_SIZE);
+
+    return 0;   /* nothing to have gone wrong :) */
+}
+#endif
+
+#if !defined(CONFIG_USER_ONLY)
+#if 0	/* future prototype style [QEmu v5] */
+bool cpu_tlb_fill(CPUState *cs, vaddr address /* addr */, int size,
                       MMUAccessType access_type, int mmu_idx,
                       bool probe, uintptr_t retaddr)
+#else   /* merge v2 target-i386/v1 target-z80 */
+void tlb_fill(CPUState *cs, target_ulong addr, int size,
+              MMUAccessType access_type, int mmu_idx, uintptr_t retaddr)
+#endif
 {
-#if 1
-;DPRINTF("UNIMPLEMENTED %s() called\n", __func__);
-;exit(1);
-#else	/* repo.or.cz final */
-    TranslationBlock *tb;
+#if 0   /* [QEmu v5] */
+    /* Previously [for QEmu 1.7] there was an MMU fault check and
+     * a call to cpu_loop_exit() could occur; QEmu v5's target/lm32
+     * omits both
+     */
+    address &= TARGET_PAGE_MASK;
+    tlb_set_page(cs, address, address,
+                PAGE_BITS, mmu_idx, TARGET_PAGE_SIZE);
+    return true;
+#else
+    /* Without an MMU fault handler, QEmu v2's accel/tcg/user-exec.c
+     * could assert ... so like lm32/ we've still got a call here,
+     * with the same "how to bail" logic
+     */
     int ret;
-    unsigned long pc;
-    CPUZ80State *saved_env;
 
-    /* XXX: hack to restore env in all cases, even if not called from
-generated code */
-    saved_env = env;
-    env = cpu_single_env;
-
-    ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
-    if (ret) {
+    //ret = cpu_z80_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    ret = z80_cpu_handle_mmu_fault(cs, addr, size, access_type, mmu_idx);
+    if (unlikely(ret)) {    /* [QEmu v2] never, always get '0' */
         if (retaddr) {
             /* now we have a real cpu fault */
-            pc = (unsigned long)retaddr;
-            tb = tb_find_pc(pc);
-            if (tb) {
-                    /* the PC is inside the translated code. It means that we have
-                     * a virtual CPU fault */
-                cpu_restore_state(tb, env, pc, NULL);
-                }
-            }
-
-            if (retaddr) {
-                raise_exception_err(env->exception_index, env->error_code);
-            } else {
-                raise_exception_err_norestore(env->exception_index, env->error_code);
-            }
+            cpu_loop_exit_restore(cs, retaddr);
         }
-        env = saved_env;
-#endif
+    }
+#endif  /* tlb_fill() formulation */
 }
+
+#endif  /* !defined(CONFIG_USER_ONLY) */
