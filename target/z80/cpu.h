@@ -112,7 +112,7 @@ enum {
 
 #define CPU_NB_REGS 15
 
-//#define NB_MMU_MODES 1
+#define NB_MMU_MODES 1
 
 
 /* CPUZ80State */
@@ -179,6 +179,9 @@ void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf);
 
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
+/* excp_helper.c */
+int z80_cpu_handle_mmu_fault(CPUState *cpu, vaddr addr, int size,
+                             int is_write, int mmu_idx);
 
 #define TARGET_PAGE_BITS 8
 
