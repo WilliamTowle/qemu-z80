@@ -18,7 +18,14 @@
 //#include "hw/boards.h"
 
 
-/* TODO: Z80_MAX_RAM_SIZE and related defines */
+/* Z80_MAX_RAM_SIZE:
+ * Address space for a Z80 ends at 64K (some emulations might use less)
+ */
+#if QEMU_VERSION_MAJOR < 3  /* "KiB" from qemu/units.h in QEmu v3+ */
+#define KiB                 1024
+#endif
+#define Z80_MAX_RAM_SIZE    (64 * KiB)
+
 
 /* TODO: ZaphodMachineClass, ZaphodMachineState types here */
 
