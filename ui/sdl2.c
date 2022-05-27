@@ -30,6 +30,14 @@
 #include "ui/sdl2.h"
 #include "sysemu/sysemu.h"
 
+#if (QEMU_VERSION_MAJOR == 2) && (QEMU_VERSION_MINOR == 12) && (QEMU_VERSION_MICRO == 1)
+	/* BUG: SDLv2 API creates non-visible * windows :(
+	 * Workaround: use SDLv1 API for SDL builds
+	 * Affects QEmu v2.12.1 (no other versions tested)
+	 */
+#error "SDLv2 BUILDS ARE BUGGY - configure with '--with-sdlabi=1.2' instead"
+#endif
+
 static int sdl2_num_outputs;
 static struct sdl2_console *sdl2_console;
 static DisplayOptions *opts;
