@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -25,6 +25,9 @@
 #define Z80_MAX_RAM_SIZE    (64 * KiB)
 
 
+#ifndef ZAPHOD_HAS_MACHINE_SELECTION
+typedef MachineClass ZaphodMachineClass;
+#else
 typedef struct {
     /*< private >*/
     MachineClass parent;
@@ -32,6 +35,7 @@ typedef struct {
     /*< public >*/
     /* TODO: board configuration here */
 } ZaphodMachineClass;
+#endif
 
 typedef struct {
     /*< private >*/

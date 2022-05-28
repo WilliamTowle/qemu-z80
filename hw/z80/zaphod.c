@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -62,7 +62,7 @@ static void main_cpu_reset(void *opaque)
     cpu_reset(CPU(cpu));
 }
 
-static void zaphod_sample_board_init(MachineState *ms)
+static void zaphod_generic_board_init(MachineState *ms)
 {
     const char *kernel_filename = ms->kernel_filename;
     Z80CPU *cpu = NULL;
@@ -104,24 +104,54 @@ static void zaphod_sample_board_init(MachineState *ms)
 
 /* zaphod_machine_init() */
 
-static void zaphod_machine_init(MachineClass *mc)
+static void zaphod_generic_instance_init(Object *obj)
 {
-    mc->desc = "Zaphod sample board";
-    mc->init = zaphod_sample_board_init;
-    mc->is_default = 1;
+;DPRINTF("DEBUG: Reached %s() [empty]\n", __func__);
+}
 
+static void zaphod_class_init(ObjectClass *oc, void *data)
+{
+    MachineClass *mc = MACHINE_CLASS(oc);
+    //ZaphodMachineClass *zmc = ZAPHOD_MACHINE_CLASS(oc);
+;DPRINTF("DEBUG: Reached %s()\n", __func__);
+
+    /* Set description, CPU, RAM board options */
+
+    mc->desc= "Zaphod development board";
     //mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
-    mc->default_cpu_type= TARGET_DEFAULT_CPU_TYPE;
+    mc->default_cpu_type = TARGET_DEFAULT_CPU_TYPE;
     mc->default_cpus = 1;
     mc->min_cpus = mc->default_cpus;
     mc->max_cpus = mc->default_cpus;
     //mc->default_ram_size = ZAPHOD_RAM_SIZE;
 
+    mc->is_default= 1;
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
     mc->no_parallel= 1;
     mc->no_serial = 1;      /* TODO: set to '0' where serial available */
     mc->no_sdcard = 1;
+
+    mc->init= zaphod_generic_board_init;
 }
 
-DEFINE_MACHINE("zaphod", zaphod_machine_init)
+static const TypeInfo zaphod_machine_type_generic = {
+    /* Implement a "generic" board until sufficiently diverse
+     * feature support is available. Use of TYPE_ZAPHOD_MACHINE
+     * means this board name is "zaphod"
+     */
+    .name           = TYPE_ZAPHOD_MACHINE,
+    .parent         = TYPE_MACHINE,
+    .abstract       = false,
+    .class_init     = zaphod_class_init,
+    .class_size     = sizeof(ZaphodMachineClass),
+    .instance_init  = zaphod_generic_instance_init,
+    .instance_size  = sizeof(ZaphodMachineState)
+};
+
+static void zaphod_machine_register_types(void)
+{
+    type_register_static(&zaphod_machine_type_generic);
+}
+
+type_init(zaphod_machine_register_types)
