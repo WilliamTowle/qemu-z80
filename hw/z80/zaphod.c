@@ -66,9 +66,9 @@ static void main_cpu_reset(void *opaque)
 }
 
 
-/* Machine state initialisation: simple machine */
+/* Machine state initialisation */
 
-static void zaphod_sample_board_init(MachineState *ms)
+static void zaphod_board_init(MachineState *ms)
 {
     const char *kernel_filename = ms->kernel_filename;
     Z80CPU *cpu;
@@ -123,14 +123,24 @@ static void zaphod_sample_board_init(MachineState *ms)
 }
 
 
+static void zaphod_machine_state_init(Object *obj)
+{
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: Reached %s() [empty]\n", __func__);
+#endif
+}
+
+
 /* Machine class initialisation: zaphod_machine_class_init() */
 
-static void zaphod_machine_class_init(MachineClass *mc)
+static void zaphod_machine_class_init(ObjectClass *oc, void *data)
 {
+    MachineClass *mc = MACHINE_CLASS(oc);
+
     /* Set description, init function, default CPU */
 
-    mc->desc= "Zaphod sample board";
-    mc->init= zaphod_sample_board_init;
+    mc->desc= "Zaphod development board";
+    mc->init= zaphod_board_init;
     mc->is_default= 1;
 
     /* TODO: Z80, but want R800 option if requested and available */
@@ -148,4 +158,25 @@ static void zaphod_machine_class_init(MachineClass *mc)
     mc->no_sdcard= 1;
 }
 
-DEFINE_MACHINE("zaphod", zaphod_machine_class_init)
+
+static const TypeInfo zaphod_machine_type_generic = {
+    /* Provide a "generic" board definition. Use of
+     * TYPE_ZAPHOD_MACHINE means this board name is "zaphod"
+     * TODO: expand to support board variants when the relevant
+     * peripheral types are available
+     */
+    .name           = TYPE_ZAPHOD_MACHINE,
+    .parent         = TYPE_MACHINE,
+    .abstract       = false,
+    .class_init     = zaphod_machine_class_init,
+    .class_size     = sizeof(ZaphodMachineClass),
+    .instance_init  = zaphod_machine_state_init,
+    .instance_size  = sizeof(ZaphodMachineState)
+};
+
+static void zaphod_machine_register_types(void)
+{
+    type_register_static(&zaphod_machine_type_generic);
+}
+
+type_init(zaphod_machine_register_types)
