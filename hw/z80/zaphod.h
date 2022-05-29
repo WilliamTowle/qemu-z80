@@ -8,6 +8,7 @@
 #ifndef HW_Z80_ZAPHOD_H
 #define HW_Z80_ZAPHOD_H
 
+
 #include "hw/boards.h"
 
 
@@ -16,6 +17,7 @@
 /* TODO: Config-related defines - see also z80-softmmu.mak */
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
+#define CONFIG_ZAPHOD_HAS_SCREEN
 
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
 #include "zaphod_iocore.h"
