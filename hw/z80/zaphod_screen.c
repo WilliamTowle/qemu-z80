@@ -12,3 +12,5 @@
 
 //#define DPRINTF(fmt, ...) \
 //    do { if (ZAPHOD_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
+
+#error "AKK"
