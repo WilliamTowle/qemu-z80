@@ -18,6 +18,7 @@
 
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
+#define CONFIG_ZAPHOD_HAS_SCREEN
 
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
 #include "zaphod_iocore.h"
