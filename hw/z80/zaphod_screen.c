@@ -10,3 +10,6 @@
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 //#define DPRINTF(fmt, ...) \
 //    do { if (EMIT_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
+
+
+#error "AKK"
