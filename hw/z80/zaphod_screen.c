@@ -13,4 +13,4 @@
 //    do { if (EMIT_DEBUG) error_printf("zaphod_screen: " fmt , ## __VA_ARGS__); } while(0)
 
 
-/* TODO: TypeInfo and registration for ZaphodScreenClass */
+#error "AKK"
