@@ -16,6 +16,7 @@
 
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
+#define CONFIG_ZAPHOD_HAS_SCREEN
 
 
 #include "cpu.h"
