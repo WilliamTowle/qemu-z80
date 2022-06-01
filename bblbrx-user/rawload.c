@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "qemu.h"
+#include "cpu.h"
 
 #include "exec/user/abitypes.h"
 
