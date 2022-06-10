@@ -67,6 +67,20 @@ static inline void gen_jmp_im(target_ulong pc)
     gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
 }
 
+static void gen_eob(DisasContext *s)
+{
+    if (s->tb->flags & HF_INHIBIT_IRQ_MASK) {
+        gen_helper_reset_inhibit_irq(cpu_env);
+    }
+    if (s->singlestep_enabled) {
+        gen_helper_debug(cpu_env);
+    } else {
+        tcg_gen_exit_tb(0);
+    }
+    s->is_jmp = DISAS_TB_JUMP;
+}
+
+
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 {
 #if 0   /* overkill: feature unused for z80 */
