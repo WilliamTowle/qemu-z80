@@ -77,6 +77,28 @@ static void gen_debug(DisasContext *s, target_ulong cur_pc)
 #endif
 
 
+/* TODO: routines for program flow control:
+ * gen_goto_tb()
+ * gen_cond_jump()
+ * gen_jcc()
+ * gen_callcc()
+ * gen_retcc()
+ */
+
+static void gen_eob(DisasContext *s)
+{
+    if (s->tb->flags & HF_INHIBIT_IRQ_MASK) {
+        gen_helper_reset_inhibit_irq(cpu_env);
+    }
+    if (s->singlestep_enabled) {
+        gen_helper_debug(cpu_env);
+    } else {
+        tcg_gen_exit_tb(0);
+    }
+    s->is_jmp = DISAS_TB_JUMP;
+}
+
+
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 {
 #if 0   /* overkill: feature unused for z80 */
