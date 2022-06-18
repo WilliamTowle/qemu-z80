@@ -14,6 +14,7 @@
 #define ZAPHOD_DEBUG    1
 
 /* TODO: Config-related defines - see also z80-softmmu.mak */
+#define CONFIG_ZAPHOD_HAS_IOCORE
 
 
 /* Z80_MAX_RAM_SIZE:
