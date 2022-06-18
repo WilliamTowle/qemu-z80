@@ -5,3 +5,5 @@ CONFIG_ZAPHOD=y
 
 # Configuration for devices support:
 # ...
+
+CONFIG_ZAPHOD_HAS_IOCORE=y
