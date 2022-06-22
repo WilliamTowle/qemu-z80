@@ -14,12 +14,15 @@
 #define ZAPHOD_DEBUG    1
 
 /* TODO: Config-related defines - see also z80-softmmu.mak */
-#define CONFIG_ZAPHOD_HAS_UART
 #define CONFIG_ZAPHOD_HAS_IOCORE
+#define CONFIG_ZAPHOD_HAS_UART
 
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+#include "zaphod_iocore.h"
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_UART
 #include "zaphod_uart.h"
+#endif
 
 
 /* Z80_MAX_RAM_SIZE:
@@ -48,7 +51,9 @@ typedef struct {
     MachineState parent;
 
     /*< public >*/
-    /* TODO: device state here */
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+    ZaphodIOCoreState        *iocore;
+#endif
 } ZaphodMachineState;
 
 
