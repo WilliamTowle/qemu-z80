@@ -48,7 +48,7 @@ typedef struct {
 } ZaphodMachineClass;
 #endif
 
-typedef struct {
+struct ZaphodMachineState {
     /*< private >*/
     MachineState parent;
 
@@ -59,7 +59,7 @@ typedef struct {
 #ifdef CONFIG_ZAPHOD_HAS_UART
     ZaphodUARTState     *uart_stdio;
 #endif
-} ZaphodMachineState;
+};
 
 
 #define TYPE_ZAPHOD_MACHINE \
