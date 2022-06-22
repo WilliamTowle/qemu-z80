@@ -19,6 +19,9 @@
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
 
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+#include "zaphod_iocore.h"
+#endif
 #ifdef CONFIG_ZAPHOD_HAS_UART
 #include "zaphod_uart.h"
 #endif
@@ -50,7 +53,9 @@ typedef struct {
     MachineState parent;
 
     /*< public >*/
-    /* TODO: device state here */
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+    ZaphodIOCoreState        *iocore;
+#endif
 } ZaphodMachineState;
 
 

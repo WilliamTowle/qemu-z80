@@ -68,6 +68,7 @@ static void main_cpu_reset(void *opaque)
 
 static void zaphod_generic_board_init(MachineState *ms)
 {
+    ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
     const char *kernel_filename = ms->kernel_filename;
     Z80CPU *cpu= NULL;
     MemoryRegion *address_space_mem;
@@ -110,6 +111,12 @@ static void zaphod_generic_board_init(MachineState *ms)
     {   /* QEmu's serial console exists */
 ;DPRINTF("TODO: non-NULL serial0 is available - do UART init!\n");
     }
+
+    /* Initialise IOCore subsystem */
+/* NB. we can get a serial0 and a serial1 with:
+ *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
+ */
+    zms->iocore= zaphod_iocore_init();
 
 
     /* Populate RAM */
