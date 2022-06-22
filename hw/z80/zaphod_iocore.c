@@ -29,6 +29,27 @@
  * value shared by UART and corresponding screen is part of the UART
  * code.
  */
+
+#if 0
+static Property zaphod_iocore_properties[]= {
+    DEFINE_PROP_BOOL("has-stdio",  ZaphodIOCoreState, has_stdio, false),
+    DEFINE_PROP_BOOL("has-acia",  ZaphodIOCoreState, has_acia, false),
+    DEFINE_PROP_END_OF_LIST()
+};
+#endif
+
+static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
+{
+    DeviceClass *dc= DEVICE_CLASS(oc);
+
+    dc->desc= "Zaphod IOCore subsystem";
+#if 0
+    dc->realize= zaphod_iocore_realizefn;
+    /* TODO: initialisation in dc->reset? */
+    dc->props= zaphod_iocore_properties;
+#endif
+}
+
 static void zaphod_iocore_instance_init(Object *obj)
 {
     /* Nothing to do here - handlers are set in realize function */
@@ -40,8 +61,8 @@ static const TypeInfo zaphod_iocore_info= {
     .parent= TYPE_DEVICE,
     /* For ZaphodIOCoreClass with virtual functions:
     .class_size= sizeof(ZaphodIOCoreClass),
-    .class_init= zaphod_iocore_class_init,
      */
+    .class_init= zaphod_iocore_class_init,
     .instance_size= sizeof(ZaphodIOCoreState),
     .instance_init= zaphod_iocore_instance_init
 };
