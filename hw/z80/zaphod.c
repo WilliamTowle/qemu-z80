@@ -69,9 +69,12 @@ static void main_cpu_reset(void *opaque)
 
 
 /* Create IOCore object (to manage IO ports/IRQ) */
-static DeviceState *zaphod_iocore_new(void)
+static DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+
+    zis->board= zms;
 
 #if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(dev);
@@ -136,7 +139,7 @@ static void zaphod_board_init(MachineState *ms)
 /* NB. we can get a serial0 and a serial1 with:
  *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
  */
-    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new());
+    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(zms));
 #endif
 
 

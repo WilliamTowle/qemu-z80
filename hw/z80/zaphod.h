@@ -40,7 +40,7 @@ typedef struct {
     /* TODO: board type identifier here */
 } ZaphodMachineClass;
 
-typedef struct {
+typedef struct ZaphodMachineState {
     /*< private >*/
     MachineState parent;
 

@@ -12,10 +12,14 @@
 #include "zaphod.h"
 
 
+typedef struct ZaphodMachineState ZaphodMachineState;
+
 typedef DeviceClass ZaphodIOCoreClass;
 
 typedef struct {
     DeviceState     parent;
+
+    ZaphodMachineState  *board;
 } ZaphodIOCoreState;
 
 
