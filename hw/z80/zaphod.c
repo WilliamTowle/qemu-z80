@@ -66,6 +66,15 @@ static void main_cpu_reset(void *opaque)
 }
 
 
+static DeviceState *zaphod_iocore_new(void)
+{
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
+
+    qdev_init_nofail(dev);
+    return dev;
+}
+
+
 /* Machine state initialisation */
 
 static void zaphod_board_init(MachineState *ms)
@@ -113,6 +122,15 @@ static void zaphod_board_init(MachineState *ms)
 ;DPRINTF("TODO: non-NULL serial0 is available - do UART init!\n");
 #endif
     }
+
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+    /* Initialise IOCore subsystem */
+;DPRINTF("*** INFO: %s() - about to do iocore init... ***\n", __func__);
+/* NB. we can get a serial0 and a serial1 with:
+ *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
+ */
+    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new());
+#endif
 
 
     /* Populate RAM */
