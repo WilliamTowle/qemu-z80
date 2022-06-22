@@ -30,19 +30,41 @@
  * the teletype ROM works because if the interrupts do fire, the CPU
  * ignores them by default
  */
+
+#if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
+static Property zaphod_iocore_properties[] = {
+    DEFINE_PROP_CHR("chardev",  ZaphodIOCoreState, chr),
+    DEFINE_PROP_BOOL("has-acia",  ZaphodIOCoreState, has_acia, false),
+    DEFINE_PROP_END_OF_LIST(),
+};
+#endif
+
+static void zaphod_iocore_class_init(ObjectClass *klass, void *data)
+{
+    //DeviceClass *dc = DEVICE_CLASS(klass);
+
+    //dc->realize = zaphod_iocore_realizefn;
+    /* TODO: initialisation in dc->reset? */
+#if 0
+    dc->props = zaphod_iocore_properties;
+#endif
+}
+
 static void zaphod_iocore_instance_init(Object *obj)
 {
     /* Nothing to do here - handlers are set in realize function */
 }
 
-ZaphodIOCoreState *zaphod_iocore_new(void)
+//ZaphodIOCoreState *zaphod_iocore_new(void)
+DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
 {
-    DeviceState *dev;
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
 
-    dev = DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
+    zis->board= zms;
 
     qdev_init_nofail(dev);
-    return ZAPHOD_IOCORE(dev);
+    return dev;
 }
 
 
@@ -51,8 +73,8 @@ static const TypeInfo zaphod_iocore_info= {
 	.parent= TYPE_DEVICE,
 	/* For ZaphodIOCoreClass with virtual functions:
 	.class_size= sizeof(ZaphodIOCoreClass),
-	.class_init= zaphod_iocore_class_init,
 	 */
+	.class_init= zaphod_iocore_class_init,
 	.instance_size= sizeof(ZaphodIOCoreState),
 	.instance_init= zaphod_iocore_instance_init
 };
