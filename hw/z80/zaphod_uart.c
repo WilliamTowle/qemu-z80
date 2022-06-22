@@ -7,7 +7,6 @@
 
 
 //#include "zaphod.h"
-#include "hw/qdev-properties.h"
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 //#define DPRINTF(fmt, ...) \
