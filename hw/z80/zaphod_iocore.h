@@ -10,12 +10,19 @@
 
 #include "zaphod.h"
 
+#include "chardev/char-fe.h"
+
+typedef struct ZaphodMachineState ZaphodMachineState;
 
 typedef DeviceClass ZaphodIOCoreClass;
 
 typedef struct {
     DeviceState     parent;
-    //CharBackend   chr;
+
+    ZaphodMachineState  *board;
+
+    CharBackend     chr;
+    //bool          has_acia;       /* mc6850, w/ interrupts */
 } ZaphodIOCoreState;
 
 
@@ -29,6 +36,7 @@ typedef struct {
     OBJECT_CHECK(ZaphodIOCoreState, obj, TYPE_ZAPHOD_IOCORE)
 
 
-ZaphodIOCoreState *zaphod_iocore_new(void);
+//ZaphodIOCoreState *zaphod_iocore_new(void);
+DeviceState *zaphod_iocore_new(ZaphodMachineState *zms);
 
 #endif  /* HW_Z80_ZAPHOD_IOCORE_H */
