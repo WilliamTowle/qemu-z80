@@ -22,6 +22,9 @@
 
 #include "hw/boards.h"
 
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+#include "zaphod_iocore.h"
+#endif
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
@@ -46,6 +49,9 @@ typedef struct {
 
     /*< public >*/
     Z80CPU              *cpu;
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+    ZaphodIOCoreState   *iocore;
+#endif
 } ZaphodMachineState;
 
 
