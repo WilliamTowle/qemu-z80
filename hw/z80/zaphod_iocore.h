@@ -11,11 +11,18 @@
 
 #include "zaphod.h"
 
+#include "chardev/char-fe.h"
+
+typedef struct ZaphodMachineState ZaphodMachineState;
 
 typedef DeviceClass ZaphodIOCoreClass;
 
 typedef struct {
     DeviceState     parent;
+
+    ZaphodMachineState  *board;
+
+    CharBackend     chr;
 } ZaphodIOCoreState;
 
 
