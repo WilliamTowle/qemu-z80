@@ -201,7 +201,9 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
      * - basic "stdio" I/O mechanism, with 'inkey' state variable
      * - hardware emulation and machine "features" bitmap
      */
-    zaphod_init_sercon(zs, serial_hds[0]);
+#ifdef ZAPHOD_HAS_SERCON
+    zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new());
+#endif
 }
 
 /* Development machine init
