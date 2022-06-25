@@ -92,6 +92,10 @@ static void zaphod_generic_board_init(MachineState *ms)
 
     /* Initialise ports/devices */
 
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+#endif
+
     /* Initialise IOCore subsystem */
 /* NB. we can get a serial0 and a serial1 with:
  *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
