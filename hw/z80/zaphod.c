@@ -93,6 +93,19 @@ static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
     return dev;
 }
 
+/* TODO: historically we have one screen, automatically paired with
+ * the ACIA UART inkey feed if set up (and the stdio UART's
+ * otherwise). Due to a design limitation, the serial0 console is
+ * always paired with the latter.
+ */
+static DeviceState *zaphod_screen_new(void)
+{
+    DeviceState *dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+
+    qdev_init_nofail(dev);
+    return dev;
+}
+
 
 /* Machine state initialisation */
 
@@ -134,6 +147,10 @@ static void zaphod_board_init(MachineState *ms)
 
 
     /* Initialise ports/devices */
+
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+#endif
 
     if (serial_hds[0])
     {   /* QEmu's main serial console is available */
