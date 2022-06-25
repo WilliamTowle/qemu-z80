@@ -15,13 +15,17 @@
 #define ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_SERCON
 
+
 #include "exec/address-spaces.h"
 #include "exec/ioport.h"
+
+#ifdef ZAPHOD_HAS_SCREEN
+#include "zaphod_screen.h"
+#endif
 
 #ifdef ZAPHOD_HAS_SERCON
 #include "zaphod_sercon.h"
 #endif
-
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
@@ -36,6 +40,10 @@ struct ZaphodState {
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
     uint8_t         inkey;
+
+#ifdef ZAPHOD_HAS_SCREEN
+    ZaphodScreenState    *screen;
+#endif
 
 #ifdef ZAPHOD_HAS_SERCON
     ZaphodSerConState   *sercon;
