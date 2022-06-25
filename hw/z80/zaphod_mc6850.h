@@ -8,8 +8,33 @@
 #ifndef HW_Z80_ZAPHOD_MC6850_H
 #define HW_Z80_ZAPHOD_MC6850_H
 
-//#include "zaphod.h"
+#include "zaphod.h"
 
-/* FIXME: migrate typedefs and prototypes here */
+//#include "chardev/char-fe.h"
+#include "sysemu/char.h"
+
+
+typedef DeviceClass ZaphodMC6850Class;
+
+typedef struct {
+    DeviceState     parent;
+
+    CharDriverState state;
+    PortioList *ports;
+} ZaphodMC6850State;
+
+
+#define TYPE_ZAPHOD_MC6850 "zaphod-mc6850"
+
+#define ZAPHOD_MC6850_GET_CLASS(obj) \
+    OBJECT_GET_CLASS(ZaphodMC6850Class, obj, TYPE_ZAPHOD_MC6850)
+#define ZAPHOD_MC6850_CLASS(klass) \
+    OBJECT_CLASS_CHECK(ZaphodMC6850Class, klass, TYPE_ZAPHOD_MC6850)
+#define ZAPHOD_MC6850(obj) \
+    OBJECT_CHECK(ZaphodMC6850State, obj, TYPE_ZAPHOD_MC6850)
+
+
+//DeviceState *zaphod_mc6850_new(CharDriverState *cd);
+DeviceState *zaphod_mc6850_new(void);
 
 #endif  /* HW_Z80_ZAPHOD_MC6850_H */

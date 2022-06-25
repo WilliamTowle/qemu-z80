@@ -28,6 +28,11 @@
 #include "zaphod_sercon.h"
 #endif
 
+#ifdef ZAPHOD_HAS_MC6850
+#include "zaphod_mc6850.h"
+#endif
+
+
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
@@ -35,13 +40,6 @@
 #define KiB			1024
 #endif
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
-
-
-#ifdef ZAPHOD_HAS_MC6850
-typedef struct {
-    PortioList *ports;
-} ZaphodMC6850State;
-#endif
 
 
 typedef enum {                  /* "features" bit map bit offsets */
