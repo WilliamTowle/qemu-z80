@@ -21,6 +21,7 @@
 #include "zaphod_sercon.h"
 #endif
 
+
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)
  */
@@ -29,13 +30,18 @@
 #endif
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
-typedef struct {
+
+typedef struct ZaphodState {
     CPUZ80State     *cpu;
     MemoryRegion    *ram;
     PortioList      *ports;
 
-    CharDriverState *sercon;            /* QEmu serial0 console */
+    //CharDriverState *sercon;            /* QEmu serial0 console */
     uint8_t         inkey;
+
+#ifdef ZAPHOD_HAS_SERCON
+    ZaphodSerConState   *sercon;
+#endif
 } ZaphodState;
 
 #endif	/*  HW_Z80_ZAPHOD_H  */
