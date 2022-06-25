@@ -8,8 +8,27 @@
 #ifndef HW_Z80_ZAPHOD_SCREEN_H
 #define HW_Z80_ZAPHOD_SCREEN_H
 
-//#include "zaphod.h"
+#include "zaphod.h"
 
-/* TODO: typedefs and prototypes here */
+typedef DeviceClass ZaphodScreenClass;
+
+
+/* TODO: screen attributes */
+
+typedef struct {
+    DeviceState     parent;
+} ZaphodScreenState;
+
+#define TYPE_ZAPHOD_SCREEN "zaphod-screen"
+
+#define ZAPHOD_SCREEN_GET_CLASS(obj) \
+    OBJECT_GET_CLASS(ZaphodScreenClass, obj, TYPE_ZAPHOD_SCREEN)
+#define ZAPHOD_SCREEN_CLASS(klass) \
+    OBJECT_CLASS_CHECK(ZaphodScreenClass, klass, TYPE_ZAPHOD_SCREEN)
+#define ZAPHOD_SCREEN(obj) \
+    OBJECT_CHECK(ZaphodScreenState, obj, TYPE_ZAPHOD_SCREEN)
+
+
+DeviceState *zaphod_screen_new(void);
 
 #endif  /* HW_Z80_ZAPHOD_SCREEN_H */

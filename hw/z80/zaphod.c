@@ -107,6 +107,10 @@ static void zaphod_generic_board_init(MachineState *ms)
 
     /* Initialise ports/devices */
 
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+#endif
+
     if (serial_hds[0])
     {   /* QEmu's serial console exists */
 ;DPRINTF("INFO: initialising UART device...\n");
