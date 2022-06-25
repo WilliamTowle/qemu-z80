@@ -26,9 +26,9 @@
 #ifdef CONFIG_ZAPHOD_HAS_UART
 #include "zaphod_uart.h"
 #endif
-//#ifdef CONFIG_ZAPHOD_HAS_SCREEN
-//#include "zaphod_screen.h"
-//#endif
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+#include "zaphod_screen.h"
+#endif
 
 
 /* Z80_MAX_RAM_SIZE:
@@ -62,6 +62,10 @@ struct ZaphodMachineState {
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_UART
     ZaphodUARTState     *uart_stdio;
+#endif
+
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    ZaphodScreenState    *screen;
 #endif
 };
 
