@@ -101,7 +101,8 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
     zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new(zs, serial_hds[0]));
 #endif
 #ifdef ZAPHOD_HAS_MC6850
-    zs->mc6850= zaphod_new_mc6850(zs);
+    //zs->mc6850= zaphod_new_mc6850(zs);
+    zs->mc6850= ZAPHOD_MC6850(zaphod_mc6850_new());
 #endif
 #ifdef ZAPHOD_HAS_SCREEN
     //zs->screen= zaphod_new_screen(zs);
