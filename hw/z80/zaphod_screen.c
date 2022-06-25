@@ -27,6 +27,7 @@ DeviceState *zaphod_screen_new(void)
     return dev;
 }
 
+//static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 
 //static Property zaphod_screen_properties[] = {
 //    /* properties can be set with '-global zaphod-screen.VAR=VAL' */
@@ -36,13 +37,14 @@ DeviceState *zaphod_screen_new(void)
 
 static void zaphod_screen_class_init(ObjectClass *klass, void *data)
 {
-#if 0   /* TODO: v1 init support */
     DeviceClass *dc = DEVICE_CLASS(klass);
 
+#if 0   /* TODO: v1 init support */
     dc->realize = zaphod_screen_realizefn;
     /* TODO: initialisation in dc->reset? */
     dc->props = zaphod_screen_properties;
 #endif
+    set_bit(DEVICE_CATEGORY_DISPLAY, dc->categories);
 }
 
 static void zaphod_screen_instance_init(Object *obj)
