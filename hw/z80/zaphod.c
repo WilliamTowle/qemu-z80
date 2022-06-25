@@ -7,8 +7,8 @@
 
 #include "qemu-common.h"
 #include "zaphod.h"         /* for config */
-#include "qemu/error-report.h"
 
+#include "qemu/error-report.h"
 #include "hw/boards.h"
 #include "hw/loader.h"
 #include "sysemu/sysemu.h"
@@ -106,7 +106,8 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
     zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new(zs, serial_hds[0]));
 #endif
 #ifdef ZAPHOD_HAS_SCREEN
-    zs->screen= zaphod_new_screen();
+    //zs->screen= zaphod_new_screen();
+    zs->screen= ZAPHOD_SCREEN(zaphod_screen_new());
 #endif
 }
 
