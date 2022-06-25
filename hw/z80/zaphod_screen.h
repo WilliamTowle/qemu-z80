@@ -8,9 +8,33 @@
 #ifndef HW_Z80_ZAPHOD_SCREEN_H
 #define HW_Z80_ZAPHOD_SCREEN_H
 
-//#include "zaphod.h"
+#include "zaphod.h"
 
-/* TODO: class/state typedef and prototypes here */
+typedef DeviceClass ZaphodScreenClass;
 
+
+/* TODO: enum for screen attributes
+ * Grant Searle's ATmega328 supports:
+ * - 0x01: use 80 chars (40 otherwise)
+ * - 0x02: bold
+ * - 0x04: double height (internally, top half/bottom half)
+ * - 0x80: 2x4 graphics block (bit 0 top left, bit 7 bottom right)
+ */
+
+typedef struct {
+    DeviceState     parent;
+} ZaphodScreenState;
+
+#define TYPE_ZAPHOD_SCREEN "zaphod-screen"
+
+#define ZAPHOD_SCREEN_GET_CLASS(obj) \
+    OBJECT_GET_CLASS(ZaphodScreenClass, obj, TYPE_ZAPHOD_SCREEN)
+#define ZAPHOD_SCREEN_CLASS(klass) \
+    OBJECT_CLASS_CHECK(ZaphodScreenClass, klass, TYPE_ZAPHOD_SCREEN)
+#define ZAPHOD_SCREEN(obj) \
+    OBJECT_CHECK(ZaphodScreenState, obj, TYPE_ZAPHOD_SCREEN)
+
+
+DeviceState *zaphod_screen_new(void);
 
 #endif  /* HW_Z80_ZAPHOD_SCREEN_H */
