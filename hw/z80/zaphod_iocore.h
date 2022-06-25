@@ -10,6 +10,7 @@
 #define HW_Z80_ZAPHOD_IOCORE_H
 
 #include "zaphod.h"
+#include "zaphod_screen.h"
 
 #include "exec/ioport.h"
 
@@ -23,6 +24,8 @@ typedef struct {
     ZaphodMachineState  *board;
 
     PortioList          *ioports_stdio;
+    /* TODO: correlate screen(s) to stdio/acia input */
+    ZaphodScreenState   *screen;
 } ZaphodIOCoreState;
 
 
