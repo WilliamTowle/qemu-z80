@@ -9,6 +9,7 @@
 #include "zaphod.h"
 
 #include "qemu/error-report.h"
+#include "hw/qdev-properties.h"
 
 
 #ifdef ZAPHOD_DEBUG
@@ -62,13 +63,13 @@ static void zaphod_sercon_realizefn(DeviceState *dev, Error **errp)
             zaphod_sercon_can_receive, zaphod_sercon_receive,
             NULL, zss);
 }
+#endif
 
 static Property zaphod_sercon_properties[] = {
     /* properties can be set with '-global zaphod-sercon.VAR=VAL' */
     DEFINE_PROP_CHR("chardev",  ZaphodSerConState, chr),
     DEFINE_PROP_END_OF_LIST(),
 };
-#endif
 
 static void zaphod_sercon_class_init(ObjectClass *klass, void *data)
 {
@@ -77,8 +78,8 @@ static void zaphod_sercon_class_init(ObjectClass *klass, void *data)
 #if 0	/* TODO: v1 init support */
     dc->realize = zaphod_sercon_realizefn;
     /* TODO: initialisation in dc->reset? */
-    dc->props = zaphod_sercon_properties;
 #endif
+    dc->props = zaphod_sercon_properties;
     set_bit(DEVICE_CATEGORY_INPUT, dc->categories);
 }
 
