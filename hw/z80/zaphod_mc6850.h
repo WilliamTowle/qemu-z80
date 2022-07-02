@@ -37,7 +37,8 @@ typedef struct {
     OBJECT_CHECK(ZaphodMC6850State, obj, TYPE_ZAPHOD_MC6850)
 
 
-//DeviceState *zaphod_mc6850_new(CharDriverState *cd);
+//DeviceState *zaphod_mc6850_new(CharDriverState *cds);
 DeviceState *zaphod_mc6850_new(ZaphodState *super);
+
 
 #endif  /* HW_Z80_ZAPHOD_MC6850_H */
