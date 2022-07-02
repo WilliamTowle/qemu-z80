@@ -9,9 +9,10 @@
 #include "qemu/osdep.h"
 #include "zaphod.h"
 
-
 //#include "qemu/error-report.h"
-//
+#include "hw/qdev-properties.h"
+
+
 //#ifdef ZAPHOD_DEBUG
 //#define DPRINTF(fmt, ...) \
 //    do { error_printf( "zaphod: " fmt , ## __VA_ARGS__); } while (0)
@@ -52,13 +53,13 @@ static void zaphod_mc6850_realizefn(DeviceState *dev, Error **errp)
             zaphod_sercon_can_receive, zaphod_sercon_receive,
             NULL, zss);
 }
+#endif
 
 static Property zaphod_mc6850_properties[] = {
     /* properties can be set with '-global zaphod-mc6850.VAR=VAL' */
     DEFINE_PROP_CHR("chardev",  ZaphodMC6850State, chr),
     DEFINE_PROP_END_OF_LIST(),
 };
-#endif
 
 static void zaphod_mc6850_class_init(ObjectClass *klass, void *data)
 {
@@ -67,8 +68,8 @@ static void zaphod_mc6850_class_init(ObjectClass *klass, void *data)
 #if 0	/* TODO: v1 init support */
     dc->realize = zaphod_mc6850_realizefn;
     /* TODO: initialisation in dc->reset? */
-    dc->props = zaphod_mc6850_properties;
 #endif
+    dc->props = zaphod_mc6850_properties;
     set_bit(DEVICE_CATEGORY_INPUT, dc->categories);
 }
 

@@ -11,7 +11,7 @@
 #include "zaphod.h"
 
 //#include "chardev/char-fe.h"
-//#include "sysemu/char.h"
+#include "sysemu/char.h"
 
 typedef struct ZaphodState ZaphodState;
 
@@ -22,7 +22,7 @@ typedef struct {
 
     ZaphodState     *super;
     PortioList      *ports;
-    //CharDriverState *chr;
+    CharDriverState *chr;
     //uint8_t         inkey;
 } ZaphodMC6850State;
 
