@@ -119,6 +119,18 @@ DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr,
 #endif
 }
 
+/* zaphod_mc6850_portio
+ * TODO: adjust? Grant Searle's documentation talks about 0x80-0xbf
+ * being reserved but decoding makes all even/odd ports equivalent
+ */
+static const MemoryRegionPortio zaphod_mc6850_portio[] = {
+    { 0x80, 2, 1,
+                .read = zaphod_mc6850_read,
+                .write = zaphod_mc6850_write
+                },
+    PORTIO_END_OF_LIST(),
+};
+
 
 DeviceState *zaphod_mc6850_new(ZaphodState *super)
 {
@@ -136,18 +148,6 @@ DeviceState *zaphod_mc6850_new(ZaphodState *super)
     qdev_init_nofail(dev);
     return dev;
 }
-
-/* zaphod_mc6850_portio
- * TODO: adjust? Grant Searle's documentation talks about 0x80-0xbf
- * being reserved but decoding makes all even/odd ports equivalent
- */
-static const MemoryRegionPortio zaphod_mc6850_portio[] = {
-    { 0x80, 2, 1,
-                .read = zaphod_mc6850_read,
-                .write = zaphod_mc6850_write
-                },
-    PORTIO_END_OF_LIST(),
-};
 
 static void zaphod_mc6850_realizefn(DeviceState *dev, Error **errp)
 {
