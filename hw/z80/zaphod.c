@@ -92,6 +92,8 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 
     zs->ram= zaphod_init_ram();
 
+    zs->inkey= '\0';
+
     zaphod_load_kernel(kernel_filename);
 
     /* TODO
