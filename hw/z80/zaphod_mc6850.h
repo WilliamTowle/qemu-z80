@@ -11,16 +11,19 @@
 #include "zaphod.h"
 
 //#include "chardev/char-fe.h"
-#include "sysemu/char.h"
+//#include "sysemu/char.h"
 
+typedef struct ZaphodState ZaphodState;
 
 typedef DeviceClass ZaphodMC6850Class;
 
 typedef struct {
     DeviceState     parent;
 
-    CharDriverState state;
-    PortioList *ports;
+    ZaphodState     *super;
+    PortioList      *ports;
+    //CharDriverState *chr;
+    //uint8_t         inkey;
 } ZaphodMC6850State;
 
 
@@ -35,6 +38,6 @@ typedef struct {
 
 
 //DeviceState *zaphod_mc6850_new(CharDriverState *cd);
-DeviceState *zaphod_mc6850_new(void);
+DeviceState *zaphod_mc6850_new(ZaphodState *super);
 
 #endif  /* HW_Z80_ZAPHOD_MC6850_H */
