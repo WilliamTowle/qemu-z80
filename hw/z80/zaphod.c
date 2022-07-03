@@ -203,7 +203,8 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
      * - hardware emulation and machine "features" bitmap
      */
 #ifdef ZAPHOD_HAS_SERCON
-    zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new());
+    //zs->sercon= zaphod_sercon_new(zs, serial_hds[0]);
+    zs->sercon= ZAPHOD_SERCON(zaphod_sercon_new(zs, serial_hds[0]));
 #endif
 }
 
