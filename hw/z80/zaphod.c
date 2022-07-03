@@ -102,7 +102,7 @@ static void zaphod_init_common(ZaphodState *zs, QEMUMachineInitArgs *args)
 #endif
 #ifdef ZAPHOD_HAS_MC6850
     //zs->mc6850= zaphod_new_mc6850(zs);
-    zs->mc6850= ZAPHOD_MC6850(zaphod_mc6850_new());
+    zs->mc6850= ZAPHOD_MC6850(zaphod_mc6850_new(zs));
 #endif
 #ifdef ZAPHOD_HAS_SCREEN
     //zs->screen= zaphod_new_screen(zs);

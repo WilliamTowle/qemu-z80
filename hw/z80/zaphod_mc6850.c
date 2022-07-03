@@ -22,12 +22,12 @@
 
 
 //DeviceState *zaphod_mc6850_new(Chardev *chr)
-DeviceState *zaphod_mc6850_new(void)
+DeviceState *zaphod_mc6850_new(ZaphodState *super)
 {
-    DeviceState *dev;
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_MC6850));
+    ZaphodMC6850State   *zms= ZAPHOD_MC6850(dev);
 
-    dev = DEVICE(object_new(TYPE_ZAPHOD_MC6850));
-
+    zms->super= super;
 #if 0	/* FIXME: need a separate console and 'CharDriverState' param? */
     /* TODO: respect default chardev, using qdev_prop_set_chr() to
      * set a fallback
