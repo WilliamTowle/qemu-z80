@@ -31,12 +31,12 @@
 
 
 //DeviceState *zaphod_sercon_new(Chardev *chr)
-DeviceState *zaphod_sercon_new(void)
+DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds)
 {
-    DeviceState *dev;
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_SERCON));
+    ZaphodSerConState   *zis= ZAPHOD_SERCON(dev);
 
-    dev = DEVICE(object_new(TYPE_ZAPHOD_SERCON));
-
+    zis->super= super;
 #if 0	/* FIXME: pass and store CharDeviceState? */
     /* TODO: respect default chardev, using qdev_prop_set_chr() to
      * set a fallback

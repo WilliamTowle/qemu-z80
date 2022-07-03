@@ -8,14 +8,16 @@
 #ifndef HW_Z80_ZAPHOD_SERCON_H
 #define HW_Z80_ZAPHOD_SERCON_H
 
-//#include "zaphod.h"
+#include "zaphod.h"
 
+typedef struct ZaphodState ZaphodState;
 
 typedef DeviceClass ZaphodSerConClass;
 
 typedef struct {
     DeviceState     parent;
 
+    ZaphodState     *super;
     PortioList      *ports;
     CharDriverState *chr;
 } ZaphodSerConState;
@@ -32,7 +34,7 @@ typedef struct {
 
 
 //DeviceState *zaphod_sercon_new(Chardev *chr);
-DeviceState *zaphod_sercon_new(void);
+DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds);
 
 
 #endif  /* HW_Z80_ZAPHOD_SERCON_H */
