@@ -59,6 +59,7 @@ static MemoryRegion *zaphod_init_ram(void)
 }
 
 
+#if 0
 static
 int zaphod_inkey_can_receive(void *opaque)
 {
@@ -160,6 +161,7 @@ static void zaphod_init_sercon(ZaphodState *zs, CharDriverState* sercon)
                 NULL, zs);
     }
 }
+#endif
 
 static void zaphod_load_kernel(const char *kernel_file)
 {
