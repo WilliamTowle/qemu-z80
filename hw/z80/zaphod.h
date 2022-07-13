@@ -16,16 +16,13 @@
 #define ZAPHOD_HAS_SERCON
 #define ZAPHOD_HAS_MC6850
 
-
-#include "exec/address-spaces.h"
-#include "exec/ioport.h"
-
-#ifdef ZAPHOD_HAS_SCREEN
-#include "zaphod_screen.h"
-#endif
 #ifdef ZAPHOD_HAS_SCREEN
 #define ZAPHOD_HAS_KEYBIO
 #endif
+
+
+#include "exec/address-spaces.h"
+#include "exec/ioport.h"
 
 #ifdef ZAPHOD_HAS_SERCON
 #include "zaphod_sercon.h"
@@ -44,6 +41,12 @@
 #endif
 #define	Z80_MAX_RAM_SIZE	(64 * KiB)
 
+#define MAX_TEXT_ROWS	25
+#define MAX_TEXT_COLS	80
+
+#ifdef ZAPHOD_HAS_SCREEN
+#include "zaphod_screen.h"
+#endif
 
 
 typedef enum {                  /* "features" bit map bit offsets */
