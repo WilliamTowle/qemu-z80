@@ -168,6 +168,24 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
     }
 }
 
+static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
+                            int row, int minc, int maxc)
+{
+    int col;
+
+    /* TODO: Assume a fixed display size for now (ie. omit attribute
+     * support until later). Grant Searle documents attributes as
+     * follows:
+     * - 0x80: graphics characters (bit 0 top left, bit 7 bottom right)
+     * - 0x04: double height (has top half/bottom half internally)
+     * - 0x02: bold
+     * - 0x01: use 80 chars (40 otherwise)
+     */
+
+    for (col= minc; col <= maxc; col++)
+        zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+}
+
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
@@ -189,10 +207,15 @@ static void zaphod_screen_update_display(void *opaque)
 
     if (zss->dirty_minr > -1)
     {
+        int row;
+
         /* Update the display surface where "dirty" region applies.
-         * TODO: implement character grid (with attributes) and
-         * repaint with reference to the content when redrawing.
+         * If this obliterates the cursor we repaint it too.
          */
+        for (row= zss->dirty_minr; row <= zss->dirty_maxr; row++)
+            zaphod_screen_redraw_row(zss, row,
+                                zss->dirty_minc, zss->dirty_maxc);
+
         dpy_gfx_update(zss->display,
                 zss->dirty_minc * FONT_WIDTH,
                 zss->dirty_minr * FONT_HEIGHT,
@@ -282,21 +305,29 @@ void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
     nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
     nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-    zaphod_screen_draw_char(zss, 0,0, nyb_hi);
-    zaphod_screen_draw_char(zss, 0,1, nyb_lo);
+    zss->char_grid[0][0]= nyb_hi;
+    zss->char_grid[0][1]= nyb_lo;
 
     if (object_property_get_bool(OBJECT(zss), "simple-escape-codes", NULL))
     {   /* show requested character */
-        zaphod_screen_draw_char(zss, 0,1, nyb_lo);
+        zss->char_grid[0][2]= ch;
+
+        /* mark region [from 0,0 to 0,2] for redraw */
+        zaphod_screen_mark_dirty(zss, 0,0);
+        zaphod_screen_mark_dirty(zss, 0,2);
     }
     else
     {   /* show requested character with graphics glyph */
-        zaphod_screen_draw_graphic(zss, 0,2, ch);
-    }
+        /* ...graphics not included in automatic redraw :( */
+        zaphod_screen_draw_graphic(zss, ZAPHOD_TEXT_ROWS-1,0, ch);
+        dpy_gfx_update(zss->display,
+                0, (ZAPHOD_TEXT_ROWS - 1) * FONT_HEIGHT,
+                FONT_WIDTH, FONT_HEIGHT);
 
-    /* mark region [from 0,0 to 0,2] for redraw */
-    zaphod_screen_mark_dirty(zss, 0,0);
-    zaphod_screen_mark_dirty(zss, 0,2);
+        /* mark region [from 0,0 to 0,1] for redraw */
+        zaphod_screen_mark_dirty(zss, 0,0);
+        zaphod_screen_mark_dirty(zss, 0,1);
+    }
 #endif
     /* TODO: printing should move the cursor, and if visible when
      * moved we need to toggle it on/off in new and old positions */
@@ -306,12 +337,18 @@ void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
 static void zaphod_screen_reset(void *opaque)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+    int row, col;
 
     zss->cursor_visible= false;
     zss->cursor_blink_time= 0;
 
     zss->dirty_minr= zss->dirty_maxr= -1;
     zss->dirty_minc= zss->dirty_maxc= -1;
+
+    /* TODO: "screen clear" escape should reset everything too */
+    for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
+        for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
+            zss->char_grid[row][col]= '\0';
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)

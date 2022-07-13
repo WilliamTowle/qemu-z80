@@ -36,6 +36,7 @@ typedef struct {
     uint8_t         *rgb_bg, *rgb_fg;
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
+    uint8_t         char_grid[ZAPHOD_TEXT_ROWS][ZAPHOD_TEXT_COLS];
 } ZaphodScreenState;
 
 #define TYPE_ZAPHOD_SCREEN "zaphod-screen"
