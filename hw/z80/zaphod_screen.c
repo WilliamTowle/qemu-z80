@@ -132,6 +132,24 @@ void zaphod_screen_draw_graphic(void *opaque, int row, int col, uint8_t data)
     }
 }
 
+static void zaphod_screen_redraw_row(ZaphodScreenState *zss,
+                            int row, int minc, int maxc)
+{
+    int col;
+
+    /* TODO: Assume a fixed display size for now (ie. omit attribute
+     * support until later). Grant Searle documents attributes as
+     * follows:
+     * - 0x80: graphics characters (bit 0 top left, bit 7 bottom right)
+     * - 0x04: double height (has top half/bottom half internally)
+     * - 0x02: bold
+     * - 0x01: use 80 chars (40 otherwise)
+     */
+
+    for (col= minc; col <= maxc; col++)
+        zaphod_screen_draw_char(zss, row, col, zss->char_grid[row][col]);
+}
+
 
 static void zaphod_screen_invalidate_display(void *opaque)
 {
@@ -151,7 +169,28 @@ static void zaphod_screen_update_display(void *opaque)
 
     /* align QEmu window content with the simulated display */
 
-    /* ... */
+    if (zss->dirty_minr > -1)
+    {
+        int row;
+
+        /* Update the display surface where "dirty" region applies.
+         * If this obliterates the cursor we repaint it too.
+         */
+        for (row= zss->dirty_minr; row <= zss->dirty_maxr; row++)
+            zaphod_screen_redraw_row(zss, row,
+                                zss->dirty_minc, zss->dirty_maxc);
+
+        dpy_gfx_update(zss->display,
+                zss->dirty_minc * FONT_WIDTH,
+                zss->dirty_minr * FONT_HEIGHT,
+                (zss->dirty_maxc - zss->dirty_minc + 1) * FONT_WIDTH,
+                (zss->dirty_maxr - zss->dirty_minr + 1) * FONT_HEIGHT
+                );
+
+        zss->dirty_minr= zss->dirty_maxr= -1;
+        zss->dirty_minc= zss->dirty_maxc= -1;
+    }
+
 
     /* Handle cursor blink if its timer expired */
 
@@ -164,7 +203,7 @@ static void zaphod_screen_update_display(void *opaque)
         zss->cursor_visible= !zss->cursor_visible;
         DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
 
-        /* since visibility changed - was zaphod_consolegui_blink_cursor() */
+        /* effect blink due to cursor visibility change */
         {
             DisplaySurface *ds = qemu_console_surface(zss->display);
             int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
@@ -235,17 +274,31 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
 
     if (zmc->has_simple_screen)
     {   /* show requested character */
-        zaphod_screen_draw_char(zss, 0,1, nyb_lo);
+        zss->char_grid[0][0]= nyb_hi;
+        zss->char_grid[0][1]= nyb_lo;
+        zss->char_grid[0][2]= ch;
+
+        /* mark region from 0,0 to 0,2 for redraw */
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 2;
     }
     else
     {   /* show requested character with graphics glyph */
-        zaphod_screen_draw_graphic(zss, 0,2, ch);
-    }
+        /* ...graphics not included in automatic redraw :( */
+        zaphod_screen_draw_graphic(zss, ZAPHOD_TEXT_ROWS-1,0, ch);
+        dpy_gfx_update(zss->display,
+                0, (ZAPHOD_TEXT_ROWS - 1) * FONT_HEIGHT,
+                FONT_WIDTH, FONT_HEIGHT);
 
-    /* mark region from 0,0 to 0,2 dirty */
-    zss->dirty_minr= zss->dirty_maxr= 0;
-    zss->dirty_minc= 0;
-    zss->dirty_maxc= 2;
+        zss->char_grid[0][0]= nyb_hi;
+        zss->char_grid[0][1]= nyb_lo;
+
+        /* mark region from 0,0 to 0,1 for redraw */
+        zss->dirty_minr= zss->dirty_maxr= 0;
+        zss->dirty_minc= 0;
+        zss->dirty_maxc= 1;
+    }
 #endif
 }
 
@@ -265,12 +318,18 @@ DeviceState *zaphod_screen_new(void)
 static void zaphod_screen_reset(void *opaque)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+    int row, col;
 
     zss->cursor_visible= false;
     zss->cursor_blink_time= 0;
 
     zss->dirty_minr= zss->dirty_maxr= -1;
     zss->dirty_minc= zss->dirty_maxc= -1;
+
+    /* TODO: "screen clear" escape should reset everything too */
+    for (row= 0; row < ZAPHOD_TEXT_ROWS; row++)
+        for (col= 0; col < ZAPHOD_TEXT_COLS; col++)
+            zss->char_grid[row][col]= '\0';
 }
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
