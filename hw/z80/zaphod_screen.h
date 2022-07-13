@@ -10,6 +10,9 @@
 
 #include "zaphod.h"
 
+#define ZAPHOD_TEXT_ROWS	25
+#define ZAPHOD_TEXT_COLS	80
+
 typedef struct ZaphodState ZaphodState;
 
 typedef DeviceClass ZaphodScreenClass;
@@ -20,10 +23,11 @@ typedef struct {
     ZaphodState     *super;
     QemuConsole     *display;
     uint8_t         *rgb_bg, *rgb_fg;
-    bool            cursor_visible;
-    int64_t         cursor_blink_time;    /* millisec */
+    uint8_t         char_grid[ZAPHOD_TEXT_ROWS][ZAPHOD_TEXT_COLS];
     int             dirty_minr, dirty_maxr;
     int             dirty_minc, dirty_maxc;
+    bool            cursor_visible;
+    int64_t         cursor_blink_time;    /* millisec */
 } ZaphodScreenState;
 
 
