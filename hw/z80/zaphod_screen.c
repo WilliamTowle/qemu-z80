@@ -139,6 +139,7 @@ DeviceState *zaphod_screen_new(void)
     DeviceState *dev;
 
     dev = DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+;DPRINTF("*** INFO: ZAPHOD_SCREEN has dev %p ***\n", dev);
 
     //qdev_prop_set_chr(dev, "chardev", chr);
 

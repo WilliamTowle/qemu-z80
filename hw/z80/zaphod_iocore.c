@@ -199,7 +199,7 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
 };
 
 
-#if 1	/* keyboard I/O (EXPERIMENTAL) */
+#if 1	/* IOCORE-KEYBIO (EXPERIMENTAL) */
 static const unsigned char keycode_to_asciilc[128]= {
     /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
      * callback to translate keycode to row and column [as per the
@@ -228,41 +228,46 @@ static const unsigned char keycode_to_asciilc[128]= {
       0,  0,  0,  0,  0,  0,  0,  0,
 };
 
-static void zaphod_iocore_put_keycode(void *opaque, int keycode)
+static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
+                             InputEvent *evt)
 {
-    //ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
-    int	release= keycode & 0x80;
+    InputKeyEvent *key = evt->u.key.data;
+    int scancodes[3], count;
+    count = qemu_input_key_value_to_scancode(key->key,
+                                             key->down,
+                                             scancodes);
 
-    if (release)
+    if (count == 1) /* single-byte XT scancode */
     {
-        /* FIXME: handle XT scancode 0xe0 properly */
-        /* TODO: resetting cs_inkey on key release is risky if
-         * systems without an IRQ sent on keypress don't poll
-         * the port promptly enough. Do we want to implement key
-         * repeat (in which case we start a timer elsewhere that
-         * should get stopped here)?
-         */
-#if 1
-;DPRINTF("INFO: %s() - key with keycode=0x%02x released\n", __func__, keycode);
-#else   /* inkey API missing - TODO: is this stdio or ACAI input? */
-        zaphod_set_inkey(zss->super, 0, false);
-#endif
-    }
-    else
-    {
-      int	ch= keycode_to_asciilc[keycode & 0x7f];
-#if 1
-;DPRINTF("INFO: %s() - keypress -> BAIL: : keycode=0x%02x (ch %d)\n", __func__, keycode, ch);
-;exit(1);
-#else
-	/* TODO:
-	 * - determine the "muxed" UART (ACIA, if defined)
-	 * - check can-receive
-	 * - calling receive will trigger IRQ as required
-	 */
-#endif
+;DPRINTF("*** INFO: key %s event (scancode %d) from source device %p ***\n", (key->down)?"down":"up", scancodes[0], dev);
+//        MachineState *machine = MACHINE(qdev_get_machine());
+//        ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
+//
+//        if (!key->down)
+//        {
+//            if (zis->board->uart_acia)
+//                zaphod_uart_set_inkey(zis->board->uart_acia, 0, false);
+//            else
+//                zaphod_uart_set_inkey(zis->board->uart_stdio, 0, false);
+//        }
+//        else
+//        {
+//          int	ch= keycode_to_asciilc[scancodes[0] & 0x7f];
+//            zaphod_sercon_set_inkey(zms->sercon, ch, true);
+//
+//            if (zis->board->uart_acia)
+//                zaphod_uart_set_inkey(zis->board->uart_acia, ch, true);
+//            else
+//                zaphod_uart_set_inkey(zis->board->uart_stdio, ch, true);
+//        }
     }
 }
+
+static QemuInputHandler zaphod_kbd_handler = {
+    .name  = "zaphod-kbd",
+    .mask  = INPUT_EVENT_MASK_KEY,
+    .event = zaphod_kbd_event,
+};
 #endif
 
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
@@ -316,8 +321,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     }
 
 #if 1	/* TODO: avoid under legacy KEYBIO? */
-    /* FIXME: rework with QemuInputHandler */
-    qemu_add_kbd_event_handler(zaphod_iocore_put_keycode, zis);
+    //qemu_add_kbd_event_handler(zaphod_iocore_put_keycode, zis);
+    zis->ihs= qemu_input_handler_register(dev, &zaphod_kbd_handler);
+    qemu_input_handler_activate(zis->ihs);
 #endif
 }
 
