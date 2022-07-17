@@ -11,6 +11,9 @@
 #include "zaphod.h"
 
 #include "exec/ioport.h"
+#if 1   /* IOCORE-KEYBIO */
+#include "ui/input.h"
+#endif
 
 typedef struct ZaphodMachineState ZaphodMachineState;
 
@@ -26,6 +29,9 @@ typedef struct {
     qemu_irq        *irq_acia;
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
     //bool          has_acia;       /* mc6850, w/ interrupts */
+#if 1   /* IOCORE-KEYBIO */
+    QemuInputHandlerState *ihs;
+#endif
 } ZaphodIOCoreState;
 
 
