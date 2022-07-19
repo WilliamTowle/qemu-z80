@@ -182,11 +182,6 @@ DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr,
 #endif
 
 
-static const MemoryRegionPortio zaphod_sercon_portio[] = {
-    { 0x00, 1, 1, .read = zaphod_sercon_read },     /* stdin */
-    { 0x01, 1, 1, .write = zaphod_sercon_write, },  /* stdout */
-    PORTIO_END_OF_LIST(),
-};
 DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_SERCON));
