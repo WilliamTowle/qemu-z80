@@ -74,6 +74,22 @@ static DeviceState *zaphod_iocore_new(void)
     return dev;
 }
 
+/* TODO: historically we always set up serial0 as the stdio UART, and
+ * serial1 becomes the MC6850 (if configured). Due to this design
+ * limitation, the MC6850 IRQ can only be associated with serial1 and
+ * serial0/serial1 functions cannot be swapped.
+ */
+static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
+{
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_UART));
+    ZaphodUARTState     *zus= ZAPHOD_UART(dev);
+
+    qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
+
+    qdev_init_nofail(dev);
+    return dev;
+}
+
 
 /* Machine state initialisation */
 
