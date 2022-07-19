@@ -85,20 +85,13 @@ void zaphod_sercon_set_inkey(void *opaque, uint8_t val, bool is_data)
 #endif
 
 
-DeviceState *zaphod_uart_new(void)
+DeviceState *zaphod_uart_new(Chardev *chr_fallback)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_UART));
-#if 0
     ZaphodUARTState     *zus= ZAPHOD_UART(dev);
 
-    /* TODO: respect any preconfigured chardev, using
-     * qdev_prop_set_chr() only to set a fallback
-     */
-    qdev_prop_set_chr(dev, "chardev", chr);
-//#else   /* TODO: set fallback device with qdev_prop_set_chr() */
-//    if (!qemu_chr_fe_backend_connected(&zss->chr))
-//        qdev_prop_set_chr(DEVICE(zss), "chardev", serial_hds[0]);
-#endif
+    if (!qemu_chr_fe_backend_connected(&zus->chr))
+        qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
 
     qdev_init_nofail(dev);
     return dev;

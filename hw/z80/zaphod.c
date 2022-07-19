@@ -99,7 +99,10 @@ static void zaphod_generic_board_init(MachineState *ms)
     zms->iocore= zaphod_iocore_init();
 
     if (serial_hds[0]) {
-;DPRINTF("TODO: non-NULL serial0 is available - do UART init!\n");
+;DPRINTF("INFO: initialising UART device...\n");
+        //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
+        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
+;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
     }
 
 
