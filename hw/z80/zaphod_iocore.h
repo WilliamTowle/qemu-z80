@@ -29,6 +29,6 @@ typedef struct {
     OBJECT_CHECK(ZaphodIOCoreState, obj, TYPE_ZAPHOD_IOCORE)
 
 
-ZaphodIOCoreState *zaphod_iocore_init(void);
+ZaphodIOCoreState *zaphod_iocore_new(void);
 
 #endif  /* HW_Z80_ZAPHOD_IOCORE_H */
