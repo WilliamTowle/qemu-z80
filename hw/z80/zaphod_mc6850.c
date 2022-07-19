@@ -40,6 +40,18 @@ DeviceState *zaphod_mc6850_new(ZaphodState *super)
     return dev;
 }
 
+/* zaphod_mc6850_portio
+ * TODO: adjust? Grant Searle's documentation talks about 0x80-0xbf
+ * being reserved but decoding makes all even/odd ports equivalent
+ */
+static const MemoryRegionPortio zaphod_mc6850_portio[] = {
+    { 0x80, 2, 1,
+                .read = zaphod_mc6850_read,
+                .write = zaphod_mc6850_write
+                },
+    PORTIO_END_OF_LIST(),
+};
+
 #if 0	/* TODO: v1 init support */
 static void zaphod_mc6850_realizefn(DeviceState *dev, Error **errp)
 {
