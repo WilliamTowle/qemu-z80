@@ -22,6 +22,10 @@
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
 #include "zaphod_iocore.h"
 #endif
+#ifdef CONFIG_ZAPHOD_HAS_UART
+#include "zaphod_uart.h"
+#endif
+
 
 /* Z80_MAX_RAM_SIZE:
  * Address space for a Z80 ends at 64K (some emulations might use less)

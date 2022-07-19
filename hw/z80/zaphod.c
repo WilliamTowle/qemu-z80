@@ -14,6 +14,7 @@
 #include "hw/hw.h"
 #include "hw/boards.h"
 #include "hw/loader.h"
+#include "hw/qdev-properties.h"
 #include "sysemu/sysemu.h"
 #include "sysemu/reset.h"
 #include "qapi/error.h"
@@ -67,6 +68,21 @@ static void main_cpu_reset(void *opaque)
     cpu_reset(CPU(cpu));
 }
 
+
+/* Create UART object. Previously serial0 was always mapped to the
+ * stdio UART and serial1 to the MC6850 (if present). This basic UART
+ * serves either purpose [with IOCore managing ioports and ACIA IRQ]
+ */
+static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
+{
+    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_UART));
+    ZaphodUARTState     *zus= ZAPHOD_UART(dev);
+
+    qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
+
+    qdev_init_nofail(dev);
+    return dev;
+}
 
 /* Create IOCore object (to manage IO ports/IRQ) */
 static DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
