@@ -29,8 +29,6 @@
  * void zaphod_sercon_write(void *opaque, uint32_t addr, uint32_t value)
  * const MemoryRegionPortio zaphod_sercon_portio[]
  */
-
-
 DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_SERCON));
@@ -48,6 +46,11 @@ DeviceState *zaphod_sercon_new(ZaphodState *super, CharDriverState *cds)
     return dev;
 }
 
+static const MemoryRegionPortio zaphod_sercon_portio[] = {
+    { 0x00, 1, 1, .read = zaphod_sercon_read },     /* stdin */
+    { 0x01, 1, 1, .write = zaphod_sercon_write, },  /* stdout */
+    PORTIO_END_OF_LIST(),
+};
 
 #if 0	/* TODO: v1 init support */
 static void zaphod_sercon_realizefn(DeviceState *dev, Error **errp)
