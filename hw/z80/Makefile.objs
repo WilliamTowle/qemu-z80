@@ -1,3 +1,4 @@
 obj-$(CONFIG_ZAPHOD) += zaphod.o
 
 obj-$(CONFIG_ZAPHOD_HAS_IOCORE) += zaphod_iocore.o
+obj-$(CONFIG_ZAPHOD_HAS_UART) += zaphod_uart.o
