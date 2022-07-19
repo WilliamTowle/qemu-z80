@@ -14,7 +14,12 @@
 #define ZAPHOD_DEBUG    1
 
 /* TODO: Config-related defines - see also z80-softmmu.mak */
+#define CONFIG_ZAPHOD_HAS_UART
 #define CONFIG_ZAPHOD_HAS_IOCORE
+
+#endif
+#ifdef CONFIG_ZAPHOD_HAS_UART
+#include "zaphod_uart.h"
 
 
 /* Z80_MAX_RAM_SIZE:
