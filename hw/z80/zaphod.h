@@ -15,6 +15,7 @@
 /* Config-related defines - see also z80-softmmu.mak */
 
 #define CONFIG_ZAPHOD_HAS_IOCORE
+#define CONFIG_ZAPHOD_HAS_UART
 
 
 #include "cpu.h"
