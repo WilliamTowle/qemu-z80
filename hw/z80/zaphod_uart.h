@@ -40,8 +40,7 @@ void zaphod_sercon_set_inkey(void *opaque, uint8_t val, bool is_data);
 #endif
 
 
-//DeviceState *zaphod_uart_new(Chardev *chr);
-DeviceState *zaphod_uart_new(void);
+DeviceState *zaphod_uart_new(Chardev *chr_fallback);
 
 
 #endif  /* HW_Z80_ZAPHOD_UART_H */
