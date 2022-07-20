@@ -8,6 +8,7 @@
 
 #include "qemu/osdep.h"
 #include "zaphod.h"
+#include "zaphod_uart.h"
 
 #include "qemu/error-report.h"
 #include "qapi/error.h"
@@ -32,6 +33,23 @@
  * value shared by UART and corresponding screen is part of the UART
  * code.
  */
+
+/* stdio chardev handlers */
+
+static
+int zaphod_iocore_can_receive_stdio(void *opaque)
+{
+    /* Maybe implement a FIFO queue? */
+    return 1;
+}
+
+static
+void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
+{
+    ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
+
+    zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
+}
 
 
 /* stdio ioport handlers */
@@ -104,6 +122,13 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
                     zis, "zaphod.stdio");
     portio_list_add(zis->ioports_stdio, get_system_io(), 0x00);
+
+    /* TODO: configuration of stdin and ACIA inputs from command line */
+
+    qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
+                    zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
+                    NULL,
+                    NULL, zis, NULL, true);
 }
 
 #if 0
