@@ -21,6 +21,7 @@ typedef struct {
 
     CharBackend     chr;
     uint8_t         inkey;
+    bool            inkey_valid;
 } ZaphodUARTState;
 
 
@@ -33,6 +34,9 @@ typedef struct {
 #define ZAPHOD_UART(obj) \
     OBJECT_CHECK(ZaphodUARTState, obj, TYPE_ZAPHOD_UART)
 
+
+uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear);
+void zaphod_uart_set_inkey(void *opaque, uint8_t val, bool is_data);
 
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch);
 
