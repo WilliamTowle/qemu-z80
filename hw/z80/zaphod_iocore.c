@@ -11,6 +11,10 @@
 
 #include "qemu/error-report.h"
 
+#include "zaphod_uart.h"
+#include "exec/address-spaces.h"
+
+
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 0
 #define DPRINTF(fmt, ...) \
@@ -34,9 +38,80 @@
  * ignores them by default
  */
 
+/* stdio chardev handlers */
+
+static
+int zaphod_iocore_can_receive_stdio(void *opaque)
+{
+    /* Maybe implement a FIFO queue? */
+    return 1;
+}
+
+static
+void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
+{
+    ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
+
+    zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
+}
+
+
+/* stdio ioport handlers */
+
+static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
+    int                 value;
+
+    switch (addr)
+    {
+    case 0x00:      /* stdin */
+        value= zaphod_uart_get_inkey(zis->board->uart_stdio, true);
+        return value;
+    default:
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
+#endif
+        return 0x00;
+    }
+}
+
+static
+void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
+{
+#ifdef CONFIG_ZAPHOD_HAS_UART
+        zaphod_uart_putchar(zis->board->uart_stdio, ch);
+#endif
+}
+
+static void zaphod_iocore_write_stdio(void *opaque, uint32_t addr, uint32_t value)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    switch (addr)
+    {
+    case 0x01:      /* stdout */
+        zaphod_iocore_putchar_stdio(zis, value & 0xff);
+        break;
+    default:
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, value);
+#endif
+        break;
+    }
+}
+
+static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
+    { 0x00, 1, 1, .read = zaphod_iocore_read_stdio },     /* stdin */
+    { 0x01, 1, 1, .write = zaphod_iocore_write_stdio, },  /* stdout */
+    PORTIO_END_OF_LIST()
+};
+
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+
+    /* stdio setup */
 
     zis->ioports_stdio = g_new(PortioList, 1);
     portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
