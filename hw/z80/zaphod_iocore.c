@@ -68,10 +68,10 @@ void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
 #ifdef CONFIG_ZAPHOD_HAS_UART
         zaphod_uart_putchar(zis->board->uart_stdio, ch);
 #endif
-//#ifdef CONFIG_ZAPHOD_HAS_SCREEN
-//        /* mux to screen (TODO: make configurable) */
-//        zaphod_screen_putchar(zis->board, ch);
-//#endif
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+        /* mux to screen (TODO: make configurable) */
+        zaphod_screen_putchar(zis->board, ch);
+#endif
 }
 
 static void zaphod_iocore_write_stdio(void *opaque, uint32_t addr, uint32_t value)
