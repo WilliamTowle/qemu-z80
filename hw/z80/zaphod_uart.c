@@ -31,12 +31,13 @@ int zaphod_uart_can_receive(void *opaque)
 static
 void zaphod_uart_receive(void *opaque, const uint8_t *buf, int len)
 {
-    ZaphodUARTState *zss= ZAPHOD_UART(opaque);
+    ZaphodUARTState *zus= ZAPHOD_UART(opaque);
 
-    zss->inkey= buf[0];
+    zus->inkey= buf[0];
+    zus->inkey_valid= true;
 }
+#endif
 
-static
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
 {
     if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
@@ -62,7 +63,26 @@ void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
         zaphod_uart_putchar(zus, '*');
     }
 }
-#endif
+
+uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear)
+{
+    ZaphodUARTState *zus= (ZaphodUARTState *)opaque;
+    uint8_t val= zus->inkey;
+
+    if (read_and_clear)
+    {
+        zus->inkey= '\0';
+        zus->inkey_valid= false;
+    }
+
+    return val;
+}
+
+void zaphod_uart_set_inkey(void *opaque, uint8_t val, bool is_data)
+{
+    ZaphodUARTState *zus= (ZaphodUARTState *)opaque;
+    zus->inkey= val;
+}
 
 
 static void zaphod_uart_realizefn(DeviceState *dev, Error **errp)
@@ -75,6 +95,7 @@ static void zaphod_uart_reset(DeviceState *dev)
     ZaphodUARTState   *zus= ZAPHOD_UART(dev);
 
     zus->inkey= '\0';
+    zus->inkey_valid= false;
 }
 
 
