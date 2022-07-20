@@ -10,16 +10,14 @@
 
 #include "qemu/error-report.h"
 
+#include "zaphod_uart.h"
+#include "exec/address-spaces.h"
 
 #define DPRINTF(fmt, ...) \
     do { if (ZAPHOD_DEBUG) error_printf("zaphod_iocore: " fmt , ## __VA_ARGS__); } while(0)
 
 
 /* PARTIAL
- * Missing here:
- *  1. for input - _can_read and _read callbacks
- *  2. for output - putchar
- *
  * We need to handle running the BASIC ROM on the Grant Searle board
  * [I/O via MC6850] and running the Zaphod "teletype" ROM on the Phil
  * Brown board. There is an IRQ on input associated with the former.
@@ -36,6 +34,73 @@
  * stdio [sercon] and ACIA need per-device input consoles with
  * 'inkey' state? How do we handle input and output streams/muxing?
  */
+
+static
+int zaphod_iocore_can_receive_stdio(void *opaque)
+{
+    /* Maybe implement a FIFO queue? */
+    return 1;
+}
+
+static
+void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
+{
+    ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
+
+    zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
+}
+
+
+static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
+    int		value;
+
+    switch (addr)
+    {
+    case 0x00:		/* stdin */
+        //value= zis->inkey;
+        //zis->inkey= 0;
+        value= zaphod_uart_get_inkey(zis->board->uart_stdio, true);
+        return value;
+    default:
+;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
+        return 0x00;
+    }
+}
+
+static
+void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
+{
+#ifdef CONFIG_ZAPHOD_HAS_UART
+        zaphod_uart_putchar(zis->board->uart_stdio, ch);
+#endif
+#ifdef CONFIG_ZAPHOD_HAS_SCREEN
+        /* mux to screen (TODO: make configurable) */
+        zaphod_screen_putchar(zis->board, ch);
+#endif
+}
+
+static void zaphod_iocore_write_stdio(void *opaque, uint32_t addr, uint32_t value)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    switch (addr)
+    {
+    case 0x01:        /* stdout */
+        zaphod_iocore_putchar_stdio(zis, value & 0xff);
+        break;
+    default:
+;DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, value);
+        break;
+    }
+}
+
+static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
+    { 0x00, 1, 1, .read = zaphod_iocore_read_stdio },     /* stdin */
+    { 0x01, 1, 1, .write = zaphod_iocore_write_stdio, },  /* stdout */
+    PORTIO_END_OF_LIST(),
+};
 
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
