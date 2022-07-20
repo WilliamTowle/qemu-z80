@@ -11,7 +11,6 @@
 //#include "zaphod.h"
 
 #include "chardev/char-fe.h"
-#include "exec/ioport.h"
 
 
 typedef DeviceClass ZaphodUARTClass;
@@ -34,11 +33,10 @@ typedef struct {
     OBJECT_CHECK(ZaphodUARTState, obj, TYPE_ZAPHOD_UART)
 
 
-#if 0
-uint8_t zaphod_sercon_get_inkey(void *opaque, bool read_and_clear);
-void zaphod_sercon_set_inkey(void *opaque, uint8_t val, bool is_data);
-#endif
+uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear);
+void zaphod_uart_set_inkey(void *opaque, uint8_t val, bool is_data);
 
+void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch);
 
 //ZaphodUARTState?
 DeviceState *zaphod_uart_new(Chardev *chr_fallback);
