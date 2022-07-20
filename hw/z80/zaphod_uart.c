@@ -31,12 +31,13 @@ int zaphod_uart_can_receive(void *opaque)
 static
 void zaphod_uart_receive(void *opaque, const uint8_t *buf, int len)
 {
-    ZaphodUARTState *zss= ZAPHOD_UART(opaque);
+    ZaphodUARTState *zus= ZAPHOD_UART(opaque);
 
-    zss->inkey= buf[0];
+    zus->inkey= buf[0];
+    zus->inkey_valid= true;
 }
+#endif
 
-static
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
 {
     if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
@@ -64,30 +65,31 @@ void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
         zaphod_uart_putchar(zus, '*');
     }
 }
-#endif
 
-#if 0
-uint8_t zaphod_sercon_get_inkey(void *opaque, bool read_and_clear)
+uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear)
 {
-    ZaphodSerConState *zss= (ZaphodSerConState *)opaque;
-    uint8_t val= zss->inkey;
+    ZaphodUARTState *zus= (ZaphodUARTState *)opaque;
+    uint8_t val= zus->inkey;
 
-    if (read_and_clear) zss->inkey= 0;
+    if (read_and_clear)
+    {
+        zus->inkey= '\0';
+        zus->inkey_valid= false;
+    }
 
     return val;
 }
 
-void zaphod_sercon_set_inkey(void *opaque, uint8_t val, bool is_data)
+void zaphod_uart_set_inkey(void *opaque, uint8_t val, bool is_data)
 {
-    ZaphodSerConState *zss= (ZaphodSerConState *)opaque;
-    zss->inkey= val;
+    ZaphodUARTState *zus= (ZaphodUARTState *)opaque;
+    zus->inkey= val;
 
     /* TODO: raise interrupt logic here?
      * stdin mode (sercon) case: no interrupt to be raised
      * ACIA mode (mc6850) case: raise interrupt if this is data
      */
 }
-#endif
 
 
 static void zaphod_uart_realizefn(DeviceState *dev, Error **errp)
@@ -100,6 +102,7 @@ static void zaphod_uart_reset(DeviceState *dev)
     ZaphodUARTState   *zus= ZAPHOD_UART(dev);
 
     zus->inkey= '\0';
+    zus->inkey_valid= false;
 }
 
 
