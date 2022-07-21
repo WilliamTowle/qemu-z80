@@ -162,7 +162,12 @@ static void zaphod_class_init(ObjectClass *oc, void *data)
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
     mc->no_parallel= 1;
-    mc->no_serial = 1;      /* TODO: set to '0' where serial available */
+#if defined(CONFIG_ZAPHOD_HAS_IOCORE)
+    /* forcibly enable a 'serial0' window for stdin input/output */
+    mc->no_serial = 0;
+#else
+    mc->no_serial = 1;
+#endif
     mc->no_sdcard = 1;
 }
 
