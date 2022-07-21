@@ -35,9 +35,12 @@ void zaphod_uart_receive(void *opaque, const uint8_t *buf, int len)
 static
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
 {
+;DPRINTF("INFO: %s() write of character '%c' (connected? %s)\n", __func__, ch, qemu_chr_fe_backend_connected(&zus->chr)?"y":"n");
+    if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
+        return;     /* CPU IOPort write without console window */
+
     if (isprint(ch))
     {
-;DPRINTF("INFO: %s() write of character '%c'\n", __func__, ch);
         qemu_chr_write(zus->chr.chr, &ch, 1, true);
     }
     else
