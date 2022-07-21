@@ -39,6 +39,9 @@ void zaphod_uart_receive(void *opaque, const uint8_t *buf, int len)
 static
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
 {
+    if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
+        return;     /* CPU IOPort write without console window */
+
     if (isprint(ch))
     {
         qemu_chr_write(zus->chr.chr, &ch, 1, true);
