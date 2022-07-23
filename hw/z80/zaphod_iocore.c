@@ -37,6 +37,23 @@
  * 'inkey' state? How do we handle input and output streams/muxing?
  */
 
+static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+
+    zis->ioports_stdio = g_new(PortioList, 1);
+    portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
+                    zis, "zaphod.stdio");
+    portio_list_add(zis->ioports_stdio, get_system_io(), 0x00);
+;DPRINTF("INFO: Done stdio init/add\n");
+
+;DPRINTF("INFO: About to set chardev handlers for stdio... (chardev connected %s)\n", qemu_chr_fe_backend_connected(&zis->board->uart_stdio->chr)?"y":"n");
+    qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
+                    zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
+                    NULL,
+                    NULL, zis, NULL, true);
+}
+
 #if 0   /* TODO:
          * Refer to UART properties for the device's chardevs
          * We may want to disable UARTS/configure mux here though?
@@ -52,7 +69,7 @@ static void zaphod_iocore_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
-    //dc->realize = zaphod_iocore_realizefn;
+    dc->realize = zaphod_iocore_realizefn;
     /* TODO: initialisation in dc->reset? */
 #if 0
     dc->props = zaphod_iocore_properties;
