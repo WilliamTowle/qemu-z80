@@ -11,6 +11,8 @@
 
 #define ZAPHOD_DEBUG    1
 
+#include "cpu.h"
+
 #include "hw/boards.h"
 
 /* TODO: Config-related defines - see also z80-softmmu.mak */
@@ -42,7 +44,7 @@ typedef struct {
     MachineState parent;
 
     /*< public >*/
-    /* TODO: device state here */
+    Z80CPU              *cpu;
 } ZaphodMachineState;
 
 
