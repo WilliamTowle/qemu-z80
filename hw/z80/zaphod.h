@@ -14,7 +14,7 @@
 //#include "config-devices.h"   /* config-related defines */
 #include "config-host.h"
 
-//#include "cpu.h"
+#include "cpu.h"
 
 #include "hw/boards.h"
 
@@ -41,7 +41,7 @@ typedef struct {
     MachineState parent;
 
     /*< public >*/
-    /* TODO: device state here */
+    Z80CPU              *cpu;
 } ZaphodMachineState;
 
 
