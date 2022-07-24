@@ -10,7 +10,7 @@
 
 #include "qapi/error.h"
 #include "qemu/error-report.h"
-
+#include "qapi/error.h"
 #include "zaphod_uart.h"
 #include "exec/address-spaces.h"
 
@@ -105,13 +105,26 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
 
+    if (!zis->board)
+    {
+        error_setg(errp, "initialisation error - zis->board NULL");
+        return;
+    }
+
     zis->ioports_stdio = g_new(PortioList, 1);
     portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
                     zis, "zaphod.stdio");
     portio_list_add(zis->ioports_stdio, get_system_io(), 0x00);
-;DPRINTF("INFO: Done stdio init/add\n");
 
-;DPRINTF("INFO: About to set chardev handlers for stdio... (chardev connected %s)\n", qemu_chr_fe_backend_connected(&zis->board->uart_stdio->chr)?"y":"n");
+    /* TODO: permit disabling stdin [in which case don't bail, but
+     * don't set up the handlers either]
+     */
+    if (!zis->board->uart_stdio)
+    {
+        error_setg(errp, "initialisation error - zis->board->uart_stdio NULL");
+        return;
+    }
+
     qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
