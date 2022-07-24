@@ -250,7 +250,7 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     NULL,
                     NULL, zis, NULL, true);
 
-        /* TODO: set ACIA IRQ */
+        zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
     }
 
     /* TODO: correlate screen(s) to stdio/acia input; enable (and
@@ -260,11 +260,7 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 ;DPRINTF("INFO: %s() about to do screen init/add...\n", __func__);
 #endif
     if (zis->screen)
-#if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zis->screen));
-#else
-        qdev_realize(DEVICE(zis->screen), NULL, NULL);
-#endif
 }
 
 #if 0
