@@ -12,6 +12,7 @@
 #include "zaphod.h"
 
 #include "exec/ioport.h"
+#include "hw/irq.h"
 
 typedef struct ZaphodMachineState ZaphodMachineState;
 
@@ -24,6 +25,8 @@ typedef struct {
 
     PortioList      *ioports_stdio;
     PortioList      *ioports_acia;
+    qemu_irq        *irq_acia;
+    /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
     //bool          has_acia;       /* mc6850, w/ interrupts */
 } ZaphodIOCoreState;
 
