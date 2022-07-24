@@ -8,6 +8,7 @@
 #include "qemu/osdep.h"
 #include "zaphod.h"
 
+#include "qapi/error.h"
 #include "qemu/error-report.h"
 
 #include "zaphod_uart.h"
@@ -59,8 +60,6 @@ static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
     switch (addr)
     {
     case 0x00:		/* stdin */
-        //value= zis->inkey;
-        //zis->inkey= 0;
         value= zaphod_uart_get_inkey(zis->board->uart_stdio, true);
         return value;
     default:
@@ -119,10 +118,7 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     NULL, zis, NULL, true);
 }
 
-#if 0   /* TODO:
-         * Refer to UART properties for the device's chardevs
-         * We may want to disable UARTS/configure mux here though?
-         */
+#if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
 static Property zaphod_iocore_properties[] = {
     DEFINE_PROP_CHR("chardev",  ZaphodIOCoreState, chr),
     DEFINE_PROP_BOOL("has-acia",  ZaphodIOCoreState, has_acia, false),

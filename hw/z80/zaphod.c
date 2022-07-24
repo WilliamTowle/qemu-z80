@@ -101,20 +101,23 @@ static void zaphod_generic_board_init(MachineState *ms)
 #endif
 #endif
 
-    /* Initialise IOCore subsystem */
-/* NB. we can get a serial0 and a serial1 with:
- *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
- */
-    //zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(/* serial_hds[0] */));
-    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(zms));
-;DPRINTF("INFO: IOCORE device created OK, at %p\n", zms->iocore);
-
     if (serial_hds[0]) {
 ;DPRINTF("INFO: initialising UART device...\n");
         //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
         zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
 ;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
     }
+
+#ifdef CONFIG_ZAPHOD_HAS_IOCORE
+    /* Initialise IOCore subsystem */
+;DPRINTF("INFO: Reached init for IOCORE...\n");
+/* NB. we can get a serial0 and a serial1 with:
+ *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
+ */
+    //zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(/* serial_hds[0] */));
+    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(zms));
+;DPRINTF("INFO: IOCORE device created OK, at %p\n", zms->iocore);
+#endif
 
 
     /* Populate RAM */
