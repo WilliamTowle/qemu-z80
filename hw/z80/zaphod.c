@@ -31,6 +31,23 @@
 #define ZAPHOD_RAM_SIZE     Z80_MAX_RAM_SIZE
 
 
+void zaphod_interrupt_request(void *opaque, int source, int level)
+{   /* ACIA has received input */
+    ZaphodMachineState  *zms= (ZaphodMachineState *)opaque;
+    //CPUState            *cs= CPU(z80_env_get_cpu(zms->cpu));
+    CPUState            *cs= CPU(zms->cpu);
+
+    if (level)
+    {
+        cpu_interrupt(cs, CPU_INTERRUPT_HARD);
+    }
+    else
+    {
+        cpu_reset_interrupt(cs, CPU_INTERRUPT_HARD);
+    }
+}
+
+
 static void zaphod_load_kernel(const char *kernel_filename)
 {
     if (!kernel_filename || !kernel_filename[0])
