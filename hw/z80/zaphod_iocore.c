@@ -11,8 +11,8 @@
 #include "qapi/error.h"
 #include "qemu/error-report.h"
 #include "qapi/error.h"
-#include "zaphod_uart.h"
 #include "exec/address-spaces.h"
+
 
 #define DPRINTF(fmt, ...) \
     do { if (ZAPHOD_DEBUG) error_printf("zaphod_iocore: " fmt , ## __VA_ARGS__); } while(0)
@@ -36,6 +36,8 @@
  * 'inkey' state? How do we handle input and output streams/muxing?
  */
 
+/* stdio chardev handlers */
+
 static
 int zaphod_iocore_can_receive_stdio(void *opaque)
 {
@@ -49,6 +51,9 @@ void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
 
     zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
 }
+
+
+/* ACIA chardev handlers */
 
 static
 int zaphod_iocore_can_receive_acia(void *opaque)
@@ -65,6 +70,8 @@ void zaphod_iocore_receive_acia(void *opaque, const uint8_t *buf, int len)
     zaphod_uart_set_inkey(zis->board->uart_acia, buf[0], true);
 }
 
+
+/* stdio ioport handlers */
 
 static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
 {
@@ -114,6 +121,9 @@ static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
     { 0x01, 1, 1, .write = zaphod_iocore_write_stdio, },  /* stdout */
     PORTIO_END_OF_LIST(),
 };
+
+
+/* ACIA ioport handlers */
 
 static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
 {
@@ -183,6 +193,8 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
         return;
     }
 
+    /* stdio setup */
+
     zis->ioports_stdio = g_new(PortioList, 1);
     portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
                     zis, "zaphod.stdio");
@@ -201,6 +213,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
+
+
+    /* ACIA setup */
 
     zis->ioports_acia = g_new(PortioList, 1);
     portio_list_init(zis->ioports_acia, OBJECT(zis), zaphod_iocore_portio_acia,
