@@ -33,8 +33,11 @@ typedef struct {
     OBJECT_CHECK(ZaphodUARTState, obj, TYPE_ZAPHOD_UART)
 
 
+#if defined(CONFIG_ZAPHOD_HAS_IOCORE)
+int zaphod_uart_can_receive(void *opaque);
 uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear);
 void zaphod_uart_set_inkey(void *opaque, uint8_t val, bool is_data);
+#endif
 
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch);
 
