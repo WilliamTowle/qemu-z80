@@ -62,6 +62,8 @@ void zaphod_iocore_receive_acia(void *opaque, const uint8_t *buf, int len)
     ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
 
     zaphod_uart_set_inkey(zis->board->uart_acia, buf[0], true);
+    if (zis->irq_acia)
+        qemu_irq_raise(*zis->irq_acia);
 }
 
 
@@ -121,16 +123,26 @@ static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
 
 static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
 {
-    //ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
-    //int		value;
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
+    int		value;
 
     switch (addr)
     {
-#if 0   /* FIXME: needs 0x80/0x81 cases from zaphod_mc6850.c here */
-    case 0x00:		/* stdin */
-        value= zaphod_uart_get_inkey(zis->board->uart_acia, true);
+    case 0x80:      /* read ACIA UART PortStatus */
+        /* FIXME: defer to UART function for this value! */
+        value= zaphod_uart_get_inkey(zis->board->uart_acia, false)? 0x01 : 0; /* RxDataReady */
+        value|= 0x02;       /* TxDataEmpty (always) */
+        value|= 0x04;       /* DTD [Data Carrier Detect] */
+        value|= 0x08;       /* CTS [Clear to Send] */
+            /* FrameErr|Overrun|ParityErr|IrqReq not emulated */
+;DPRINTF("DEBUG: %s() read ACIA UART PortStatus (port 0x%02x) -> status %02x\n", __func__, addr, value);
         return value;
-#endif
+    case 0x81:      /* read ACIA UART RxData */
+        value= zaphod_uart_get_inkey(zis->board->uart_acia, true);
+        if (zis->irq_acia)
+            qemu_irq_lower(*zis->irq_acia);
+;DPRINTF("DEBUG: %s() read ACIA UART RXData (port 0x%02x) -> inkey ch-value %d\n", __func__, addr, value);
+        return value? value : 0xff;
     default:
 ;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
         return 0x00;
@@ -151,15 +163,20 @@ void zaphod_iocore_putchar_acia(ZaphodIOCoreState *zis, const unsigned char ch)
 
 static void zaphod_iocore_write_acia(void *opaque, uint32_t addr, uint32_t value)
 {
-    //ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
 
     switch (addr)
     {
-#if 0   /* FIXME: needs 0x80/0x81 cases from zaphod_mc6850.c here */
-    case 0x01:        /* stdout */
+    case 0x80:      /* write -> ACIA UART PortControl */
+        /* ignore since baud rate change etc. not emulated? */
+;DPRINTF("DEBUG: %s() write m6850 PortControl (port 0x%02x) <- value %d\n", __func__, addr, value);
+        break;
+    case 0x81:      /* write -> ACIA UART TxData */
+;DPRINTF("DEBUG: %s() write ACIA UART TxData (port 0x%02x) -> ch-value=%d\n", __func__, addr, value);
+        //zaphod_consolegui_putchar(zms->console, toupper(value & 0xff));
+        //zaphod_serio_putchar(/*zms->console, */value & 0xff);
         zaphod_iocore_putchar_acia(zis, value & 0xff);
         break;
-#endif
     default:
 ;DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, value);
         break;
