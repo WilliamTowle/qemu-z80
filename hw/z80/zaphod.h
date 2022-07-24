@@ -11,6 +11,8 @@
 
 #define ZAPHOD_DEBUG    1
 
+#include "cpu.h"
+
 #include "hw/boards.h"
 
 
@@ -53,6 +55,7 @@ struct ZaphodMachineState {
     MachineState parent;
 
     /*< public >*/
+    Z80CPU              *cpu;
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     ZaphodIOCoreState        *iocore;
 #endif

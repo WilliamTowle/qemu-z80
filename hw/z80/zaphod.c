@@ -72,18 +72,15 @@ static void zaphod_generic_board_init(MachineState *ms)
 {
     ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
     const char *kernel_filename = ms->kernel_filename;
-    Z80CPU *cpu;
     MemoryRegion *address_space_mem;
     MemoryRegion *ram;
     CPUState *cs;
 
     /* Init CPU/set reset callback */
-;DPRINTF("DEBUG: ms has cpu_type: %s (is '%s')\n", ms->cpu_type?"y":"n", ms->cpu_type);
 
     cs= cpu_create(ms->cpu_type);
-    cpu= Z80_CPU(cs);
-
-    qemu_register_reset(main_cpu_reset, cpu);
+    zms->cpu = Z80_CPU(cs);
+    qemu_register_reset(main_cpu_reset, zms->cpu);
 
     /* QEmu v5: reset has happened */
     //cpu_reset(cs);
