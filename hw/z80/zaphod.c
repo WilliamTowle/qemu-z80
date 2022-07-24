@@ -102,11 +102,19 @@ static void zaphod_generic_board_init(MachineState *ms)
 #endif
 
     if (serial_hds[0]) {
-;DPRINTF("INFO: initialising UART device...\n");
+;DPRINTF("INFO: initialising UART0 device...\n");
         //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
         zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
-;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
+;DPRINTF("INFO: UART0 device created OK, at %p\n", zms->uart_stdio);
     }
+
+    if (serial_hds[1]) {
+;DPRINTF("INFO: initialising UART1 device...\n");
+        //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
+        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
+;DPRINTF("INFO: UART1 device created OK, at %p\n", zms->uart_acia);
+    }
+
 
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     /* Initialise IOCore subsystem */
