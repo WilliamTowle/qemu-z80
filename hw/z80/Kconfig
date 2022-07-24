@@ -2,8 +2,14 @@ config ZAPHOD
     # Support for Zaphod machine family
     # Sample machine inspired by Phil Brown's Amiga Z80 system emulator
     select ZAPHOD_HAS_IOCORE
+    select ZAPHOD_HAS_UART
 
 config ZAPHOD_HAS_IOCORE
     # IOCORE (Zaphod board I/O subsystem) support
+    bool
+    depends on ZAPHOD
+
+config ZAPHOD_HAS_UART
+    # UART support
     bool
     depends on ZAPHOD
