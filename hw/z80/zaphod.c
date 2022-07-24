@@ -160,9 +160,17 @@ static void zaphod_board_init(MachineState *ms)
     {   /* QEmu's main serial console is available */
         zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
 #if 1   /* WmT - TRACE */
-;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
+;DPRINTF("INFO: UART0 [stdio] created OK - device at %p has chr.chr %p\n", zms->uart_stdio, zms->uart_stdio->chr.chr);
 #endif
     }
+
+    if (serial_hds[1]) {
+        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: UART1 [ACIA] created OK - device at %p has chr.chr %p\n", zms->uart_acia, zms->uart_acia->chr.chr);
+#endif
+    }
+
 
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     /* Initialise IOCore subsystem */
