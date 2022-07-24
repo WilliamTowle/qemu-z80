@@ -117,11 +117,19 @@ static void zaphod_generic_board_init(MachineState *ms)
 
     if (serial_hds[0])
     {   /* QEmu's serial console exists */
-;DPRINTF("INFO: initialising UART device...\n");
+;DPRINTF("INFO: initialising UART0 device...\n");
         //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
         zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
-;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
+;DPRINTF("INFO: UART0 [stdio] created OK - device at %p [zms %p] has chr.chr %p\n", zms->uart_stdio, zms, zms->uart_stdio->chr.chr);
     }
+
+    if (serial_hds[1]) {
+;DPRINTF("INFO: initialising UART1 device...\n");
+        //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
+        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
+;DPRINTF("INFO: UART1 [ACIA] created OK - device at %p [zms %p] has chr.chr %p\n", zms->uart_acia, zms, zms->uart_acia->chr.chr);
+    }
+
 
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     /* Initialise IOCore subsystem */
