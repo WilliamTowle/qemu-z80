@@ -98,4 +98,7 @@ struct ZaphodMachineState {
     OBJECT_GET_CLASS(ZaphodMachineClass, (obj), TYPE_ZAPHOD_MACHINE)
 
 
+void zaphod_interrupt_request(void *opaque, int source, int level);
+
+
 #endif  /* HW_Z80_ZAPHOD_H */
