@@ -17,7 +17,15 @@
     do { if (ZAPHOD_DEBUG) error_printf("zaphod_uart: " fmt , ## __VA_ARGS__); } while(0)
 
 
-#if !defined(CONFIG_ZAPHOD_HAS_IOCORE)
+#if defined(CONFIG_ZAPHOD_HAS_IOCORE)
+int zaphod_uart_can_receive(void *opaque)
+{
+    /* With no FIFO, we can always store something to 'inkey' (and
+     * the device-specific 'opaque' value is redundant
+     */
+    return 1;
+}
+#else
 static
 int zaphod_uart_can_receive(void *opaque)
 {
