@@ -22,6 +22,7 @@ typedef struct {
     ZaphodMachineState  *board;
 
     PortioList      *ioports_stdio;
+    PortioList      *ioports_acia;
     //bool          has_acia;       /* mc6850, w/ interrupts */
 } ZaphodIOCoreState;
 
