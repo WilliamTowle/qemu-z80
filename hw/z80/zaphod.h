@@ -13,7 +13,8 @@
 
 /* TODO: Config-related defines - see also z80-softmmu.mak */
 
-//#include "cpu.h"
+
+#include "cpu.h"
 
 #include "hw/boards.h"
 
@@ -40,7 +41,7 @@ typedef struct {
     MachineState parent;
 
     /*< public >*/
-    /* TODO: device state here */
+    Z80CPU              *cpu;
 } ZaphodMachineState;
 
 
