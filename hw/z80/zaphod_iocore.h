@@ -24,6 +24,9 @@ typedef struct {
     ZaphodMachineState  *board;
 
     PortioList          *ioports_stdio;
+    PortioList          *ioports_acia;
+    qemu_irq            *irq_acia;
+    /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
     /* TODO: correlate screen(s) to stdio/acia input */
     ZaphodScreenState   *screen;
 } ZaphodIOCoreState;
