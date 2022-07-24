@@ -29,6 +29,23 @@
 #define ZAPHOD_RAM_SIZE     Z80_MAX_RAM_SIZE
 
 
+void zaphod_interrupt_request(void *opaque, int source, int level)
+{   /* ACIA has received input */
+    ZaphodMachineState  *zms= (ZaphodMachineState *)opaque;
+    //CPUState            *cs= CPU(z80_env_get_cpu(zms->cpu));
+    CPUState            *cs= CPU(zms->cpu);
+
+    if (level)
+    {
+        cpu_interrupt(cs, CPU_INTERRUPT_HARD);
+    }
+    else
+    {
+        cpu_reset_interrupt(cs, CPU_INTERRUPT_HARD);
+    }
+}
+
+
 static void zaphod_load_kernel(const char *kernel_filename)
 {
     if (!kernel_filename || !kernel_filename[0])
@@ -70,18 +87,15 @@ static void zaphod_generic_board_init(MachineState *ms)
 {
     ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
     const char *kernel_filename = ms->kernel_filename;
-    Z80CPU *cpu;
     MemoryRegion *address_space_mem;
     MemoryRegion *ram;
     CPUState *cs;
 
     /* Init CPU/set reset callback */
-;DPRINTF("DEBUG: ms has cpu_type: %s (is '%s')\n", ms->cpu_type?"y":"n", ms->cpu_type);
 
     cs= cpu_create(ms->cpu_type);
-    cpu= Z80_CPU(cs);
-
-    qemu_register_reset(main_cpu_reset, cpu);
+    zms->cpu = Z80_CPU(cs);
+    qemu_register_reset(main_cpu_reset, zms->cpu);
 
     /* QEmu v5: reset has happened */
     //cpu_reset(cs);

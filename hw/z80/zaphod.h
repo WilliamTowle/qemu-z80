@@ -9,6 +9,8 @@
 #define HW_Z80_ZAPHOD_H
 
 
+#include "cpu.h"
+
 #define ZAPHOD_DEBUG    1
 
 #include "hw/boards.h"
@@ -62,6 +64,7 @@ struct ZaphodMachineState {
     MachineState parent;
 
     /*< public >*/
+    Z80CPU              *cpu;
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     ZaphodIOCoreState        *iocore;
 #endif
@@ -84,6 +87,9 @@ struct ZaphodMachineState {
 	OBJECT_CLASS_CHECK(ZaphodMachineClass, oc, TYPE_ZAPHOD_MACHINE)
 #define ZAPHOD_MACHINE_GET_CLASS(obj) \
     OBJECT_GET_CLASS(ZaphodMachineClass, (obj), TYPE_ZAPHOD_MACHINE)
+
+
+void zaphod_interrupt_request(void *opaque, int source, int level);
 
 
 #endif  /* HW_Z80_ZAPHOD_H */
