@@ -229,6 +229,8 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     zaphod_iocore_can_receive_acia, zaphod_iocore_receive_acia,
                     NULL,
                     NULL, zis, NULL, true);
+
+    zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
 }
 
 #if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
