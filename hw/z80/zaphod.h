@@ -75,6 +75,7 @@ struct ZaphodMachineState {
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_UART
     ZaphodUARTState     *uart_stdio;
+    ZaphodUARTState     *uart_acia;
 #endif
 
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
