@@ -255,7 +255,7 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     NULL,
                     NULL, zis, NULL, true);
 
-        /* TODO: set ACIA IRQ */
+        zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
     }
 
     /* TODO: correlate screen(s) to stdio/acia input; enable (and

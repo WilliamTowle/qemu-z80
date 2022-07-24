@@ -13,6 +13,7 @@
 #include "zaphod_screen.h"
 
 #include "exec/ioport.h"
+#include "hw/irq.h"
 
 typedef struct ZaphodMachineState ZaphodMachineState;
 
