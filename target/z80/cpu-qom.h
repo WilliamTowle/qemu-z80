@@ -1,5 +1,5 @@
 /*
- * Minimal QEmu Z80 CPU
+ * QEmu Z80 CPU
  * vim: ft=c sw=4 ts=4 et :
  *
  *  Ported/provisional reimplementations by William Towle 2018-2022
