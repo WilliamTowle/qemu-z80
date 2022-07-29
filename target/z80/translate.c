@@ -87,15 +87,15 @@ static void gen_debug(DisasContext *s, target_ulong cur_pc)
 
 static void gen_eob(DisasContext *s)
 {
-    if (s->tb->flags & HF_INHIBIT_IRQ_MASK) {
+    if (s->base.tb->flags & HF_INHIBIT_IRQ_MASK) {
         gen_helper_reset_inhibit_irq(cpu_env);
     }
-    if (s->singlestep_enabled) {
+    if (s->base.singlestep_enabled) {
         gen_helper_debug(cpu_env);
     } else {
         tcg_gen_exit_tb(0);
     }
-    s->is_jmp = DISAS_TB_JUMP;
+    s->base.is_jmp = DISAS_NORETURN;
 }
 
 
