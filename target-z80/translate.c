@@ -75,8 +75,7 @@ typedef struct DisasContext {
     int override; /* -1 if no override */
     int prefix;
     uint16_t pc; /* program counter */
-    int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
-                   static state change (stop translation) */
+    int is_jmp;
     int model;
 
     /* current block context */
@@ -549,7 +548,7 @@ static void gen_debug(DisasContext *s, target_ulong cur_pc)
     gen_jmp_im(cur_pc);
     //gen_helper_debug();
     gen_helper_debug(cpu_env);
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 static void gen_eob(DisasContext *s)
@@ -562,7 +561,7 @@ static void gen_eob(DisasContext *s)
     } else {
         tcg_gen_exit_tb(0);
     }
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 
@@ -574,7 +573,7 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 #else	/* v0.15.0+ */
     gen_helper_raise_exception(cpu_env, tcg_const_i32(trapno));
 #endif
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 /* Conditions */
@@ -708,7 +707,7 @@ static inline void gen_jcc(DisasContext *s, int cc,
     gen_set_label(l1);
     gen_goto_tb(s, 1, val);
 
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 static inline void gen_callcc(DisasContext *s, int cc,
@@ -730,7 +729,7 @@ static inline void gen_callcc(DisasContext *s, int cc,
     gen_pushw(cpu_T[0]);
     gen_goto_tb(s, 1, val);
 
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 static inline void gen_retcc(DisasContext *s, int cc,
@@ -752,7 +751,7 @@ static inline void gen_retcc(DisasContext *s, int cc,
     gen_helper_jmp_T0(cpu_env);
     gen_eob(s);
 
-    s->is_jmp = 3;
+    s->is_jmp = DISAS_TB_JUMP;
 }
 
 static inline void gen_ex(int regpair1, int regpair2)
@@ -831,7 +830,7 @@ next_byte:
                     s->pc++;
                     gen_helper_djnz(cpu_env, tcg_const_tl(s->pc + n), tcg_const_tl(s->pc));
                     gen_eob(s);
-                    s->is_jmp = 3;
+                    s->is_jmp = DISAS_TB_JUMP;
                     zprintf("djnz $%02x\n", n);
                     break;
                 case 3:
@@ -839,7 +838,7 @@ next_byte:
                     s->pc++;
                     gen_jmp_im(s->pc + n);
                     gen_eob(s);
-                    s->is_jmp = 3;
+                    s->is_jmp = DISAS_TB_JUMP;
                     zprintf("jr $%02x\n", n);
                     break;
                 case 4:
@@ -1155,7 +1154,7 @@ next_byte:
                         gen_helper_jmp_T0(cpu_env);
                         zprintf("ret\n");
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
 //                      s->is_ei = 1;
                         break;
                     case 1:
@@ -1170,7 +1169,7 @@ next_byte:
                         gen_helper_jmp_T0(cpu_env);
                         zprintf("jp %s\n", regpairnames[r1]);
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                         break;
                     case 3:
                         r1 = regpairmap(OR2_HL, m);
@@ -1198,7 +1197,7 @@ next_byte:
                     gen_jmp_im(n);
                     zprintf("jp $%04x\n", n);
                     gen_eob(s);
-                    s->is_jmp = 3;
+                    s->is_jmp = DISAS_TB_JUMP;
                     break;
                 case 1:
                     //zprintf("cb prefix\n");
@@ -1283,7 +1282,7 @@ next_byte:
                         gen_jmp_im(n);
                         zprintf("call $%04x\n", n);
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                         break;
                     case 1:
                         //zprintf("dd prefix\n");
@@ -1319,7 +1318,7 @@ next_byte:
                 gen_jmp_im(y*8);
                 zprintf("rst $%02x\n", y*8);
                 gen_eob(s);
-                s->is_jmp = 3;
+                s->is_jmp = DISAS_TB_JUMP;
                 break;
             }
             break;
@@ -1531,7 +1530,7 @@ next_byte:
                     zprintf("reti\n");
                 }
                 gen_eob(s);
-                s->is_jmp = 3;
+                s->is_jmp = DISAS_TB_JUMP;
 //              s->is_ei = 1;
                 break;
             case 6:
@@ -1598,7 +1597,7 @@ next_byte:
                     if ((y & 2)) {
                         gen_helper_bli_ld_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                     }
                     break;
 
@@ -1615,7 +1614,7 @@ next_byte:
                     if ((y & 2)) {
                         gen_helper_bli_cp_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                     }
                     break;
 
@@ -1637,7 +1636,7 @@ next_byte:
                     if ((y & 2)) {
                         gen_helper_bli_io_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                     } else if (use_icount) {
                         gen_jmp_im(s->pc);
                     }
@@ -1661,7 +1660,7 @@ next_byte:
                     if ((y & 2)) {
                         gen_helper_bli_io_rep(cpu_env, tcg_const_tl(s->pc));
                         gen_eob(s);
-                        s->is_jmp = 3;
+                        s->is_jmp = DISAS_TB_JUMP;
                     } else if (use_icount) {
                         gen_jmp_im(s->pc);
                     }
@@ -1802,7 +1801,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         pc_ptr = disas_insn(env, dc, pc_ptr);
         num_insns++;
         /* stop translation if indicated */
-        if (dc->is_jmp) {
+        if (dc->is_jmp != DISAS_NEXT) {
             break;
         }
         /* if single step mode, we generate only one instruction and
