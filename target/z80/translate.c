@@ -58,7 +58,7 @@
 
 
 /* global register indexes */
-//static TCGv cpu_A0;
+static TCGv cpu_A0;
 #if 0   /* overkill? feature unused for z80 */
 static TCGv_i32 cpu_cc_op;
 #endif
@@ -985,8 +985,76 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
                 }
                 break;
 
-            /* TODO: case for z=2 */
-
+            case 2:
+                switch (q) {
+                case 0:
+                    switch (p) {
+                    case 0:
+                        gen_movb_v_A(cpu_T[0]);
+                        gen_movw_v_BC(cpu_A0);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld (bc),a\n");
+                        break;
+                    case 1:
+                        gen_movb_v_A(cpu_T[0]);
+                        gen_movw_v_DE(cpu_A0);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld (de),a\n");
+                        break;
+                    case 2:
+                        n = z80_lduw_code(env, s);
+                        //s->pc += 2;
+                        r1 = regpairmap(OR2_HL, m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_st16(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld ($%04x),%s\n", n, regpairnames[r1]);
+                        break;
+                    case 3:
+                        n = z80_lduw_code(env, s);
+                        //s->pc += 2;
+                        gen_movb_v_A(cpu_T[0]);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_st8(cpu_T[0], cpu_A0, MEM_INDEX);
+                        zprintf("ld ($%04x),a\n", n);
+                        break;
+                    }
+                    break;
+                case 1:
+                    switch (p) {
+                    case 0:
+                        gen_movw_v_BC(cpu_A0);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,(bc)\n");
+                        break;
+                    case 1:
+                        gen_movw_v_DE(cpu_A0);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,(de)\n");
+                        break;
+                    case 2:
+                        n = z80_lduw_code(env, s);
+                        //s->pc += 2;
+                        r1 = regpairmap(OR2_HL, m);
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_ld16u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movw_reg_v(r1, cpu_T[0]);
+                        zprintf("ld %s,($%04x)\n", regpairnames[r1], n);
+                        break;
+                    case 3:
+                        n = z80_lduw_code(env, s);
+                        //s->pc += 2;
+                        tcg_gen_movi_i32(cpu_A0, n);
+                        tcg_gen_qemu_ld8u(cpu_T[0], cpu_A0, MEM_INDEX);
+                        gen_movb_A_v(cpu_T[0]);
+                        zprintf("ld a,($%04x)\n", n);
+                        break;
+                    }
+                    break;
+                }
+                break;
             case 3:
                 switch (q)
                 {
@@ -1342,7 +1410,8 @@ void tcg_z80_init(void)
 ;DPRINTF("DEBUG: %s() tcg_global_mem_new_i32() for cpu_T[0]...\n", __func__);
 #endif
     cpu_T[0] = tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, t0), "T0");
-    /* PARTIAL: also create cpu_T[1], cpu_A0 */
+    /* PARTIAL: also create cpu_T[1] */
+    cpu_A0= tcg_global_mem_new_i32(cpu_env, offsetof(CPUZ80State, a0), "A0");
 }
 
 

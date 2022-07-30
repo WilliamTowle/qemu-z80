@@ -117,6 +117,7 @@ enum {
 
 typedef struct CPUZ80State {
     target_ulong    t0 /*, t1 */;
+    target_ulong    a0;
     uint32_t        regs[CPU_NB_REGS];
     target_ulong    pc;
 
