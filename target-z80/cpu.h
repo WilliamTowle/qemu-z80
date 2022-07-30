@@ -87,25 +87,11 @@ static inline CPUZ80State *cpu_init(const char *cpu_model)
 
 static inline bool cpu_has_work(CPUState *cs)
 {
-#if 1   /* As implemented at repo.or.cz target-z80/exec.h
-         * Fixme? Zilog's Z80 has NMI type interrupts, and not
-         * all Zaphod platforms have I/O using IRQs
-         */
+    /* For i386, INTERRUPT_HARD is only flagged if eflags has
+     * IF_MASK set; Zilog's Z80 also has NMI type interrupts [not
+     * implemented]
+     */
     return cs->interrupt_request & CPU_INTERRUPT_HARD;
-#else   /* as implemented for target-i386
-         * POLL/SMI/NMI/MCE/VIRQ/INIT/SIPI/TPR are described as
-         * i386-specific
-         */
-    Z80CPU *cpu = Z80_CPU(cs);
-    CPUZ80State *env = &cpu->env;
-    return ((cs->interrupt_request & (CPU_INTERRUPT_HARD |
-                                      CPU_INTERRUPT_POLL)) &&
-            (env->eflags & IF_MASK)) ||
-           (cs->interrupt_request & (CPU_INTERRUPT_NMI |
-                                     CPU_INTERRUPT_INIT |
-                                     CPU_INTERRUPT_SIPI |
-                                     CPU_INTERRUPT_MCE));
-#endif
 }
 
 #include "exec/exec-all.h"
