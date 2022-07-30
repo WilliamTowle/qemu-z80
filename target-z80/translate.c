@@ -60,12 +60,12 @@ typedef struct DisasContext {
     /* current insn context */
     int override; /* -1 if no override */
     int prefix;
-    uint16_t pc; /* pc = pc + cs_base */
+    uint16_t pc; /* program counter */
     int is_jmp; /* 1 = means jump (stop translation), 2 means CPU
                    static state change (stop translation) */
 //    int model;
 //    /* current block context */
-//    target_ulong cs_base; /* base of CS segment */
+//    target_ulong cs_base; /* [i386] base of CS segment */
     int singlestep_enabled; /* "hardware" single step enabled */
     int jmp_opt; /* use direct block chaining for direct jumps */
     int flags; /* all execution flags */
@@ -1106,7 +1106,7 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 //    CPUBreakpoint *bp;
     int flags, j, lj /* , cflags - set but unused */ ;
     target_ulong pc_start;
-//    target_ulong cs_base;
+//    target_ulong cs_base; /* i386 */
     int num_insns;
     int max_insns;
 #if 1	/* WmT - TRACE */
@@ -1166,7 +1166,11 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         if (unlikely(!QTAILQ_EMPTY(&env->breakpoints))) {
             QTAILQ_FOREACH(bp, &env->breakpoints, entry) {
                 if (bp->pc == pc_ptr) {
+#if 0
                     gen_debug(dc, pc_ptr - dc->cs_base);
+#else
+                    gen_debug(dc, pc_ptr /* - dc->cs_base */);
+#endif
                     break;
                 }
             }
@@ -1208,7 +1212,11 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
 #else
         if (dc->singlestep_enabled ||
             (flags & HF_INHIBIT_IRQ_MASK)) {
+#if 0
             gen_jmp_im(pc_ptr - dc->cs_base);
+#else
+            gen_jmp_im(pc_ptr /* - dc->cs_base */);
+#endif
             gen_eob(dc);
             break;
         }
@@ -1217,12 +1225,20 @@ static inline void gen_intermediate_code_internal(Z80CPU *cpu,
         if (tcg_ctx.gen_opc_ptr >= gen_opc_end ||
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
             num_insns >= max_insns) {
+#if 0
             gen_jmp_im(pc_ptr - dc->cs_base);
+#else
+            gen_jmp_im(pc_ptr /* - dc->cs_base */);
+#endif
             gen_eob(dc);
             break;
         }
         if (singlestep) {
+#if 0
             gen_jmp_im(pc_ptr - dc->cs_base);
+#else
+            gen_jmp_im(pc_ptr /* - dc->cs_base */);
+#endif
             gen_eob(dc);
             break;
         }
@@ -1288,9 +1304,14 @@ void restore_state_to_opc(CPUZ80State *env, TranslationBlock *tb, int pc_pos)
                         tcg_ctx.gen_opc_pc[i]);
             }
         }
+#if 0
         qemu_log("pc_pos=0x%x eip=" TARGET_FMT_lx " cs_base=%x\n",
                 pc_pos, tcg_ctx.gen_opc_pc[pc_pos] - tb->cs_base,
                 (uint32_t)tb->cs_base);
+#else
+        qemu_log("pc_pos=0x%x pc=" TARGET_FMT_lx "\n",
+                pc_pos, tcg_ctx.gen_opc_pc[pc_pos] /* - tb->cs_base */);
+#endif
     }
 #endif
     env->eip = tcg_ctx.gen_opc_pc[pc_pos] - tb->cs_base;
