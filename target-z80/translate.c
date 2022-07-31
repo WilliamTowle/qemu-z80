@@ -56,6 +56,7 @@
 #define zprintf printf
 #else
 #define zprintf(...)
+#define ZPRINTF_UNUSED  __attribute__((unused))
 #endif
 
 static TCGv /* cpu_env, */ cpu_T[3], cpu_A0;
@@ -104,7 +105,7 @@ enum {
     OR_IYmem,
 };
 
-static const char *const regnames[] = {
+static const char *const regnames[] ZPRINTF_UNUSED = {
     [OR_B]     = "b",
     [OR_C]     = "c",
     [OR_D]     = "d",
@@ -124,7 +125,7 @@ static const char *const regnames[] = {
     [OR_IYmem] = "(iy+d)",
 };
 
-static const char *const idxnames[] = {
+static const char *const idxnames[] ZPRINTF_UNUSED = {
     [OR_IXmem] = "ix",
     [OR_IYmem] = "iy",
 };
@@ -440,7 +441,7 @@ enum {
     OR2_HLX,
 };
 
-static const char *const regpairnames[] = {
+static const char *const regpairnames[] ZPRINTF_UNUSED = {
     [OR2_AF]  = "af",
     [OR2_BC]  = "bc",
     [OR2_DE]  = "de",
@@ -571,7 +572,7 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 
 /* Conditions */
 
-static const char *const cc[8] = {
+static const char *const cc[8] ZPRINTF_UNUSED = {
     "nz",
     "z",
     "nc",
@@ -602,7 +603,7 @@ static const int cc_flags[4] = {
 
 /* Arithmetic/logic operations */
 
-static const char *const alu[8] = {
+static const char *const alu[8] ZPRINTF_UNUSED = {
     "add a,",
     "adc a,",
     "sub ",
@@ -630,7 +631,7 @@ static alu_helper_func *const gen_alu[8] = {
 
 /* Rotation/shift operations */
 
-static const char *const rot[8] = {
+static const char *const rot[8] ZPRINTF_UNUSED = {
     "rlc",
     "rrc",
     "rl",
@@ -657,7 +658,7 @@ static rot_helper_func *const gen_rot_T0[8] = {
 
 /* Block instructions */
 
-static const char *const bli[4][4] = {
+static const char *const bli[4][4] ZPRINTF_UNUSED = {
     { "ldi",  "cpi",  "ini",  "outi", },
     { "ldd",  "cpd",  "ind",  "outd", },
     { "ldir", "cpir", "inir", "otir", },
