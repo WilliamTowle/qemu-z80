@@ -143,6 +143,12 @@ static void z80_cpu_reset(CPUState *s)
 
     /* QEmu v2+: no initial hidden flags required */
     env->hflags= 0;
+
+#if 0   /* untested */
+    cpu_breakpoint_remove_all(s, BP_CPU);
+    cpu_watchpoint_remove_all(s, BP_CPU);
+    //also have class init set cc->debug_excp_handler
+#endif
 }
 
 
