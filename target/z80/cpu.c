@@ -145,6 +145,12 @@ static void z80_cpu_reset(CPUState *s)
 ;exit(1);
     env->hflags |= HF_SOFTMMU_MASK;
 #endif
+
+#if 0   /* untested */
+    cpu_breakpoint_remove_all(s, BP_CPU);
+    cpu_watchpoint_remove_all(s, BP_CPU);
+    //also have class init set cc->debug_excp_handler
+#endif
 }
 
 
