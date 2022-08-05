@@ -128,6 +128,15 @@ static const GraphicHwOps zaphod_screen_ops= {
 };
 
 
+/* character processing */
+
+void zaphod_screen_putchar(void *opaque, uint8_t ch)
+{
+    /* TODO: implement */
+;DPRINTF("*** INFO: zaphod_screen_putchar() - ch 0x%02x ***\n", ch);
+}
+
+
 DeviceState *zaphod_screen_new(void)
 {
     DeviceState *dev;
