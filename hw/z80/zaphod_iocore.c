@@ -228,26 +228,21 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     /* ACIA setup */
 
-    zis->ioports_acia = g_new(PortioList, 1);
-    portio_list_init(zis->ioports_acia, OBJECT(zis), zaphod_iocore_portio_acia,
-                    zis, "zaphod.acia");
-    portio_list_add(zis->ioports_acia, get_system_io(), 0x00);
-
-    /* TODO: permit disabling acia [in which case don't bail, but
-     * don't set up the handlers either]
-     */
-    if (!zis->board->uart_acia)
+    if (zis->board->uart_acia)
     {
-        error_setg(errp, "initialisation error - zis->board->uart_acia NULL");
-        return;
-    }
+        zis->ioports_acia = g_new(PortioList, 1);
+        portio_list_init(zis->ioports_acia, OBJECT(zis), zaphod_iocore_portio_acia,
+                        zis, "zaphod.acia");
+        portio_list_add(zis->ioports_acia, get_system_io(), 0x00);
 
-    qemu_chr_fe_set_handlers(&zis->board->uart_acia->chr,
+
+        qemu_chr_fe_set_handlers(&zis->board->uart_acia->chr,
                     zaphod_iocore_can_receive_acia, zaphod_iocore_receive_acia,
                     NULL,
                     NULL, zis, NULL, true);
 
-    zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
+        zis->irq_acia= qemu_allocate_irqs(zaphod_interrupt_request, zis->board, 1);
+    }
 }
 
 #if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
