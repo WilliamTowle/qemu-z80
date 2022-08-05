@@ -114,7 +114,7 @@ static const GraphicHwOps zaphod_screen_ops= {
 
 /* character processing */
 
-void zaphod_screen_putchar(void *opaque, uint8_t ch)
+void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
 {
 #if 1   /* WmT - TRACE */
 ;DPRINTF("*** INFO: zaphod_screen_putchar() - ch 0x%02x ***\n", ch);
