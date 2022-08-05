@@ -31,6 +31,9 @@ typedef struct {
     OBJECT_CHECK(ZaphodScreenState, obj, TYPE_ZAPHOD_SCREEN)
 
 
+void zaphod_screen_putchar(void *opaque, uint8_t ch);
+
+
 DeviceState *zaphod_screen_new(void);
 
 #endif  /* HW_Z80_ZAPHOD_SCREEN_H */
