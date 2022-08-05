@@ -75,6 +75,7 @@ static void main_cpu_reset(void *opaque)
 static void zaphod_generic_board_init(MachineState *ms)
 {
     ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
     const char *kernel_filename = ms->kernel_filename;
     //Z80CPU *cpu = NULL;
     MemoryRegion *address_space_mem;
@@ -118,7 +119,8 @@ static void zaphod_generic_board_init(MachineState *ms)
 ;DPRINTF("INFO: UART0 device created OK, at %p\n", zms->uart_stdio);
     }
 
-    if (serial_hds[1]) {
+;DPRINTF("INFO: Init ACIA UART MachineClass has_acia set? %s\n", zmc->has_acia?"y":"n");
+    if (zmc->has_acia && serial_hds[1]) {
 ;DPRINTF("INFO: initialising UART1 device...\n");
         //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
         zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
@@ -210,6 +212,7 @@ static void zaphod_machine_register_types(void)
 
 static void zaphod_pb_options(MachineClass *mc)
 {
+;DPRINTF("DEBUG: Reached %s()...\n", __func__);
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
 
     zmc->has_acia= false;
@@ -218,6 +221,7 @@ static void zaphod_pb_options(MachineClass *mc)
 
 static void zaphod_dev_options(MachineClass *mc)
 {
+;DPRINTF("DEBUG: Reached %s()...\n", __func__);
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
 
     zmc->has_acia= true;
