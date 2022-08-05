@@ -53,6 +53,7 @@ typedef struct {
     MachineClass parent;
 
     /*< public >*/
+    bool has_acia;
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
     bool has_simple_screen;
 #endif

@@ -237,6 +237,7 @@ static void zaphod_pb_options(MachineClass *mc)
 {
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
 
+    zmc->has_acia= false;
     zmc->has_simple_screen= true;
 }
 
@@ -244,6 +245,7 @@ static void zaphod_dev_options(MachineClass *mc)
 {
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(mc);
 
+    zmc->has_acia= true;
     zmc->has_simple_screen= false;
 }
 
