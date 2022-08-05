@@ -88,6 +88,7 @@ static void main_cpu_reset(void *opaque)
 static void zaphod_generic_board_init(MachineState *ms)
 {
     ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
     const char *kernel_filename = ms->kernel_filename;
     MemoryRegion *address_space_mem;
     MemoryRegion *ram;
@@ -140,7 +141,8 @@ static void zaphod_generic_board_init(MachineState *ms)
 ;DPRINTF("INFO: UART0 [stdio] created OK - device at %p [zms %p] has chr.chr %p\n", zms->uart_stdio, zms, zms->uart_stdio->chr.chr);
     }
 
-    if (serial_hds[1]) {
+;DPRINTF("INFO: Init ACIA UART MachineClass has_acia set? %s\n", zmc->has_acia?"y":"n");
+    if (zmc->has_acia && serial_hds[1]) {
 ;DPRINTF("INFO: initialising UART1 device...\n");
         //zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new());
         zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
