@@ -205,21 +205,11 @@ static ObjectClass *z80_cpu_class_by_name(const char *cpu_model)
 
 static bool z80_cpu_has_work(CPUState *cs)
 {
-#if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__)
-;if (cs->interrupt_request & CPU_INTERRUPT_HARD)
-{
-;DPRINTF("INFO: CPU_INTERRUPT_HARD is flagged -> BAIL\n");
-;exit(1);
-}
-;return 0;
-#else   /* TODO: implement */
     /* For i386, INTERRUPT_HARD is only flagged if eflags has
      * IF_MASK set; Zilog's Z80 also has NMI type interrupts [not
      * implemented]
      */
     return cs->interrupt_request & CPU_INTERRUPT_HARD;
-#endif
 }
 
 
