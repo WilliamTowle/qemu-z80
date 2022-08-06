@@ -189,21 +189,12 @@ static ObjectClass *z80_cpu_class_by_name(const char *cpu_model)
 
 static bool z80_cpu_has_work(CPUState *cs)
 {
-#if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: Reached %s() ** PARTIAL **\n", __func__)
-;if (cs->interrupt_request & CPU_INTERRUPT_HARD)
-{
-;DPRINTF("INFO: ** implementation required ** CPU_INTERRUPT_HARD is flagged -> BAIL\n");
-;exit(1);
-}
-;return 0;
-#else   /* TODO: implement */
     /* For i386, INTERRUPT_HARD is only flagged if eflags has
      * IF_MASK unset or interrupts are not inhibited if it is.
      * Zilog's Z80 also has NMI type interrupts [not implemented]
      */
+/* FIXME: implement for v5: with z80_cpu_pending_interrupt() */
     return cs->interrupt_request & CPU_INTERRUPT_HARD;
-#endif
 }
 
 
@@ -228,6 +219,8 @@ static void z80_cpu_synchronize_from_tb(CPUState *cs, TranslationBlock *tb)
 
     env->pc= tb->pc;
 }
+
+/* FIXME: port of int x86_cpu_pending_interrupt(CPUState *cs, int interrupt_request) here */
 
 static void z80_cpu_class_init(ObjectClass *oc, void *data)
 {
