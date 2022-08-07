@@ -6,3 +6,8 @@
  *  Ported/provisional reimplementations by William Towle 2018-2022
  *  All versions under GPL
  */
+
+
+/* QEmu internal */
+
+DEF_HELPER_2(movl_pc_im, void, env, int)

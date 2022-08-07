@@ -64,7 +64,7 @@ static void gen_update_cc_op(DisasContext *s)
 
 static inline void gen_jmp_im(target_ulong pc)
 {
-    gen_helper_movl_pc_im(cpu_env, tcg_const_tl(pc));
+    gen_helper_movl_pc_im(cpu_env, tcg_const_i32(pc));
 }
 
 static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
