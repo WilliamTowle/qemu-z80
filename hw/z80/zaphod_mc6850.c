@@ -82,11 +82,10 @@ DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr,
 	}
 }
 
-/* zaphod_mc6850_portio
- * TODO: adjust? Grant Searle's documentation talks about 0x80-0xbf
- * being reserved but decoding makes all even/odd ports equivalent
- */
 static const MemoryRegionPortio zaphod_mc6850_portio[] = {
+    /* TODO: 0x80-0x81 apply to Grant Searle BASIC ROM but hardware
+     * decodes all of 0x80-0xbf [with even/odd ports equivalent]
+     */
     { 0x80, 2, 1,
                 .read = zaphod_mc6850_read,
                 .write = zaphod_mc6850_write
