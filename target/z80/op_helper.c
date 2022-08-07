@@ -43,3 +43,9 @@ void helper_movl_pc_im(CPUZ80State *env, int new_pc)
 {
     PC= (uint16_t)new_pc;
 }
+
+
+void helper_jmp_T0(CPUZ80State *env)
+{
+    PC = T0;
+}
