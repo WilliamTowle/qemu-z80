@@ -169,10 +169,8 @@ version-obj-$(CONFIG_WIN32) += $(BUILD_DIR)/version.o
 
 ######################################################################
 # tracing
-ifneq (${TARGET_BASE_ARCH},z80)
 util-obj-y +=  trace/
 target-obj-y += trace/
-endif
 
 ######################################################################
 # guest agent
