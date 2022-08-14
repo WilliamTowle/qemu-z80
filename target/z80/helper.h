@@ -117,3 +117,8 @@ DEF_HELPER_1(ld_R_A, void, env)
 DEF_HELPER_1(ld_I_A, void, env)
 DEF_HELPER_1(ld_A_R, void, env)
 DEF_HELPER_1(ld_A_I, void, env)
+
+
+///* R800-specific insns */
+//DEF_HELPER_1(mulub_cc, void, env)
+//DEF_HELPER_1(muluw_cc, void, env)
