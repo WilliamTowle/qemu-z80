@@ -867,3 +867,8 @@ void helper_ld_A_I(CPUZ80State *env)
 
     F = (F & CC_C) | sf | zf | pf;
 }
+
+/* TODO:
+ * helper_mulub_cc()
+ * helper_muluw_cc()
+ */
