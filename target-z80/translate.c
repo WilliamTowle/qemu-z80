@@ -54,6 +54,7 @@
 
 #if 0	/* debug instruction decode? */
 #define zprintf printf
+#define ZPRINTF_UNUSED
 #else
 #define zprintf(...)
 #define ZPRINTF_UNUSED  __attribute__((unused))
