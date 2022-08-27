@@ -767,62 +767,57 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, bool jr)
 ;DPRINTF("DEBUG: Reached PARTIAL %s() with s=%p, inhibit %s, recheck_tf %s, jr %s\n", __func__, s, inhibit?"y":"n", recheck_tf?"y":"n", jr?"y":"n");
 #endif
 #if 0   /* overkill? feature unused for z80 */
-//#if 1 /* WmT - PARTIAL */
-//;DPRINTF("NOTE: %s() about to gen_update_cc_op()...\n", __func__);
-//#endif
     gen_update_cc_op(s);
 #endif
 
-#if 1   /* WmT - PARTIAL */
-;if (inhibit) {
-;DPRINTF("DEBUG: inhibit parameter TRUE -> %s() needs helpers\n", __FILE__);
+    /* TODO: how i386-specific is this block? */
+    /* If several instructions disable interrupts, only the first does it.  */
+    if (inhibit && !(s->flags & HF_INHIBIT_IRQ_MASK)) {
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: %s() missing gen_set_hflag()? ***\n", __func__);
 ;exit(1);
-}
 #endif
-//    /* If several instructions disable interrupts, only the first does it.  */
-//    if (inhibit && !(s->flags & HF_INHIBIT_IRQ_MASK)) {
-//        gen_set_hflag(s, HF_INHIBIT_IRQ_MASK);
-//    } else {
-//        gen_reset_hflag(s, HF_INHIBIT_IRQ_MASK);
-//    }
-//
+        //gen_set_hflag(s, HF_INHIBIT_IRQ_MASK);
+    } else {
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: %s() missing gen_reset_hflag()? ***\n", __func__);
+#endif
+        //gen_reset_hflag(s, HF_INHIBIT_IRQ_MASK);
+    }
 //    if (s->base.tb->flags & HF_RF_MASK) {
-//        gen_helper_reset_rf(cpu_env);
+//#if 1   /* WmT - TRACE */
+//;DPRINTF("*** DEBUG: %s() missing gen_helper_reset_rf()? ***\n", __func__);
+//;exit(1);   /* only i386? */
+//#endif
+//        //gen_helper_reset_rf(cpu_env);
 //    }
-#if 1   /* WmT - PARTIAL */
-;if (s->base.singlestep_enabled) {
-;DPRINTF("DEBUG: singlestep_enabled TRUE -> %s() needs helpers\n", __FILE__);
-;exit(1);
-}
+    if (s->base.singlestep_enabled) {
+        gen_helper_debug(cpu_env);
+    } else if (recheck_tf) {
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: %s() recheck_tf true - missing gen_helper_rechecking_single_step()? ***\n", __func__);
+;exit(1);   /* no 'tf' at repo.or.cz */
 #endif
-//    if (s->base.singlestep_enabled) {
-//        gen_helper_debug(cpu_env);
-#if 1   /* WmT - PARTIAL */
-;if (recheck_tf) {
-;DPRINTF("DEBUG: recheck_tf parameter TRUE -> %s() needs helpers\n", __FILE__);
-;exit(1);
-}
-#endif
-//    } else if (recheck_tf) {
-//        gen_helper_rechecking_single_step(cpu_env);
-//        tcg_gen_exit_tb(NULL, 0);
+        //gen_helper_rechecking_single_step(cpu_env);
+        tcg_gen_exit_tb(0);
 //    } else if (s->tf) {
+//#if 1   /* WmT - TRACE */
+//;DPRINTF("*** DEBUG: %s() missing gen_helper_rechecking_single_step()? ***\n", __func__);
+//;exit(1);
+//#endif
 //        gen_helper_single_step(cpu_env);
-#if 1   /* WmT - PARTIAL */
-;if (jr) {
-;DPRINTF("DEBUG: jr parameter TRUE -> %s() needs helpers\n", __FILE__);
+    } else if (jr) {
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: %s() jr=true unexpected? ***\n", __func__);
 ;exit(1);
-}
 #endif
-//    } else if (jr) {
-//        tcg_gen_lookup_and_goto_ptr();
-//    } else {
+        tcg_gen_lookup_and_goto_ptr();
+    } else {
         //tcg_gen_exit_tb(NULL, 0);
         tcg_gen_exit_tb(0);
-//    }
+    }
     s->base.is_jmp = DISAS_NORETURN;
 }
-
 
 static inline void
 gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf)
