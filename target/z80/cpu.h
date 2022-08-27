@@ -68,7 +68,7 @@ typedef struct CPUZ80State {
     struct {} end_reset_fields;
     /* Fields after this point are preserved across CPU reset. */
 
-    //int model;
+    /* TODO: 'int model;' */
 } CPUZ80State;
 
 
