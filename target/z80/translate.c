@@ -86,6 +86,7 @@ typedef struct DisasContext {
     CCOp cc_op;  /* current CC operation */
     bool cc_op_dirty;
 #endif
+    uint32_t flags; /* all execution flags */
 #ifdef CONFIG_USER_ONLY
     target_ulong    magic_ramloc;
 #endif
@@ -773,56 +774,58 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, bool jr)
     gen_update_cc_op(s);
 #endif
 
-//    /* If several instructions disable interrupts, only the first does it.  */
-//    if (inhibit && !(s->flags & HF_INHIBIT_IRQ_MASK)) {
+    /* If several instructions disable interrupts, only the first does it.  */
+    if (inhibit && !(s->flags & HF_INHIBIT_IRQ_MASK)) {
+    /* FIXME: direct hflag manipulation here is i386-specific;
+     * repo.or.cz has gen_helper_reset_inhibit_irq() and calls that
+     */
 #if 1   /* WmT - TRACE */
-;if (inhibit) {
-;DPRINTF("DEBUG: 'inhibit' parameter TRUE -> %s() needs helpers\n", __FILE__);
+;DPRINTF("*** DEBUG: %s() missing set-inhibit helper? ***\n", __func__);
 ;exit(1);
-}
 #endif
-//        gen_set_hflag(s, HF_INHIBIT_IRQ_MASK);
-//    } else {
-//        gen_reset_hflag(s, HF_INHIBIT_IRQ_MASK);
-//    }
-//
+        //gen_set_hflag(s, HF_INHIBIT_IRQ_MASK);
+    } else {
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: %s() missing reset-inhibit helper? ***\n", __func__);
+//;exit(1);
+#endif
+        //gen_reset_hflag(s, HF_INHIBIT_IRQ_MASK);
+    }
+
 //    if (s->base.tb->flags & HF_RF_MASK) {   /* ? i386-specific? */
-//        gen_helper_reset_rf(cpu_env);
+//#if 1   /* WmT - TRACE */
+//;DPRINTF("*** DEBUG: %s() missing gen_helper_reset_rf()? ***\n", __func__);
+//;exit(1);   /* only i386? */
+//#endif
+//        //gen_helper_reset_rf(cpu_env);
 //    }
-//    if (s->base.singlestep_enabled) {
+    if (s->base.singlestep_enabled) {
+        gen_helper_debug(cpu_env);
+    } else if (recheck_tf) {    /* ? i386-specific? */
 #if 1   /* WmT - TRACE */
-;if (s->base.singlestep_enabled) {
-;DPRINTF("DEBUG: singlestep_enabled TRUE -> %s() needs helpers\n", __FILE__);
+;DPRINTF("*** DEBUG: %s() recheck_tf true - missing gen_helper_rechecking_single_step()? ***\n", __func__);
 ;exit(1);
-}
 #endif
-//        gen_helper_debug(cpu_env);
-//    } else if (recheck_tf) {
-#if 1   /* WmT - TRACE */
-;if (recheck_tf) {
-;DPRINTF("DEBUG: 'recheck_tf' parameter TRUE -> %s() needs helpers\n", __FILE__);
-;exit(1);
-}
-#endif
-//        gen_helper_rechecking_single_step(cpu_env);
-//        tcg_gen_exit_tb(NULL, 0);
+        //gen_helper_rechecking_single_step(cpu_env);
+        tcg_gen_exit_tb(0);
 //    } else if (s->tf) {    /* ? i386-specific? */
+//#if 1   /* WmT - TRACE */
+//;DPRINTF("*** DEBUG: %s() missing gen_helper_rechecking_single_step()? ***\n", __func__);
+//;exit(1);
+//#endif
 //        gen_helper_single_step(cpu_env);
-//    } else if (jr) {
+    } else if (jr) {
 #if 1   /* WmT - TRACE */
-;if (jr) {
-;DPRINTF("DEBUG: %s() 'jr' parameter TRUE -> needs helpers\n", __FILE__);
+;DPRINTF("*** DEBUG: %s() jr=true unexpected? ***\n", __func__);
 ;exit(1);
-}
 #endif
-//        tcg_gen_lookup_and_goto_ptr();
-//    } else {
+        tcg_gen_lookup_and_goto_ptr();
+    } else {
         //tcg_gen_exit_tb(NULL, 0);
         tcg_gen_exit_tb(0);
-//    }
+    }
     s->base.is_jmp = DISAS_NORETURN;
 }
-
 
 static inline void
 gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf)
@@ -1880,7 +1883,7 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
     ...initialisation of relevant 'static TCGv's
  */
 //    CPUX86State *env = cpu->env_ptr;
-//    uint32_t flags = dc->base.tb->flags;
+    uint32_t flags = dc->base.tb->flags;
 //    target_ulong cs_base = dc->base.tb->cs_base;
 //
 //    dc->pe = (flags >> HF_PE_SHIFT) & 1;
@@ -1911,11 +1914,12 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
-#if 1   /* PARTIAL */
-;DPRINTF("INFO: %s() flags init would use tb flags %d\n", __func__, dc->base.tb->flags);
-;if (dc->base.tb->flags) exit(1);
-#endif
-//    dc->flags = flags;
+
+    /* [QEmu v2] z80-softmmu initialises with non-zero flags (due
+     * to obsolete HF_SOFTMMU_MASK use?)
+     */
+    dc->flags = flags;
+
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
 //    /* Do not optimize repz jumps at all in icount mode, because
