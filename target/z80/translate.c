@@ -23,6 +23,9 @@
 
 typedef struct DisasContext {
     DisasContextBase base;
+
+    /* current block context */
+    uint32_t        flags; /* all execution flags */
 } DisasContext;
 
 
@@ -59,11 +62,11 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
     ...dc->jmp_opt, based on singlestepping configuration
     ...initialisation of relevant 'static TCGv's
  */
-//    DisasContext *dc = container_of(dcbase, DisasContext, base);
+    DisasContext *dc = container_of(dcbase, DisasContext, base);
 //    CPUX86State *env = cpu->env_ptr;
-//    uint32_t flags = dc->base.tb->flags;
+    uint32_t flags = dc->base.tb->flags;
 //    target_ulong cs_base = dc->base.tb->cs_base;
-//
+
 //    dc->pe = (flags >> HF_PE_SHIFT) & 1;
 //    dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
 //    dc->ss32 = (flags >> HF_SS32_SHIFT) & 1;
@@ -92,7 +95,12 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
-//    dc->flags = flags;
+
+    /* [QEmu v2] z80-softmmu initialises with non-zero flags (due
+     * to obsolete HF_SOFTMMU_MASK use?)
+     */
+    dc->flags = flags;
+
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
 //    /* Do not optimize repz jumps at all in icount mode, because
