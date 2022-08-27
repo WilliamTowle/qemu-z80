@@ -127,6 +127,7 @@ static void z80_cpu_reset(CPUState *s)
     //env->regs[R_F]= 0xff;
     env->regs[R_SP]= 0xffff;
 
+    /* QEmu v2+: no initial hidden flags required */
     env->hflags= 0;
 }
 
