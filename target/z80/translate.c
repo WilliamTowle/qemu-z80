@@ -1555,6 +1555,10 @@ next_byte:
                  * - for z=1: mulub insn (TODO)
                  * - for z=3: muluw insn (TODO)
                  */
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() PREFIX_ED case with z=%d (R800: z=1 mulub, z=3 muluw)\n", __func__, z);
+;if ( (z == 1) || (z == 3) ) exit(1);
+#endif
             zprintf("nop\n");
             break;
         case 1:
