@@ -1463,6 +1463,7 @@ next_byte:
                         goto next_byte;
                         break;
                     }   /* switch(p) ends */
+                    break;
                 }
                 break;
 
