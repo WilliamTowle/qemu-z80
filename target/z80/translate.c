@@ -100,7 +100,7 @@ static void gen_unknown_opcode(CPUZ80State *env, DisasContext *s)
     gen_illegal_opcode(s);
 
     if (qemu_loglevel_mask(LOG_UNIMP)) {
-        target_ulong pc = s->pc_start, end = s->pc;
+        target_ulong pc = s->base.pc_next, end = s->pc;
         qemu_log_lock();
         qemu_log("ILLOPC: " TARGET_FMT_lx ":", pc);
         for (; pc < end; ++pc) {
