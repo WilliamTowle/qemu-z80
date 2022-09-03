@@ -99,7 +99,7 @@ static void gen_unknown_opcode(CPUZ80State *env, DisasContext *s)
     gen_illegal_opcode(s);
 
     if (qemu_loglevel_mask(LOG_UNIMP)) {
-        target_ulong pc = s->pc_start, end = s->pc;
+        target_ulong pc = s->base.pc_next, end = s->pc;
         qemu_log_lock();
         qemu_log("ILLOPC: " TARGET_FMT_lx ":", pc);
         for (; pc < end; ++pc) {
@@ -144,6 +144,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     unsigned int b;     /* instruction byte */
     target_ulong    pc_start = s->base.pc_next;
 
+    //s->pc_start = s->pc = pc_start;
     s->pc = pc_start;
 
     /* TODO: zprintf() of PC/insns and tracking of prefixes */
