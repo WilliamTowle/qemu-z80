@@ -83,9 +83,11 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 static void gen_illegal_opcode(DisasContext *s)
 {
 #if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, s->pc_start, s->cs_base);
+//;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, s->pc_start, s->cs_base);
+;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing s->base.pc_next 0x%04x\n", __func__, s->base.pc_next);
 #endif
-    gen_exception(dc, EXCP_ILLOP, s->pc_start - s->cs_base);
+    //gen_exception(s, EXCP_ILLOP, s->pc_start - s->cs_base);
+    gen_exception(s, EXCP_ILLOP, s->base.pc_next);
 }
 
 /* Signal a missing opcode or an unimplemented feature. For I386
