@@ -82,12 +82,14 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 /* Called by gen_unknown_opcode() only. For Z80, we don't have the
  * concept of modes in which instructions are disallowed
  */
-static void gen_illegal_opcode(DisasContext *dc)
+static void gen_illegal_opcode(DisasContext *s)
 {
 #if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, dc->pc_start, dc->cs_base);
+//;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, s->pc_start, s->cs_base);
+;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing s->base.pc_next 0x%04x\n", __func__, s->base.pc_next);
 #endif
-    gen_exception(dc, EXCP_ILLOP, dc->pc_start - dc->cs_base);
+    //gen_exception(s, EXCP_ILLOP, s->pc_start - s->cs_base);
+    gen_exception(s, EXCP_ILLOP, s->base.pc_next);
 }
 
 /* Signal a missing opcode or an unimplemented feature. For I386
@@ -100,7 +102,7 @@ static void gen_unknown_opcode(CPUZ80State *env, DisasContext *s)
 
     if (qemu_loglevel_mask(LOG_UNIMP)) {
         FILE *logfile = qemu_log_lock();
-        target_ulong pc = s->pc_start, end = s->pc;
+        target_ulong pc = s->base.pc_next, end = s->pc;
 
         qemu_log("ILLOPC: " TARGET_FMT_lx ":", pc);
         for (; pc < end; ++pc) {
