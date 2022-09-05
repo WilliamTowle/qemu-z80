@@ -532,8 +532,8 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
     if ((prefixes & (PREFIX_CB | PREFIX_ED)) == 0) {
         /* unprefixed opcodes: */
         unsigned int x, y, z, p, q;
-        //int n, d;           /* immediate 'n', displacement 'd' */
-        //int r1, r2;         /* register number */
+        int n, d;           /* immediate 'n', displacement 'd' */
+        int r1, r2;         /* register number */
 
         b = cpu_ldub_code(env, s->pc);
         s->pc++;
