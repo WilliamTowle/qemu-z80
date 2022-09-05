@@ -145,15 +145,14 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
         m = MODE_NORMAL;
     }
 
-    /* unprefixed opcodes */
-
     if ((prefixes & (PREFIX_CB | PREFIX_ED)) == 0) {
+        /* unprefixed opcodes: */
+        unsigned int x, y, z, p, q;
+        //int n, d;           /* immediate 'n', displacement 'd' */
+        //int r1, r2;         /* register number */
+
         b = cpu_ldub_code(env, s->pc);
         s->pc++;
-
-        int x, y, z, p, q;
-        int n, d;
-        int r1, r2;
 
         x = (b >> 6) & 0x03;
         y = (b >> 3) & 0x07;
@@ -697,18 +696,17 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 #endif
     } else if (prefixes & PREFIX_CB) {
         /* cb mode: */
-
-        int x, y, z, p, q;
-        int d;
-        //int r1, r2;
+        unsigned int x, y, z, p, q;
+        int d;              /* displacement 'd' */
+        //int r1, r2;         /* register number */
 
         if (m != MODE_NORMAL) {
-            /* 0xDD 0xCB OFFS OP or 0xFD 0xCB OFFS OP */
+            /* 0xDD 0xCB DISP OP or 0xFD 0xCB DISP OP cases */
             d = cpu_ldsb_code(env, s->pc);
             s->pc++;
         }
 
-        b = ldub_code(s->pc);
+        b = cpu_ldub_code(env, s->pc);
         s->pc++;
 
         x = (b >> 6) & 0x03;
@@ -780,13 +778,12 @@ static target_ulong disas_insn(CPUZ80State *env, DisasContext *s, target_ulong p
 //
     } else if (prefixes & PREFIX_ED) {
         /* ed mode: */
+        unsigned int x, y, z, p, q;
+        //int n, d;           /* immediate 'n', displacement 'd' */
+        //int r1, r2;         /* register number */
 
-        b = ldub_code(s->pc);
+        b = cpu_ldub_code(env, s->pc);
         s->pc++;
-
-        int x, y, z, p, q;
-        int n;
-        int r1, r2;
 
         x = (b >> 6) & 0x03;
         y = (b >> 3) & 0x07;
