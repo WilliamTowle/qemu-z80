@@ -42,3 +42,16 @@ void helper_halt(CPUZ80State *env)
     cpu_loop_exit(cs);
 #endif
 }
+
+
+void helper_debug(CPUZ80State *env)
+{
+    CPUState *cs = CPU(z80_env_get_cpu(env));
+
+    cs->exception_index = EXCP_DEBUG;
+#if 0	/* v0.15.0+ */
+    cpu_loop_exit(env);
+#else	/* v2+ */
+    cpu_loop_exit(cs);
+#endif
+}
