@@ -41,8 +41,7 @@
  */
 static void QEMU_NORETURN raise_interrupt2(CPUZ80State *env, int intno,
                                            int is_int, int error_code,
-                                           int next_eip_addend,
-                                           uintptr_t retaddr)
+                                           int next_eip_addend)
 {
     CPUState *cs = CPU(z80_env_get_cpu(env));
 
@@ -62,12 +61,12 @@ static void QEMU_NORETURN raise_interrupt2(CPUZ80State *env, int intno,
 #if 0   /* i386 specific */
     env->exception_next_eip = env->eip + next_eip_addend;
 #endif
-    cpu_loop_exit_restore(cs, retaddr);
+    cpu_loop_exit(cs);
 }
 
 void raise_exception(CPUZ80State *env, int exception_index)
 {
-    raise_interrupt2(env, exception_index, 0, 0, 0, 0);
+    raise_interrupt2(env, exception_index, 0, 0, 0);
 }
 
 void helper_raise_exception(CPUZ80State *env, int exception_index)
