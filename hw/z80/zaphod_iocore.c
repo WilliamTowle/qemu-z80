@@ -134,20 +134,15 @@ static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
     switch (addr)
     {
     case 0x80:      /* read ACIA UART PortStatus */
-        /* FIXME: defer to UART function for this value! */
-        value= zaphod_uart_get_inkey(zis->board->uart_acia, false)? 0x01 : 0; /* RxDataReady */
-        value|= 0x02;       /* TxDataEmpty (always) */
-        value|= 0x04;       /* DTD [Data Carrier Detect] */
-        value|= 0x08;       /* CTS [Clear to Send] */
-            /* FrameErr|Overrun|ParityErr|IrqReq not emulated */
-;DPRINTF("DEBUG: %s() read ACIA UART PortStatus (port 0x%02x) -> status %02x\n", __func__, addr, value);
-        return value;
+        return zaphod_uart_portstatus(zis->board->uart_acia);
+
     case 0x81:      /* read ACIA UART RxData */
         value= zaphod_uart_get_inkey(zis->board->uart_acia, true);
         if (zis->irq_acia)
             qemu_irq_lower(*zis->irq_acia);
 ;DPRINTF("DEBUG: %s() read ACIA UART RXData (port 0x%02x) -> inkey ch-value %d\n", __func__, addr, value);
         return value? value : 0xff;
+
     default:
 ;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
         return 0x00;
