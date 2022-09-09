@@ -129,8 +129,7 @@ static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
     switch (addr)
     {
     case 0x80:      /* read ACIA UART PortStatus */
-#if 0
-        /* FIXME: defer to UART function for this value! */
+#if 0	/* deprecated - deferred to zaphod_uart.c function */
         value= zaphod_uart_get_inkey(zis->board->uart_acia, false)? 0x01 : 0; /* RxDataReady */
         value|= 0x02;       /* TxDataEmpty (always) */
         value|= 0x04;       /* DTD [Data Carrier Detect] */
