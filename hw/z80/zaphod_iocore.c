@@ -200,7 +200,7 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
 
 
 #if 1	/* IOCORE-KEYBIO (EXPERIMENTAL) */
-static const unsigned char keycode_to_asciilc[128]= {
+static const uint8_t keycode_to_asciilc[128]= {
     /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
      * callback to translate keycode to row and column [as per the
      * Spectrum's keyboard electronics]. When feeding input to our
@@ -239,27 +239,32 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 
     if (count == 1) /* single-byte XT scancode */
     {
-;DPRINTF("*** INFO: key %s event (scancode %d) from source device %p ***\n", (key->down)?"down":"up", scancodes[0], dev);
-//        MachineState *machine = MACHINE(qdev_get_machine());
-//        ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
-//
-//        if (!key->down)
-//        {
-//            if (zis->board->uart_acia)
-//                zaphod_uart_set_inkey(zis->board->uart_acia, 0, false);
-//            else
-//                zaphod_uart_set_inkey(zis->board->uart_stdio, 0, false);
-//        }
-//        else
-//        {
-//          int	ch= keycode_to_asciilc[scancodes[0] & 0x7f];
-//            zaphod_sercon_set_inkey(zms->sercon, ch, true);
-//
-//            if (zis->board->uart_acia)
-//                zaphod_uart_set_inkey(zis->board->uart_acia, ch, true);
-//            else
-//                zaphod_uart_set_inkey(zis->board->uart_stdio, ch, true);
-//        }
+        MachineState *machine = MACHINE(qdev_get_machine());
+        ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
+
+        if (!key->down)
+        {
+            if (zms->uart_acia)
+                zaphod_uart_set_inkey(zms->uart_acia, 0, false);
+            else
+                zaphod_uart_set_inkey(zms->uart_stdio, 0, false);
+        }
+        else
+        {
+          uint8_t	ch= keycode_to_asciilc[scancodes[0] & 0x7f];
+            ZaphodUARTState *uart_mux;
+
+            if ( (uart_mux= zms->uart_acia) != NULL )
+            {
+                if (zaphod_iocore_can_receive_acia(zms->iocore))
+                    zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
+            }
+            else if ( (uart_mux= zms->uart_stdio) != NULL )
+            {
+                if (zaphod_iocore_can_receive_stdio(zms->iocore))
+                    zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
+            }
+        }
     }
 }
 
