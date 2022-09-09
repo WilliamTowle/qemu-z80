@@ -35,6 +35,7 @@ typedef struct {
     OBJECT_CHECK(ZaphodUARTState, obj, TYPE_ZAPHOD_UART)
 
 
+int zaphod_uart_portstatus(void *opaque);
 #if defined(CONFIG_ZAPHOD_HAS_IOCORE)
 int zaphod_uart_can_receive(void *opaque);
 uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear);
