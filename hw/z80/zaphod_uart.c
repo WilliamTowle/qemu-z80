@@ -18,6 +18,12 @@
 
 
 #if defined(CONFIG_ZAPHOD_HAS_IOCORE)
+int zaphod_uart_portstatus(void *opaque)
+{
+    ZaphodUARTState *zus= ZAPHOD_UART(opaque);
+;exit(1);
+}
+
 int zaphod_uart_can_receive(void *opaque)
 {
     /* With no FIFO, we can always store something to 'inkey' (and

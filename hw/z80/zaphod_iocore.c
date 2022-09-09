@@ -135,6 +135,7 @@ static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
     switch (addr)
     {
     case 0x80:      /* read ACIA UART PortStatus */
+#if 0
         /* FIXME: defer to UART function for this value! */
         value= zaphod_uart_get_inkey(zis->board->uart_acia, false)? 0x01 : 0; /* RxDataReady */
         value|= 0x02;       /* TxDataEmpty (always) */
@@ -143,6 +144,9 @@ static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
             /* FrameErr|Overrun|ParityErr|IrqReq not emulated */
 ;DPRINTF("DEBUG: %s() read ACIA UART PortStatus (port 0x%02x) -> status %02x\n", __func__, addr, value);
         return value;
+#else
+        return zaphod_uart_portstatus(zis->board->uart_acia);
+#endif
     case 0x81:      /* read ACIA UART RxData */
         value= zaphod_uart_get_inkey(zis->board->uart_acia, true);
         if (zis->irq_acia)
