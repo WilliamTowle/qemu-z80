@@ -21,6 +21,20 @@
 
 
 #if defined(CONFIG_ZAPHOD_HAS_IOCORE)
+int zaphod_uart_portstatus(void *opaque)
+{
+    ZaphodUARTState *zus= ZAPHOD_UART(opaque);
+    int value;
+
+    value= zus->inkey_valid? 0 : 0x01;  /* RxDataReady */
+    value|= 0x02;                       /* TxDataEmpty (always) */
+    value|= 0x04;                       /* DTD [Data Carrier Detect] */
+    value|= 0x08;                       /* CTS [Clear to Send] */
+    /* FrameErr|Overrun|ParityErr|IrqReq not emulated */
+
+    return value;
+}
+
 int zaphod_uart_can_receive(void *opaque)
 {
     /* With no FIFO, we can always store something to 'inkey' (and
