@@ -1594,17 +1594,37 @@ next_byte:
         case 0:
             zprintf("nop\n");
             break;
-        case 3: /* NB. follows x=0 due to fallthrough between x=1,x=2 */
-            /* PARTIAL: incomplete for model == Z80_CPU_R800 here
-             * z=1: mulub
-             * z=3: muluw
-             */
-#if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: %s() PREFIX_ED case with z=%d (R800: z=1 mulub, z=3 muluw)\n", __func__, z);
-;if ( (z == 1) || (z == 3) ) exit(1);
-#endif
-            zprintf("nop\n");
+        case 3:
+            if (s->model == Z80_CPU_R800) {
+                switch (z) {
+                case 1:
+                    /* does mulub work with r1 == h, l, (hl) or a? */
+                    r1 = regmap(reg[y], m);
+                    gen_movb_v_reg(cpu_T[0], r1);
+                    gen_helper_mulub_cc(cpu_env);
+                    zprintf("mulub a,%s\n", regnames[r1]);
+                    break;
+                case 3:
+                    if (q == 0) {
+                        /* does muluw work with r1 == de or hl? */
+                        /* what is the effect of DD/FD prefixes here? */
+                        r1 = regpairmap(regpair[p], m);
+                        gen_movw_v_reg(cpu_T[0], r1);
+                        gen_helper_muluw_cc(cpu_env);
+                        zprintf("muluw hl,%s\n", regpairnames[r1]);
+                    } else {
+                        zprintf("nop\n");
+                    }
+                    break;
+                default:
+                    zprintf("nop\n");
+                    break;
+                }
+            } else {
+                zprintf("nop\n");
+            }
             break;
+
         case 1:
             switch (z)
             {
