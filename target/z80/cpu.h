@@ -149,7 +149,7 @@ typedef struct CPUZ80State {
     struct {} end_reset_fields;
     /* Fields after this point are preserved across CPU reset. */
 
-    //int model;
+    int model;
 } CPUZ80State;
 
 
@@ -175,6 +175,9 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
 hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
 #endif
 
+
+#define Z80_CPU_Z80     1
+#define Z80_CPU_R800    2
 
 static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 {
