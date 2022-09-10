@@ -139,7 +139,7 @@ typedef struct CPUZ80State {
     struct {} end_reset_fields;
     /* Fields after this point are preserved across CPU reset. */
 
-    /* TODO: identifier for CPU model */
+    int model;
 } CPUZ80State;
 
 
@@ -166,6 +166,9 @@ void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
 #endif
 
+
+#define Z80_CPU_Z80     1
+#define Z80_CPU_R800    2
 
 void z80_cpu_list(void);
 

@@ -861,7 +861,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
     s->pc = pc_start;
     prefixes= 0;
 
-    zprintf("PC = %04x: ", s->pc);
+    zprintf("[%s CPU] PC = %04x: ", (env->model == Z80_CPU_Z80)?"z80":"r800", s->pc);
     /* prefix handling jumps here to keep track
      * of prefixes seen in state
      */
