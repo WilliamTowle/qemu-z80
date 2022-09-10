@@ -19,6 +19,37 @@
     do { if (EMIT_DEBUG) error_printf("Z80 cpu: " fmt , ## __VA_ARGS__); } while(0)
 
 
+/* list registered CPU models */
+
+static void z80_cpu_list_entry(gpointer data, gpointer user_data)
+{
+    ObjectClass *oc = data;
+    CPUListState *s = user_data;
+    const char *typename= object_class_get_name(oc);
+    char *suffix= strstr(typename, "-cpu");
+    char *name;
+
+    assert(suffix != NULL);
+    name = g_strndup(typename, suffix - typename);
+    (*s->cpu_fprintf)(s->file, "  %s\n", name);
+    g_free(name);
+}
+
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf)
+{
+    CPUListState s = {
+        .file = f,
+        .cpu_fprintf = cpu_fprintf,
+    };
+    GSList *list;
+
+    (*cpu_fprintf)(f, "Available CPUs:\n");
+    list = object_class_get_list_sorted(TYPE_Z80_CPU, false);
+    g_slist_foreach(list, z80_cpu_list_entry, &s);
+    g_slist_free(list);
+}
+
+
 static void z80_cpu_initfn(Object *obj)
 {
     CPUState *cs = CPU(obj);

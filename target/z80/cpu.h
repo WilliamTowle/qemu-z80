@@ -91,6 +91,8 @@ static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 void z80_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
                         int flags);
 
+void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf);
+
 
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
@@ -109,6 +111,7 @@ int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
 
 #define cpu_signal_handler cpu_z80_signal_handler
+#define cpu_list z80_cpu_list
 
 
 /* MMU modes definitions:
