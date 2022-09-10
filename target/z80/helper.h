@@ -118,7 +118,7 @@ DEF_HELPER_1(ld_I_A, void, env)
 DEF_HELPER_1(ld_A_R, void, env)
 DEF_HELPER_1(ld_A_I, void, env)
 
+/* R800 */
 
-///* R800 */
-//DEF_HELPER_1(mulub_cc, void, env)
-//DEF_HELPER_1(muluw_cc, void, env)
+DEF_HELPER_1(mulub_cc, void, env)
+DEF_HELPER_1(muluw_cc, void, env)

@@ -845,3 +845,20 @@ void helper_ld_A_I(CPUZ80State *env)
 
     F = (F & CC_C) | sf | zf | pf;
 }
+
+void HELPER(mulub_cc)(CPUZ80State *env)
+{
+    /* TODO: flags */
+
+    HL = A * T0;
+}
+
+void HELPER(muluw_cc)(CPUZ80State *env)
+{
+    /* TODO: flags */
+    uint32_t tmp;
+
+    tmp = HL * T0;
+    DE = tmp >> 16;
+    HL = tmp & 0xff;
+}
