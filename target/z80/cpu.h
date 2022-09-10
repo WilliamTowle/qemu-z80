@@ -139,6 +139,8 @@ typedef struct CPUZ80State {
 
     CPU_COMMON
 
+    int model;
+
     /* exception/interrupt handling */
     int error_code;
     int exception_is_int;
@@ -166,6 +168,9 @@ bool z80_cpu_exec_interrupt(CPUState *cpu, int int_req);
 hwaddr z80_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
 #endif
 
+
+#define Z80_CPU_Z80     1
+#define Z80_CPU_R800    2
 
 static inline Z80CPU *z80_env_get_cpu(CPUZ80State *env)
 {
