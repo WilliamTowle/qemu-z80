@@ -44,7 +44,7 @@ static void z80_cpu_list_entry(gpointer data, gpointer user_data)
     ObjectClass *oc = data;
     CPUListState *s = user_data;
     const char *typename= object_class_get_name(oc);
-    char *suffix= strstr(typename, "-cpu");
+    char *suffix= strstr(typename, "-" TYPE_Z80_CPU);
     char *name;
 
     assert(suffix != NULL);
@@ -65,6 +65,28 @@ void z80_cpu_list(FILE *f, fprintf_function cpu_fprintf)
     list = object_class_get_list_sorted(TYPE_Z80_CPU, false);
     g_slist_foreach(list, z80_cpu_list_entry, &s);
     g_slist_free(list);
+}
+
+static void zilog_z80_cpu_initfn(Object *obj)
+{
+    CPUState *cs = CPU(obj);
+    Z80CPU *cpu = Z80_CPU(obj);
+    CPUZ80State *env = &cpu->env;
+
+    cs->env_ptr = env;
+
+    env->model = Z80_CPU_Z80;
+}
+
+static void mitsui_r800_cpu_initfn(Object *obj)
+{
+    CPUState *cs = CPU(obj);
+    Z80CPU *cpu = Z80_CPU(obj);
+    CPUZ80State *env = &cpu->env;
+
+    cs->env_ptr = env;
+
+    env->model = Z80_CPU_R800;
 }
 
 
@@ -179,8 +201,8 @@ static char *z80_cpu_type_name(const char *model_name)
      * suits an implementation that doesn't distinguish between
      * Zilog's Z80 and ASCII-Mitsui's R800
      */
-    return g_strdup_printf(TYPE_Z80_CPU);
-    //return g_strdup_printf(Z80_CPU_TYPE_NAME("%s"), model_name);
+    //return g_strdup_printf(TYPE_Z80_CPU);
+    return g_strdup_printf(Z80_CPU_TYPE_NAME("%s"), model_name);
 }
 
 static ObjectClass *z80_cpu_class_by_name(const char *cpu_model)
@@ -287,28 +309,37 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     cc->disas_set_info = z80_disas_set_info;
 }
 
-static const TypeInfo z80_cpu_type_info = {
-    /* NB: default to .abstract=false and regular Zilog Z80 for
-     * now (TODO: base class definition can use .name=TYPE_Z80_CPU
-     * directly)
-     */
-    .name = TYPE_Z80_CPU,
-    //.name = Z80_CPU_TYPE_NAME(TYPE_Z80_CPU),
-    .parent = TYPE_CPU,
-    .instance_size = sizeof(Z80CPU),
-    .instance_init = z80_cpu_initfn,
-    //.abstract = true;
-    .class_size = sizeof(Z80CPUClass),
-    .class_init = z80_cpu_class_init,
+
+/* for multiple CPU support:
+ * - want an abstract base class
+ * - want define to create concrete CPU classes
+ * - upstream code sets 'model' in CPUZ80State
+ * - there is a disas_set_info() for each CPU
+ */
+
+#define DEFINE_Z80_CPU_TYPE(cpu_model, initfn) \
+    { \
+        .parent = TYPE_Z80_CPU, \
+        .name = Z80_CPU_TYPE_NAME(cpu_model), \
+        .instance_init = initfn, \
+    }
+
+static const TypeInfo z80_cpus_type_info[] = {
+    {
+        /* NB: default to regular Zilog Z80 for now [TODO: use 'name' of
+         * TYPE_Z80_CPU for the base class and Z80_CPU_TYPE_NAME(x) for
+         * the Z80/R800 subclasses and in z80_cpu_type_name() likewise]
+         */
+        .name = TYPE_Z80_CPU,
+        .parent = TYPE_CPU,
+        .instance_size = sizeof(Z80CPU),
+        .instance_init = z80_cpu_initfn,
+        .abstract = true,
+        .class_size = sizeof(Z80CPUClass),
+        .class_init = z80_cpu_class_init,
+    },
+    DEFINE_Z80_CPU_TYPE("z80", zilog_z80_cpu_initfn), \
+    DEFINE_Z80_CPU_TYPE("r800", mitsui_r800_cpu_initfn) \
 };
 
-static void z80_cpu_register_types(void)
-{
-    type_register_static(&z80_cpu_type_info);
-}
-
-/* TODO: support CPU variants:
- * - Zilog Z80 CPU
- * - Mitsui R800 CPU
- */
-type_init(z80_cpu_register_types)
+DEFINE_TYPES(z80_cpus_type_info)
