@@ -21,6 +21,36 @@
     do { if (EMIT_DEBUG) error_printf("Z80 cpu: " fmt , ## __VA_ARGS__); } while(0)
 
 
+/* list registered CPU models */
+
+static void z80_cpu_list_entry(gpointer data, gpointer user_data)
+{
+    ObjectClass *oc = data;
+    CPUListState *s = user_data;
+    const char *typename= object_class_get_name(oc);
+    char *suffix= strstr(typename, "-cpu");
+    char *name;
+
+    assert(suffix != NULL);
+    name = g_strndup(typename, suffix - typename);
+    (*s->cpu_fprintf)(s->file, "  %s\n", name);
+    g_free(name);
+}
+
+void z80_cpu_list(void)
+{
+    CPUListState s = {
+        .file = f,
+        .cpu_fprintf = cpu_fprintf,
+    };
+    GSList *list = object_class_get_list_sorted(TYPE_Z80_CPU, false);
+
+    (*cpu_fprintf)(f, "Available CPUs:\n");
+    g_slist_foreach(list, z80_cpu_list_entry, &s);
+    g_slist_free(list);
+}
+
+
 /* TODO: becomes CPU class instance init.
  * Need to implement separate {zilog_z80|mitsui_r800}_cpu_initfn
  */
