@@ -311,8 +311,8 @@ static void zaphod_common_machine_class_init(ObjectClass *oc,
     }
 
     /* TODO: Z80, but want R800 option if requested and available */
-    //mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
-    mc->default_cpu_type= TARGET_DEFAULT_CPU_TYPE;
+    mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
+    //mc->default_cpu_type= TARGET_DEFAULT_CPU_TYPE;
     mc->default_cpus= 1;
     mc->min_cpus= mc->default_cpus;
     mc->max_cpus= mc->default_cpus;
