@@ -162,8 +162,8 @@ static void zaphod_class_init(ObjectClass *oc, void *data)
     /* Set description, CPU, RAM board options */
 
     mc->desc= "Zaphod development board";
-    //mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
-    mc->default_cpu_type = TARGET_DEFAULT_CPU_TYPE;
+    mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
+    //mc->default_cpu_type= TARGET_DEFAULT_CPU_TYPE;
     mc->default_cpus = 1;
     mc->min_cpus = mc->default_cpus;
     mc->max_cpus = mc->default_cpus;
