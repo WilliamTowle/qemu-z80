@@ -79,7 +79,7 @@ typedef struct DisasContext {
     /* current insn context */
     int                 prefix;
     target_ulong pc;
-    //int model;
+
 
     /* current block context */
 #if 0   /* overkill? feature unused for z80 */
@@ -1591,7 +1591,7 @@ next_byte:
             zprintf("nop\n");
             break;
         case 3:
-            if (s->model == Z80_CPU_R800) {
+            if (env->model == Z80_CPU_R800) {
                 switch (z) {
                 case 1:
                     /* does mulub work with r1 == h, l, (hl) or a? */
