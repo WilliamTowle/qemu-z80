@@ -1552,7 +1552,7 @@ next_byte:
             zprintf("nop\n");
             break;
         case 3: /* Invalid instruction (unless R800) */
-            if (s->model == Z80_CPU_R800) {
+            if (env->model == Z80_CPU_R800) {
                 switch (z) {
                 case 1:
                     /* does mulub work with r1 == h, l, (hl) or a? */
