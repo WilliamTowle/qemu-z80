@@ -8,6 +8,7 @@
 #include "qemu/osdep.h"
 #include "zaphod.h"
 
+#include "hw/hw.h"
 #include "ui/console.h"
 
 
@@ -138,6 +139,14 @@ DeviceState *zaphod_screen_new(void)
     return dev;
 }
 
+static void zaphod_screen_reset(void *opaque)
+{
+    ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+
+    zss->cursor_visible= false;
+    zss->cursor_blink_time= 0;
+}
+
 
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
@@ -156,13 +165,10 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
      * previous output
      */
 
-    zss->cursor_visible= 0;
-    zss->cursor_blink_time= 0;
-
     qemu_console_resize(zss->display,
         FONT_WIDTH * ZAPHOD_TEXT_COLS, FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
 
-    /* TODO: assign reset function here for initialisation */
+    qemu_register_reset(zaphod_screen_reset, zss);
 }
 
 static void zaphod_screen_class_init(ObjectClass *klass, void *data)
@@ -180,7 +186,7 @@ static void zaphod_screen_instance_init(Object *obj)
 {
     //ZaphodScreenState *zms= ZAPHOD_SCREEN(obj);
 
-    /* TODO: reset behaviours belong in a function? */
+    /* NB. see zaphod_screen_reset() */
 }
 
 
