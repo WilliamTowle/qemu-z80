@@ -142,6 +142,14 @@ DeviceState *zaphod_screen_new(void)
     return dev;
 }
 
+static void zaphod_screen_reset(void *opaque)
+{
+    ZaphodScreenState *zss= ZAPHOD_SCREEN(opaque);
+
+    zss->cursor_visible= false;
+    zss->cursor_blink_time= 0;
+}
+
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(dev);
@@ -153,12 +161,11 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
                         NULL,   /* no ISA bus to emulate */
                         0, &zaphod_screen_ops, zss);
 
-    zss->cursor_visible= 0;
-    zss->cursor_blink_time= 0;
-
     qemu_console_resize(zss->display,
                         FONT_WIDTH * ZAPHOD_TEXT_COLS,
                         FONT_HEIGHT * ZAPHOD_TEXT_ROWS);
+
+    qemu_register_reset(zaphod_screen_reset, zss);
 }
 
 
