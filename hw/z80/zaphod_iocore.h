@@ -31,6 +31,7 @@ typedef struct {
     //bool          has_acia;       /* mc6850, w/ interrupts */
 #if 1   /* IOCORE-KEYBIO */
     QemuInputHandlerState *ihs;
+    int             modifiers;
 #endif
 } ZaphodIOCoreState;
 

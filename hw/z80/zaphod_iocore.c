@@ -242,6 +242,18 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         MachineState *machine = MACHINE(qdev_get_machine());
         ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
 
+;DPRINTF("*** INFO: key->down %d, considering scancode 0x%02x ***\n", key->down, scancodes[0]);
+        switch (scancodes[0] & 0x7f)
+        {
+        case 0x2a:  /* Shift_L */
+            zms->iocore->modifiers^= 1;
+            return;
+        case 0x36:  /* Shift_R */
+            zms->iocore->modifiers^= 2;
+            return;
+        }
+
+;DPRINTF("*** INFO: key->down %d, considering scancode 0x%02x ***\n", key->down, scancodes[0]);
         if (!key->down)
         {
             if (zms->uart_acia)
@@ -253,6 +265,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         {
           uint8_t	ch= keycode_to_asciilc[scancodes[0] & 0x7f];
             ZaphodUARTState *uart_mux;
+
+            /* TODO: modifiers also affect other keys; this should
+             * be how we handle caps-lock-active state
+             */
+            if (zms->iocore->modifiers & 3)
+                ch= toupper(ch);
 
             if ( (uart_mux= zms->uart_acia) != NULL )
             {
@@ -274,6 +292,13 @@ static QemuInputHandler zaphod_kbd_handler = {
     .event = zaphod_kbd_event,
 };
 #endif
+
+static void zaphod_iocore_reset(void *opaque)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    zis->modifiers= 0;
+}
 
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
@@ -330,6 +355,8 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     zis->ihs= qemu_input_handler_register(dev, &zaphod_kbd_handler);
     qemu_input_handler_activate(zis->ihs);
 #endif
+
+    qemu_register_reset(zaphod_iocore_reset, zis);
 }
 
 #if 0	/* 'chardev' removed (see sercon/mc6850 devices) */
