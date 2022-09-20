@@ -62,27 +62,10 @@ void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
     if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
         return;     /* CPU IOPort write without console window */
 
-    if (isprint(ch))
-    {
-        qemu_chr_write(zus->chr.chr, &ch, 1, true);
-    }
-    else
-    {   /* HACK: Show non-printable characters as corresponding hex */
-        uint8_t nyb_hi, nyb_lo;
-
-        nyb_hi= (ch & 0xf0) >> 4;
-        nyb_lo= ch & 0x0f;
-
-        zaphod_uart_putchar(zus, '[');
-        nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
-        //zus->sercon->chr_write(zus->sercon, &nyb_hi, 1);
-        zaphod_uart_putchar(zus, nyb_hi);
-        nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
-        //zus->sercon->chr_write(zus->sercon, &nyb_lo, 1);
-        zaphod_uart_putchar(zus, nyb_lo);
-        zaphod_uart_putchar(zus, ']');
-        zaphod_uart_putchar(zus, '*');
-    }
+    /* TODO: standard control codes are handled by the serial
+     * console - non-standard ones will need to be treated specially
+     */
+    qemu_chr_write(zus->chr.chr, &ch, 1, true);
 }
 
 uint8_t zaphod_uart_get_inkey(void *opaque, bool read_and_clear)
