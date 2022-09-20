@@ -290,9 +290,6 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
     nyb_hi+= (nyb_hi > 9)? 'A' - 10 : '0';
     nyb_lo+= (nyb_lo > 9)? 'A' - 10 : '0';
 
-    zaphod_screen_draw_char(zms->screen, 0,0, nyb_hi);
-    zaphod_screen_draw_char(zms->screen, 0,1, nyb_lo);
-
     if (zmc->has_simple_screen)
     {   /* show requested character */
         zss->char_grid[0][0]= nyb_hi;
