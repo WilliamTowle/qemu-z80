@@ -279,6 +279,16 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
     ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
     ZaphodScreenState  *zss= zms->screen;
 
+    /* TODO: need to handle escape sequences sanely - Phil Brown's
+     * documentation says "an OUT to port 1 will display the
+     * appropriate character on the console screen" and lists
+     * "escape codes" of:
+     * - ESC 0 - to clear the console screen
+     * - ESC 1 x y - to move the cursor position to x,y
+     * - ESC 2 - to clear to end of line from the current position
+     * Grant Searle has custom codes including changing [per-line]
+     * attributes and set/unset/toggle pixels
+     */
 #if 1	/* HACK enabling write/test of basic rendering routines:
          * For each character, display corresponding hex nybbles
          * and the corresponding graphic mode "character"
