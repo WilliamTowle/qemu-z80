@@ -1192,7 +1192,13 @@ next_byte:
                 } else {
                     gen_movb_v_reg(cpu_T[0], r1);
                 }
-                if (is_indexed(r2)) {
+                if (is_indexed(r2)
+#ifdef __GNUC__     /* avoid gcc "'d' may be used uninitialised" */
+#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+                    && !is_indexed(r1))
+#endif
+#endif
+                {
                     gen_movb_idx_v(r2, cpu_T[0], d);
                 } else {
                     gen_movb_reg_v(r2, cpu_T[0]);
