@@ -1113,6 +1113,7 @@ next_byte:
                     break;
                 }
                 break;
+
             case 4:
                 r1 = regmap(reg[y], m);
                 if (is_indexed(r1)) {
@@ -1177,6 +1178,7 @@ next_byte:
                     zprintf("ld %s,$%02x\n", regnames[r1], n);
                 }
                 break;
+
             case 7:
                 switch (y)
                 {
@@ -1242,7 +1244,12 @@ next_byte:
                 } else {
                     gen_movb_v_reg(cpu_T[0], r1);
                 }
-                if (is_indexed(r2)) {
+                if (is_indexed(r2)
+#if __GNUC__    /* gcc 6.3.0: avoid "'d' may be used uninitialised" */
+                    && !is_indexed(r1))
+#endif
+                    {
+                    //d= z80_ldsb_code(env, s);
                     gen_movb_idx_v(r2, cpu_T[0], d);
                 } else {
                     gen_movb_reg_v(r2, cpu_T[0]);
