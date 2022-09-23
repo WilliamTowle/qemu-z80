@@ -357,9 +357,6 @@ int main(int argc, char **argv)
      * further initialise TaskState
      * manage any GDB stub
      */
-#if 1	/* WmT - TRACE */
-;DPRINTF("%s(): PARTIAL - run filename=%s via local cpu_loop() (%d bit '%s' CPU, env %p)\n", __func__, filename, TARGET_LONG_BITS, cpu_model, env);
-#endif
     cpu_loop(env); /* NB: doesn't exit to our 'return' statement below */
   return 0;
 }
