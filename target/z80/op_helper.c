@@ -151,8 +151,12 @@ uint8_t z80_cpu_inb(CPUZ80State *env, uint16_t port)
 
 void helper_in_T0_im(CPUZ80State *env, int val)
 {
-    //T0 = cpu_inb(env, (A << 8) | val);
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
+    //    T0 = cpu_inb(env, (A << 8) | val);
+    T0 = cpu_inb(env, val);
+#else   /* QEmu v2.x: wrapper function is 16-bit safe */
     T0 = z80_cpu_inb(env, (A << 8) | val);
+#endif
 }
 
 void helper_in_T0_bc_cc(CPUZ80State *env)
@@ -170,8 +174,12 @@ void helper_in_T0_bc_cc(CPUZ80State *env)
 
 void helper_out_T0_im(CPUZ80State *env, int val)
 {
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
     //cpu_outb(env, (A << 8) | val, T0);
+    cpu_outb(env, val, T0);
+#else   /* QEmu v2.x: wrapper function is 16-bit safe */
     z80_cpu_outb(env, (A << 8) | val, T0);
+#endif
 }
 
 void helper_out_T0_bc(CPUZ80State *env)
