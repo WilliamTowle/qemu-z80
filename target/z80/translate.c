@@ -137,7 +137,7 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 
 static void z80_tr_tb_start(DisasContextBase *db, CPUState *cpu)
 {
-#if 1   /* WmT - PARTIAL */
+#if 0   /* WmT - PARTIAL */
 ;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
 ;exit(1);
 #else
