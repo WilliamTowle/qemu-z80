@@ -195,9 +195,12 @@ void HELPER(movl_pc_im)(CPUZ80State *env, uint32_t new_pc)
 
 void HELPER(in_T0_im)(CPUZ80State *env, uint32_t val)
 {
-    ////    T0 = cpu_inb(env, (A << 8) | val);
-    //T0 = cpu_inb(env, val);
-    T0 = cpu_inb(val);	/* TODO: 'val' should have type pio_addr_t */
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
+    //    T0 = cpu_inb(env, (A << 8) | val);
+    T0 = cpu_inb(env, val);
+#else   /* QEmu v1.x ioport-user.c API */
+    T0 = cpu_inb(val);
+#endif
 }
 
 void HELPER(in_T0_bc_cc)(CPUZ80State *env)
@@ -205,7 +208,7 @@ void HELPER(in_T0_bc_cc)(CPUZ80State *env)
     int sf, zf, pf;
 
     //T0 = cpu_inb(env, BC);
-    T0 = cpu_inb(BC);	/* TODO: 'BC' should have type pio_addr_t */
+    T0 = cpu_inb(BC);
 
     sf = (T0 & 0x80) ? CC_S : 0;
     zf = T0 ? 0 : CC_Z;
@@ -215,15 +218,18 @@ void HELPER(in_T0_bc_cc)(CPUZ80State *env)
 
 void HELPER(out_T0_im)(CPUZ80State *env, uint32_t val)
 {
-    //// cpu_outb(env, (A << 8) | val, T0);
-    //cpu_outb(env, val, T0);
-    cpu_outb(val, T0);		/* TODO: 'val' should have type pio_addr_t */
+#if 0   /* github.com/legumbre: "[v0.10.x] segfaults when A non-zero" */
+    // cpu_outb(env, (A << 8) | val, T0);
+    cpu_outb(env, val, T0);
+#else   /* QEmu v1.x ioport-user.c API */
+    cpu_outb(val, T0);
+#endif
 }
 
 void HELPER(out_T0_bc)(CPUZ80State *env)
 {
     //cpu_outb(env, BC, T0);
-    cpu_outb(BC, T0);		/* TODO: 'BC' should have type pio_addr_t */
+    cpu_outb(BC, T0);
 }
 
 /* Misc */
