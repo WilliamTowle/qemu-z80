@@ -43,4 +43,6 @@
 #define TARGET_VIRT_ADDR_SPACE_BITS 24
 
 
+#include "exec/cpu-all.h"
+
 #endif /* Z80_CPU_H */
