@@ -107,7 +107,6 @@ obj-y += trace/
 
 #########################################################
 # cpu emulator library
-ifneq (${TARGET_BASE_ARCH},z80)
 obj-y += exec.o exec-vary.o
 obj-y += accel/
 obj-$(CONFIG_TCG) += tcg/tcg.o tcg/tcg-op.o tcg/tcg-op-vec.o tcg/tcg-op-gvec.o
@@ -119,7 +118,6 @@ obj-y += target/$(TARGET_BASE_ARCH)/
 obj-y += disas.o
 obj-$(call notempty,$(TARGET_XML_FILES)) += gdbstub-xml.o
 LIBS := $(libs_cpu) $(LIBS)
-endif
 
 obj-$(CONFIG_PLUGIN) += plugins/
 
