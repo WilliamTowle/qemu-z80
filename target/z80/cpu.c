@@ -183,6 +183,7 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
 
     zcc->parent_reset= cc->reset;
     cc->reset= z80_cpu_reset;
+    cc->reset_dump_flags = 0;   /* i386: CPU_DUMP_FPU | CPU_DUMP_CCOP */
 
     cc->class_by_name = z80_cpu_class_by_name;
 
