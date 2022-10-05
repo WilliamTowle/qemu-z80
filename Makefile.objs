@@ -3,8 +3,8 @@
 ifneq (${TARGET_BASE_ARCH},z80)
 stub-obj-y = stubs/
 util-obj-y = crypto/ util/ qobject/ qapi/
-qom-obj-y = qom/
 endif
+qom-obj-y = qom/
 
 #######################################################################
 # code used by both qemu system emulation and qemu-img
@@ -91,12 +91,10 @@ endif
 
 #######################################################################
 # Target-independent parts used in system and user emulation
-ifneq (${TARGET_BASE_ARCH},z80)
 common-obj-y += cpus-common.o
 common-obj-y += hw/
 common-obj-y += qom/
 common-obj-y += disas/
-endif
 
 ######################################################################
 # Resource file for Windows executables
