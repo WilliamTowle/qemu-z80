@@ -74,6 +74,8 @@ struct Z80CPU {
 /* helper.c */
 void z80_cpu_dump_state(CPUState *cs, FILE *f, int flags);
 
+void z80_cpu_list(void);
+
 int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
 
@@ -85,6 +87,7 @@ int cpu_z80_signal_handler(int host_signum, void *pinfo, void *puc);
 
 
 #define cpu_signal_handler cpu_z80_signal_handler
+#define cpu_list z80_cpu_list
 
 
 /* MMU modes definitions:

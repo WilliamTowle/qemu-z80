@@ -14,6 +14,7 @@
 
 #include "qemu/error-report.h"
 #include "exec/exec-all.h"
+#include "qemu/qemu-print.h"
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 1
@@ -26,27 +27,23 @@
 static void z80_cpu_list_entry(gpointer data, gpointer user_data)
 {
     ObjectClass *oc = data;
-    CPUListState *s = user_data;
     const char *typename= object_class_get_name(oc);
     char *suffix= strstr(typename, "-cpu");
     char *name;
 
     assert(suffix != NULL);
     name = g_strndup(typename, suffix - typename);
-    (*s->cpu_fprintf)(s->file, "  %s\n", name);
+    qemu_printf("  %s\n", name);
     g_free(name);
 }
 
 void z80_cpu_list(void)
 {
-    CPUListState s = {
-        .file = f,
-        .cpu_fprintf = cpu_fprintf,
-    };
-    GSList *list = object_class_get_list_sorted(TYPE_Z80_CPU, false);
+    GSList *list;
+    qemu_printf("Available CPUs:\n");
 
-    (*cpu_fprintf)(f, "Available CPUs:\n");
-    g_slist_foreach(list, z80_cpu_list_entry, &s);
+    list = object_class_get_list(TYPE_Z80_CPU, false);
+    g_slist_foreach(list, z80_cpu_list_entry, NULL);
     g_slist_free(list);
 }
 
