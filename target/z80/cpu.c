@@ -15,6 +15,10 @@
 #include "qemu/error-report.h"
 #include "exec/exec-all.h"
 #include "qemu/qemu-print.h"
+#ifndef CONFIG_USER_ONLY
+#include "sysemu/reset.h"
+#endif
+
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 1
@@ -84,6 +88,18 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
         error_propagate(errp, local_err);
         return;
     }
+}
+
+static void z80_cpu_unrealizefn(DeviceState *dev)
+{
+    Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
+
+#ifndef CONFIG_USER_ONLY
+    cpu_remove_sync(CPU(dev));
+    qemu_unregister_reset(z80_cpu_machine_reset_cb, dev);
+#endif
+
+    zcc->parent_unrealize(dev);
 }
 
 static void z80_cpu_reset(DeviceState *dev)
@@ -207,6 +223,8 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     /* target-i386 common class init */
     device_class_set_parent_realize(dc, z80_cpu_realizefn,
                                     &zcc->parent_realize);
+    device_class_set_parent_unrealize(dc, z80_cpu_unrealizefn,
+                                    &zcc->parent_unrealize);
 
     device_class_set_parent_reset(dc, z80_cpu_reset, &zcc->parent_reset);
     cc->reset_dump_flags = 0;   /* i386: CPU_DUMP_FPU | CPU_DUMP_CCOP */

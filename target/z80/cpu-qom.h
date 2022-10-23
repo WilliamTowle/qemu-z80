@@ -29,6 +29,7 @@ typedef struct Z80CPUClass {
 
     /*< public >*/
     DeviceRealize parent_realize;
+    DeviceUnrealize parent_unrealize;
     DeviceReset parent_reset;
 } Z80CPUClass;
 
