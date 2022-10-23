@@ -86,6 +86,23 @@ static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
     }
 }
 
+static void z80_cpu_unrealizefn(DeviceState *dev, Error **errp)
+{
+    Z80CPUClass *zcc = Z80_CPU_GET_CLASS(dev);
+    Error *local_err = NULL;
+
+#ifndef CONFIG_USER_ONLY
+    cpu_remove_sync(CPU(dev));
+    qemu_unregister_reset(z80_cpu_machine_reset_cb, dev);
+#endif
+
+    zcc->parent_unrealize(dev, &local_err);
+    if (local_err != NULL) {
+        error_propagate(errp, local_err);
+        return;
+    }
+}
+
 /* CPUClass::reset() */
 static void z80_cpu_reset(CPUState *s)
 {
@@ -210,9 +227,8 @@ static void z80_cpu_class_init(ObjectClass *oc, void *data)
     /* v2's target-i386 common class init */
     device_class_set_parent_realize(dc, z80_cpu_realizefn,
                                     &zcc->parent_realize);
-    /* TODO: device_class_set_parent_unrealize(...); */
-//    device_class_set_parent_unrealize(dc, z80_cpu_unrealizefn,
-//                                    &zcc->parent_unrealize);
+    device_class_set_parent_unrealize(dc, z80_cpu_unrealizefn,
+                                    &zcc->parent_unrealize);
 
     zcc->parent_reset= cc->reset;
     cc->reset= z80_cpu_reset;
