@@ -62,6 +62,16 @@ static void z80_cpu_initfn(Object *obj)
     cpu_set_cpustate_pointers(cpu);
 }
 
+
+#ifndef CONFIG_USER_ONLY
+/* TODO: remove me, when reset over QOM tree is implemented */
+static void z80_cpu_machine_reset_cb(void *opaque)
+{
+    Z80CPU *cpu = opaque;
+    cpu_reset(CPU(cpu));
+}
+#endif
+
 static void z80_cpu_realizefn(DeviceState *dev, Error **errp)
 {
     CPUState *cs = CPU(dev);
