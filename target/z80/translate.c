@@ -54,8 +54,7 @@ static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
     ...dc->jmp_opt, based on singlestepping configuration
     ...initialisation of relevant 'static TCGv's
  */
-
-//    DisasContext *dc = container_of(dcbase, DisasContext, base);
+    DisasContext *dc = container_of(dcbase, DisasContext, base);
 //    CPUX86State *env = cpu->env_ptr;
 //    uint32_t flags = dc->base.tb->flags;
 //    target_ulong cs_base = dc->base.tb->cs_base;
@@ -88,6 +87,10 @@ static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
+#if 1   /* PARTIAL */
+;DPRINTF("INFO: %s() flags init would use tb flags %d\n", __func__, dc->base.tb->flags);
+;if (dc->base.tb->flags) exit(1);
+#endif
 //    dc->flags = flags;
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
