@@ -83,6 +83,10 @@ static int z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu,
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
+#if 1   /* PARTIAL */
+;DPRINTF("INFO: %s() flags init would use tb flags %d\n", __func__, dc->base.tb->flags);
+;if (dc->base.tb->flags) exit(1);
+#endif
 //    dc->flags = flags;
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
