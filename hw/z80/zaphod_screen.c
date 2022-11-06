@@ -305,7 +305,7 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
 {
     /* this 'opaque' is the MachineState from zaphod_io_write() */
     ZaphodMachineState *zms= ZAPHOD_MACHINE(opaque);
-    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
+    //ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
     ZaphodScreenState  *zss= zms->screen;
 
     /* TODO: need to handle escape sequences sanely - Phil Brown's
