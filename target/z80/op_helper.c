@@ -20,8 +20,10 @@
     do { if (EMIT_DEBUG) error_printf("Z80 op_helper: " fmt , ## __VA_ARGS__); } while(0)
 
 
-///* Access to registers/emulator temporary values */
-//
+/* Access to registers/emulator temporary values */
+
+#define T0 (env->t0)
+//#define T1 (env->t1)
 //#define A   (env->regs[R_A])
 //#define F   (env->regs[R_F])
 //#define BC  (env->regs[R_BC])
@@ -63,4 +65,10 @@ void HELPER(reset_inhibit_irq)(CPUZ80State *env)
 void helper_movl_pc_im(CPUZ80State *env, int new_pc)
 {
     PC= (uint16_t)new_pc;
+}
+
+
+void helper_jmp_T0(CPUZ80State *env)
+{
+    PC = T0;
 }
