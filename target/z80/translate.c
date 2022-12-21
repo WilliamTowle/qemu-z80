@@ -42,6 +42,9 @@ typedef struct DisasContext {
 
     /* current insn context */
     target_ulong        pc;
+
+    /* current block context */
+    target_ulong cs_base; /* base of CS segment ... FIXME: x86-specific? */
 #if 0   /* overkill? feature unused for z80 */
     CCOp cc_op;  /* current CC operation */
     bool cc_op_dirty;
@@ -398,6 +401,9 @@ static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
     if (dc->base.is_jmp == DISAS_TOO_MANY) {
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() handling DISAS_TOO_MANY - using pc_next 0x%04x - cs_base 0x%04x for gen_jmp_im()\n", __func__, dc->base.pc_next, dc->cs_base);
+#endif
         gen_jmp_im(dc->base.pc_next - dc->cs_base);
         gen_eob(dc);
     }
