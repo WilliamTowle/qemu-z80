@@ -13,6 +13,7 @@
 
 #include "qemu/error-report.h"
 #include "exec/helper-proto.h"
+#include "exec.h"
 
 #define EMIT_DEBUG 0
 #define DPRINTF(fmt, ...) \
