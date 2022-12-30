@@ -154,6 +154,12 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, bool jr)
 //        gen_helper_reset_rf(cpu_env);
 //    }
 //    if (s->base.singlestep_enabled) {
+#if 1   /* WmT - TRACE */
+;if (s->base.singlestep_enabled) {
+;DPRINTF("DEBUG: singlestep_enabled TRUE -> %s() needs helpers\n", __FILE__);
+;exit(1);
+}
+#endif
 //        gen_helper_debug(cpu_env);
 //    } else if (recheck_tf) {
 #if 1   /* WmT - TRACE */
