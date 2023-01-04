@@ -756,8 +756,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
             if (z == 6 && y == 6) {
                 /* Exception [replaces LD (HL),(HL)] */
                 gen_jmp_im(s->pc);
-                //gen_helper_halt();
-                gen_helper_halt(cpu_env, tcg_const_i32(s->pc - pc_start));
+                //gen_helper_halt(cpu_env, tcg_const_i32(s->pc - pc_start));
+                gen_helper_halt(cpu_env);
                 s->base.is_jmp = DISAS_NORETURN;
                 zprintf("halt\n");
             } else {
