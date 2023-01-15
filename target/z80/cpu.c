@@ -232,8 +232,10 @@ static void z80_cpu_set_pc(CPUState *cs, vaddr value)
 
 static void z80_disas_set_info(CPUState *cs, disassemble_info *info)
 {
-    /* TODO: switch to bfd_mach_z80_r800 where applicable */
-    info->mach = bfd_mach_z80_z80;
+    Z80CPU *cpu = Z80_CPU(cs);
+    CPUZ80State *env = &cpu->env;
+
+    info->mach = (env->model == Z80_CPU_Z80)? bfd_mach_z80_z80 : bfd_mach_z80_r800;
     info->print_insn = print_insn_z80;
 }
 
