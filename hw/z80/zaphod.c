@@ -148,7 +148,7 @@ static void zaphod_board_init(MachineState *ms)
 
     if (serial_hd(0))
     {   /* QEmu's main serial console is available */
-        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
+        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hd(0)));
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: UART device created OK, at %p\n", zms->uart_stdio);
 #endif
