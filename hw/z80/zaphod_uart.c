@@ -12,6 +12,7 @@
 #include "qemu/error-report.h"
 #include "sysemu/sysemu.h"
 #include "exec/address-spaces.h"
+#include "hw/qdev-properties.h"
 
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
@@ -88,7 +89,11 @@ static void zaphod_uart_class_init(ObjectClass *oc, void *data)
     dc->desc= "Zaphod UART device";
     dc->realize= zaphod_uart_realizefn;
     dc->reset= zaphod_uart_reset;
+#if QEMU_VERSION_MAJOR < 5
     dc->props= zaphod_uart_properties;
+#else
+    device_class_set_props(dc, zaphod_uart_properties);
+#endif
     set_bit(DEVICE_CATEGORY_INPUT, dc->categories);
 }
 
