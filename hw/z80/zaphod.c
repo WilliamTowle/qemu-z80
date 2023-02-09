@@ -80,7 +80,11 @@ static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
 
     qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
 
+#if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(dev);
+#else
+    qdev_realize(dev, NULL, NULL);
+#endif
     return dev;
 }
 
