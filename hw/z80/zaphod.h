@@ -11,7 +11,7 @@
 
 #define ZAPHOD_DEBUG    1
 
-//#include "config-devices.h"   /* config-related defines */
+#include "config-devices.h"   /* config-related defines */
 #include "config-host.h"
 
 #include "cpu.h"
