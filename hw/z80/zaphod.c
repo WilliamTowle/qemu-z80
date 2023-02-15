@@ -73,7 +73,11 @@ static DeviceState *zaphod_iocore_new(void)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
 
+#if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(dev);
+#else
+    qdev_realize(dev, NULL, NULL);
+#endif
     return dev;
 }
 
