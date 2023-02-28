@@ -35,7 +35,7 @@ static void zaphod_iocore_instance_init(Object *obj)
     /* Nothing to do here - handlers are set in realize function */
 }
 
-ZaphodIOCoreState *zaphod_iocore_init(void)
+ZaphodIOCoreState *zaphod_iocore_new(void)
 {
     DeviceState *dev;
 
