@@ -1192,7 +1192,7 @@ next_byte:
                 }
                 if (is_indexed(r2)
 #ifdef __GNUC__     /* avoid gcc "'d' may be used uninitialised" */
-#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+#if __GNUC__ == 6   /* suppress v6.3.0 warning (TODO: also v8?) */
                     && !is_indexed(r1)
 #endif
 #endif
@@ -1488,7 +1488,7 @@ next_byte:
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
 #ifdef __GNUC__     /* gcc didn't complain above!! */
-#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+#if __GNUC__ == 6   /* suppress v6.3.0 warning (TODO: also v8?) */
                     r2 = regmap(reg[z], 0);
 #endif
 #endif
@@ -1505,7 +1505,7 @@ next_byte:
                 gen_movb_idx_v(r1, cpu_T[0], d);
                 if (z != 6) {
 #ifdef __GNUC__     /* gcc didn't complain above!! */
-#if __GNUC__ == 6   /* suppress warning for v6.3.0 */
+#if __GNUC__ == 6   /* suppress v6.3.0 warning (TODO: also v8?) */
                     r2 = regmap(reg[z], 0);
 #endif
 #endif
