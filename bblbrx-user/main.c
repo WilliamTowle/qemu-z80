@@ -31,7 +31,7 @@ int singlestep;
 
 
 bool qemu_cpu_is_self(CPUState *cpu)
-{
+{   /* [QEmu v2] called by generic_handle_interrupt() */
     return thread_cpu == cpu;
 }
 
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
      *  2. check QEMU_{STRACE|QEMU_RAND_SEED}
      *  3. initialisation of 'target_environ' [if required]
      */
-    //thread_cpu= cpu;
+    thread_cpu= cpu;
 
     /* Since we have no MMU, the entirety of target RAM is
      * effectively available to programs at all times without
