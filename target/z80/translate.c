@@ -44,12 +44,10 @@ typedef struct DisasContext {
     target_ulong        pc;
 
     /* current block context */
-    target_ulong cs_base; /* base of CS segment ... FIXME: x86-specific? */
 #if 0   /* overkill? feature unused for z80 */
     CCOp cc_op;  /* current CC operation */
     bool cc_op_dirty;
 #endif
-    int tf;         /* i386 "trap flag" (CPU single-stepping) */
     uint32_t        flags; /* all execution flags */
 } DisasContext;
 
@@ -110,10 +108,8 @@ static void gen_exception(DisasContext *s, int trapno, target_ulong cur_pc)
 static void gen_illegal_opcode(DisasContext *s)
 {
 #if 1   /* WmT - TRACE */
-//;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing pc_start 0x%04x less cs_base 0x%04x\n", __func__, s->pc_start, s->cs_base);
 ;DPRINTF("DEBUG: %s() deferring to gen_exception(); passing s->base.pc_next 0x%04x\n", __func__, s->base.pc_next);
 #endif
-    //gen_exception(s, EXCP_ILLOP, s->pc_start - s->cs_base);
     gen_exception(s, EXCP_ILLOP, s->base.pc_next);
 }
 
@@ -199,7 +195,8 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: read byte OK, is potential end-of-program 'ret'\n");
 #endif
-            gen_exception(s, EXCP_KERNEL_TRAP, pc_start /* - s->cs_base */);
+            //gen_exception(s, EXCP_KERNEL_TRAP, pc_start - s->cs_base);
+            gen_exception(s, EXCP_KERNEL_TRAP, pc_start);
             break;
 
         default:    /* other op */
@@ -257,9 +254,8 @@ static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
  */
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 //    CPUX86State *env = cpu->env_ptr;
-//    uint32_t flags = dc->base.tb->flags;
-//    target_ulong cs_base = dc->base.tb->cs_base;
-//
+    uint32_t flags = dc->base.tb->flags;
+
 //    dc->pe = (flags >> HF_PE_SHIFT) & 1;
 //    dc->code32 = (flags >> HF_CS32_SHIFT) & 1;
 //    dc->ss32 = (flags >> HF_SS32_SHIFT) & 1;
@@ -288,11 +284,9 @@ static void z80_tr_init_disas_context(DisasContextBase *dcbase, CPUState *cpu)
 //    dc->lma = (flags >> HF_LMA_SHIFT) & 1;
 //    dc->code64 = (flags >> HF_CS64_SHIFT) & 1;
 //#endif
-#if 1   /* PARTIAL */
-;DPRINTF("INFO: %s() flags init would use tb flags %d\n", __func__, dc->base.tb->flags);
-;if (dc->base.tb->flags) exit(1);
-#endif
-//    dc->flags = flags;
+
+    dc->flags= flags;
+
 //    dc->jmp_opt = !(dc->tf || dc->base.singlestep_enabled ||
 //                    (flags & HF_INHIBIT_IRQ_MASK));
 //    /* Do not optimize repz jumps at all in icount mode, because
@@ -361,7 +355,7 @@ static bool z80_tr_breakpoint_check(DisasContextBase *dcbase, CPUState *cpu,
     /* If RF is set, suppress an internally generated breakpoint.  */
     int flags = dc->base.tb->flags & HF_RF_MASK ? BP_GDB : BP_ANY;
     if (bp->flags & flags) {
-        gen_debug(dc, dc->base.pc_next - dc->cs_base);
+        gen_debug(dc, dc->base.pc_next);
         dc->base.is_jmp = DISAS_NORETURN;
         /* The address covered by the breakpoint must be included in
            [tb->pc, tb->pc + tb->size) in order to for it to be
@@ -390,7 +384,7 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("DEBUG: %s() PARTIAL - proceeding with pc_next 0x%04x from disas_insn()\n", __func__, pc_next);
 #endif
-    if (dc->tf || (dc->base.tb->flags & HF_INHIBIT_IRQ_MASK)) {
+    if (/* dc->tf || */ (dc->base.tb->flags & HF_INHIBIT_IRQ_MASK)) {
         /* if single step mode, we generate only one instruction and
            generate an exception */
         /* if irq were inhibited with HF_INHIBIT_IRQ_MASK, we clear
@@ -418,20 +412,15 @@ static void z80_tr_translate_insn(DisasContextBase *dcbase, CPUState *cpu)
 
 static void z80_tr_tb_stop(DisasContextBase *dcbase, CPUState *cpu)
 {
-#if 0   /* WmT - TRACE */
-;DPRINTF("INFO: Reached %s() ** PARTIAL **\n", __func__);
-;exit(1);
-#else
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
     if (dc->base.is_jmp == DISAS_TOO_MANY) {
 #if 1   /* WmT - TRACE */
-;DPRINTF("DEBUG: %s() handling DISAS_TOO_MANY - using pc_next 0x%04x - cs_base 0x%04x for gen_jmp_im()\n", __func__, dc->base.pc_next, dc->cs_base);
+;DPRINTF("DEBUG: %s() handling DISAS_TOO_MANY - using pc_next 0x%04x for gen_jmp_im()\n", __func__, dc->base.pc_next);
 #endif
-        gen_jmp_im(dc->base.pc_next - dc->cs_base);
+        gen_jmp_im(dc->base.pc_next);
         gen_eob(dc);
     }
-#endif
 }
 
 static void z80_tr_disas_log(const DisasContextBase *dcbase,
