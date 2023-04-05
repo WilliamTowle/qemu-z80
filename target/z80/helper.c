@@ -221,14 +221,12 @@ bool z80_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
 
     //Z80CPU *cpu = Z80_CPU(cs);
     //CPUZ80State *env = &cpu->env;
-    bool ret;
 
     //interrupt_request = z80_cpu_pending_interrupt(cs, interrupt_request);
     if (!interrupt_request) {
         return false;
     }
 
-    ret = false;
     /* Don't process multiple interrupt requests in a single call.
      * This is required to make icount-driven execution deterministic.
      */
@@ -251,12 +249,12 @@ bool z80_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
             Z80CPU *cpu = Z80_CPU(cs);
             do_interrupt_all(cpu, 0 /* intno */);
         }
-        ret = true;
         break;
 
         default:
 ;DPRINTF("*** DEBUG: %s() unmatched interrupt_request %d in switch ***\n", __func__, interrupt_request);
     }
 
-    return ret;
+    /* Ensure that no TB jump will be modified as the program flow was changed.  */
+    return true;
 }
