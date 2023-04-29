@@ -50,11 +50,13 @@ void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
     zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
 }
 
+
+/* ACIA chardev handlers */
+
 static
 int zaphod_iocore_can_receive_acia(void *opaque)
 {
-    /* Maybe implement a FIFO queue? */
-    return 1;
+    return zaphod_uart_can_receive(opaque);
 }
 
 static
@@ -121,6 +123,9 @@ static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
     { 0x01, 1, 1, .write = zaphod_iocore_write_stdio, },  /* stdout */
     PORTIO_END_OF_LIST(),
 };
+
+
+/* ACIA ioport handlers */
 
 static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
 {
@@ -210,6 +215,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
+
+
+    /* ACIA setup */
 
     zis->ioports_acia = g_new(PortioList, 1);
     portio_list_init(zis->ioports_acia, OBJECT(zis), zaphod_iocore_portio_acia,
