@@ -59,12 +59,20 @@ void zaphod_iocore_receive_acia(void *opaque, const uint8_t *buf, int len)
 {
     ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
 
-    /* TODO: QEmu's SDL v2 support introduces sdl2_process_key(),
-     * which injects '\n' in the input stream for Q_KEY_CODE_RET,
-     * effectively performing CR -> NL translation on input compared
-     * to QEmu v1. Previously we received '\r' in the buffer here.
-     */
-    zaphod_uart_set_inkey(zis->board->uart_acia, buf[0], true);
+#if QEMU_VERSION_MAJOR >= 5 /* possibly `SDL_MAJOR_VERSION >= 2` ? */
+    if (buf[0] == '\n')
+    {
+        /* QEmu's SDL v2 support introduces sdl2_process_key(), which
+         * injects '\n' in the input stream for Q_KEY_CODE_RET rather
+         * than '\r' as before. Send the latter.
+         */
+        zaphod_uart_set_inkey(zis->board->uart_acia, '\r', true);
+    }
+    else
+#endif
+    {
+        zaphod_uart_set_inkey(zis->board->uart_acia, buf[0], true);
+    }
     if (zis->irq_acia)
         qemu_irq_raise(*zis->irq_acia);
 }
