@@ -47,8 +47,7 @@ void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
 static
 int zaphod_iocore_can_receive_acia(void *opaque)
 {
-    /* Maybe implement a FIFO queue? */
-    return 1;
+    return zaphod_uart_can_receive(opaque);
 }
 
 static
