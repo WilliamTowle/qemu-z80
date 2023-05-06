@@ -32,6 +32,7 @@ typedef struct {
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
 #if 1   /* IOCORE-KEYBIO */
     QemuInputHandlerState *ihs;
+    int             modifiers;
 #endif
 } ZaphodIOCoreState;
 
