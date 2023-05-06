@@ -276,11 +276,14 @@ static const uint8_t keycode_to_asciilc[128]= {
 static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
                              InputEvent *evt)
 {
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+    ZaphodMachineState  *zms= zis->board;
     InputKeyEvent *key;
-    int scancodes[3], count;
+    int qcode, scancodes[3], count;
 
     assert(evt->type == INPUT_EVENT_KIND_KEY);
     key= evt->u.key.data;
+    qcode = qemu_input_key_value_to_qcode(key->key);
 
     /* TODO:
      * 1. check qcode value for modifier keys; if pressed, prepare to:
@@ -292,15 +295,36 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
      * - map qcodes to ASCII and pass to relevant (stdio/ACIA) UART
      */
 
+    switch (qcode)
+    {
+    case Q_KEY_CODE_SHIFT:
+;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT... ***\n");
+        zms->iocore->modifiers^= 1;
+        return;
+    case Q_KEY_CODE_SHIFT_R:
+;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT_R... ***\n");
+        zms->iocore->modifiers^= 2;
+        return;
+
+    /* TODO: other modifiers? */
+
+    default:
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** INFO: %s() possible regular key use - down: %s, qcode %d ***\n", __func__, key->down?"y":"n", qcode);
+#endif
+        break;  /* fall through to inject ASCII for key */
+    }
+
+    /* Put character - convert to ASCII and inject into ACIA or
+     * stdio stream via the relevant chardev's receive functions.
+     * TODO: rewrite as 'else' case of modifier adjust test
+     */
+
     count = qemu_input_key_value_to_scancode(key->key,
                                              key->down,
                                              scancodes);
-
     if (count == 1) /* single-byte XT scancode */
     {
-        ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
-        ZaphodMachineState  *zms= zis->board;
-
         if (!key->down)
         {
             if (zms->uart_acia)
@@ -312,6 +336,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         {
           uint8_t           ch= keycode_to_asciilc[scancodes[0] & 0x7f];
           ZaphodUARTState   *uart_mux;
+
+            /* TODO: implement per-modifier lookup tables indexed by
+             * qcode, and only force upper case if caps lock is active
+             */
+            if (zms->iocore->modifiers & 3)
+                ch= toupper(ch);
 
             if ( (uart_mux= zms->uart_acia) != NULL )
             {
@@ -333,6 +363,13 @@ static QemuInputHandler zaphod_kbd_handler = {
     .event = zaphod_kbd_event,
 };
 #endif
+
+static void zaphod_iocore_reset(void *opaque)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    zis->modifiers= 0;
+}
 
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
@@ -394,6 +431,8 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 #endif
     if (zis->screen)
         qdev_init_nofail(DEVICE(zis->screen));
+
+     qemu_register_reset(zaphod_iocore_reset, zis);
 }
 
 #if 0
