@@ -234,20 +234,46 @@ static const uint8_t keycode_to_asciilc[128]= {
 static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
                              InputEvent *evt)
 {
+    MachineState *machine = MACHINE(qdev_get_machine());
+    ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
     InputKeyEvent *key;
-    int scancodes[3], count;
+    int qcode, scancodes[3], count;
 
     assert(evt->type == INPUT_EVENT_KIND_KEY);
     key= evt->u.key.data;
+    qcode = qemu_input_key_value_to_qcode(key->key);
+
+    /* TODO: we can work with 'qcode' values here:
+     * 1. test if qcode value specifies a modifier key, then:
+     * - set bit 0x1 in 'modifiers' for left shift based on up/down
+     * - set bit 0x2 in 'modifiers' for right shift based on up/down
+     * - (...etc)
+     * 2. map (or translate?) qcodes to ASCII otherwise
+     */
+
+    switch (qcode)
+    {
+    case Q_KEY_CODE_SHIFT:
+;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT... ***\n");
+        zms->iocore->modifiers^= 1;
+        return;
+    case Q_KEY_CODE_SHIFT_R:
+;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT_R... ***\n");
+        zms->iocore->modifiers^= 2;
+        return;
+
+    /* TODO: other modifiers? */
+    default:
+;DPRINTF("*** INFO: %s() possible regular key use - down: %s, qcode %d ***\n", __func__, key->down?"y":"n", qcode);
+
+        break;  // fall through to inject ASCII for key
+    }
+
     count = qemu_input_key_value_to_scancode(key->key,
                                              key->down,
                                              scancodes);
-
     if (count == 1) /* single-byte XT scancode */
     {
-        MachineState *machine = MACHINE(qdev_get_machine());
-        ZaphodMachineState *zms = ZAPHOD_MACHINE(machine);
-
         if (!key->down)
         {
             if (zms->uart_acia)
@@ -259,6 +285,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         {
           uint8_t	ch= keycode_to_asciilc[scancodes[0] & 0x7f];
             ZaphodUARTState *uart_mux;
+
+            /* TODO: modifiers also affect other keys; this should
+             * be how we handle caps-lock-active state
+             */
+            if (zms->iocore->modifiers & 3)
+                ch= toupper(ch);
 
             if ( (uart_mux= zms->uart_acia) != NULL )
             {
@@ -280,6 +312,13 @@ static QemuInputHandler zaphod_kbd_handler = {
     .event = zaphod_kbd_event,
 };
 #endif
+
+static void zaphod_iocore_reset(void *opaque)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    zis->modifiers= 0;
+}
 
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
@@ -336,6 +375,8 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     zis->ihs= qemu_input_handler_register(dev, &zaphod_kbd_handler);
     qemu_input_handler_activate(zis->ihs);
 #endif
+
+    qemu_register_reset(zaphod_iocore_reset, zis);
 }
 
 #if 0   /* 'chardev' removed (see sercon/mc6850 devices) */
