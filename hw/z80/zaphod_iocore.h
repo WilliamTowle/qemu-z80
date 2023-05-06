@@ -34,6 +34,7 @@ typedef struct {
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
 #if 1   /* IOCORE-KEYBIO */
     QemuInputHandlerState *ihs;
+    int             modifiers;
 #endif
     /* TODO: correlate screen(s) to stdio/acia input */
     ZaphodScreenState   *screen;
