@@ -203,9 +203,31 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
 
 
 #if 1   /* keyboard I/O */
+#if 1
 /* Tables for mapping qcode of keypress to corresponding ascii
  * TODO: must account for modifier keys
  */
+static const uint8_t qcode_to_ascii[]= {
+    [Q_KEY_CODE_1]              = '1',
+    [Q_KEY_CODE_BACKSPACE]      = 127,
+    [Q_KEY_CODE_Q]              = 'q',
+    [Q_KEY_CODE_A]              = 'a',
+    [Q_KEY_CODE_RET]            = '\r',
+    [Q_KEY_CODE_Z]              = 'z',
+    [Q_KEY_CODE_SPC]            = ' '
+};
+#if 0   /* TODO: further table(s) for modifier combinations */
+static const uint8_t shift_qcode_to_ascii[]= {
+    [Q_KEY_CODE_1]              = '!',
+    [Q_KEY_CODE_BACKSPACE]      = 127,
+    [Q_KEY_CODE_Q]              = 'Q',
+    [Q_KEY_CODE_A]              = 'A',
+    [Q_KEY_CODE_RET]            = '\r',
+    [Q_KEY_CODE_Z]              = 'Z',
+    [Q_KEY_CODE_SPC]            = ' '
+};
+#endif
+#else   /* previous keyboard I/O */
 static const uint8_t keycode_to_asciilc[128]= {
     /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
      * callback to translate keycode to row and column [as per the
@@ -233,6 +255,7 @@ static const uint8_t keycode_to_asciilc[128]= {
       0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,
 };
+#endif
 
 static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
                              InputEvent *evt)
@@ -307,8 +330,14 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
             }
             else
             {
-              uint8_t           ch= keycode_to_asciilc[scancodes[0] & 0x7f];
+              uint8_t           ch= '\0';
               ZaphodUARTState   *uart_mux;
+
+                if (qcode < (sizeof qcode_to_ascii/sizeof qcode_to_ascii[0]))
+                    ch= qcode_to_ascii[qcode];
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** INFO: key-down event (scancode %d, qcode_to_ascii[] value %d) ***\n", scancodes[0], ch);
+#endif
 
                 /* TODO: implement per-modifier lookup tables indexed by
                  * qcode, and only force upper case if caps lock is active
