@@ -15,8 +15,7 @@
 
 void helper_halt(CPUZ80State *env)
 {
-    Z80CPU *cpu = z80_env_get_cpu(env);
-    CPUState *cs = CPU(cpu);
+    CPUState *cs = CPU(z80_env_get_cpu(env));
     //printf("halting at PC 0x%x\n",env->pc);
 
     cs->halted = 1;
