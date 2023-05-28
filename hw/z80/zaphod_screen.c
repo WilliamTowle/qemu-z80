@@ -213,7 +213,12 @@ static void zaphod_screen_update_display(void *opaque)
         zss->cursor_visible= !zss->cursor_visible;
         DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
 
-        zss->cursor_dirty= true;
+        /* Adjust 'cursor_dirty' state here so the "blink" step is
+         * performed as needed - ie. if the cursor is:
+         *   - in non-dirty state? always trigger state change next
+         *   - dirty (was just erased)? unset flag [do nothing below]
+         */
+        zss->cursor_dirty^= !zss->cursor_dirty || !zss->cursor_visible;
     }
 
     if (zss->cursor_dirty)
