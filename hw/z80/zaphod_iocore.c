@@ -274,34 +274,24 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
                              InputEvent *evt)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
-    ZaphodMachineState  *zms= zis->board;
     InputKeyEvent *key;
-    int qcode, scancodes[3], count;
+    int qcode, modifier_bit, scancodes[3], count;
 
     assert(evt->type == INPUT_EVENT_KIND_KEY);
     key= evt->u.key.data;
     qcode = qemu_input_key_value_to_qcode(key->key);
 
-    /* TODO:
-     * 1. check qcode value for modifier keys; if pressed, prepare to:
-     * - adjust bit 0x1 in 'modifiers' for left shift
-     * - adjust bit 0x2 in 'modifiers' for right shift
-     * - (...etc)
-     * 2. depending on whether a modifier was pressed, either:
-     * - align modifier state bit to up/down state of key, or
-     * - map qcodes to ASCII and pass to relevant (stdio/ACIA) UART
-     */
-
+    modifier_bit= 0;
     switch (qcode)
     {
     case Q_KEY_CODE_SHIFT:
 ;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT... ***\n");
-        zms->iocore->modifiers^= 1;
-        return;
+        modifier_bit= 1;
+        break;
     case Q_KEY_CODE_SHIFT_R:
 ;DPRINTF("*** INFO: handle modifier Q_KEY_CODE_SHIFT_R... ***\n");
-        zms->iocore->modifiers^= 2;
-        return;
+        modifier_bit= 2;
+        break;
 
     /* TODO: other modifiers? */
 
@@ -312,43 +302,56 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         break;  /* fall through to inject ASCII for key */
     }
 
-    /* Put character - convert to ASCII and inject into ACIA or
-     * stdio stream via the relevant chardev's receive functions.
-     * TODO: rewrite as 'else' case of modifier adjust test
-     */
-
-    count = qemu_input_key_value_to_scancode(key->key,
-                                             key->down,
-                                             scancodes);
-    if (count == 1) /* single-byte XT scancode */
+    if (modifier_bit)
     {
-        if (!key->down)
-        {
-            if (zms->uart_acia)
-                zaphod_uart_set_inkey(zms->uart_acia, 0, false);
-            else
-                zaphod_uart_set_inkey(zms->uart_stdio, 0, false);
-        }
-        else
-        {
-          uint8_t           ch= keycode_to_asciilc[scancodes[0] & 0x7f];
-          ZaphodUARTState   *uart_mux;
+;DPRINTF("*** INFO: %s() modifiers 0x%x, modifier_bit 0x%x ***\n", __func__, zis->modifiers, modifier_bit);
+        zis->modifiers&= ~modifier_bit;
+        if (key->down)
+            zis->modifiers|= modifier_bit;
+;DPRINTF("*** INFO: %s() modifiers done, set to 0x%x ***\n", __func__, zis->modifiers);
+    }
+    else if (zis->board->screen)
+    {
+        /* Put character - convert to ASCII and inject into ACIA or
+         * stdio stream via the relevant chardev's receive functions.
+         * TODO: rewrite as 'else' case of modifier adjust test
+         */
 
-            /* TODO: implement per-modifier lookup tables indexed by
-             * qcode, and only force upper case if caps lock is active
-             */
-            if (zms->iocore->modifiers & 3)
-                ch= toupper(ch);
+        count = qemu_input_key_value_to_scancode(key->key,
+                                                 key->down,
+                                                 scancodes);
+        if (count == 1) /* single-byte XT scancode */
+        {
+            ZaphodMachineState  *zms= zis->board;
 
-            if ( (uart_mux= zms->uart_acia) != NULL )
+            if (!key->down)
             {
-                if (zaphod_iocore_can_receive_acia(zms->iocore))
-                    zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
+                if (zms->uart_acia)
+                    zaphod_uart_set_inkey(zms->uart_acia, 0, false);
+                else
+                    zaphod_uart_set_inkey(zms->uart_stdio, 0, false);
             }
-            else if ( (uart_mux= zms->uart_stdio) != NULL )
+            else
             {
-                if (zaphod_iocore_can_receive_stdio(zms->iocore))
-                    zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
+              uint8_t           ch= keycode_to_asciilc[scancodes[0] & 0x7f];
+              ZaphodUARTState   *uart_mux;
+
+                /* TODO: implement per-modifier lookup tables indexed by
+                 * qcode, and only force upper case if caps lock is active
+                 */
+                if (zis->modifiers & 3)
+                    ch= toupper(ch);
+
+                if ( (uart_mux= zms->uart_acia) != NULL )
+                {
+                    if (zaphod_iocore_can_receive_acia(zms->iocore))
+                        zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
+                }
+                else if ( (uart_mux= zms->uart_stdio) != NULL )
+                {
+                    if (zaphod_iocore_can_receive_stdio(zms->iocore))
+                        zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
+                }
             }
         }
     }
