@@ -454,12 +454,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
                 if (zis->modifiers & 3)
                     ch= toupper(ch);
 
-                if ( (uart_mux= zms->uart_acia) != NULL )
+                if ( ch && (uart_mux= zms->uart_acia) != NULL )
                 {
                     if (zaphod_iocore_can_receive_acia(zms->iocore))
                         zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
                 }
-                else if ( (uart_mux= zms->uart_stdio) != NULL )
+                else if ( ch && (uart_mux= zms->uart_stdio) != NULL )
                 {
                     if (zaphod_iocore_can_receive_stdio(zms->iocore))
                         zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
