@@ -293,7 +293,6 @@ static const uint8_t qcode_to_ascii[]= {
 
     [Q_KEY_CODE_SPC]            = ' '
 };
-#if 0   /* TODO: further table(s) for modifier combinations */
 static const uint8_t shift_qcode_to_ascii[]= {
     /* TODO: '`' */
     [Q_KEY_CODE_1]              = '!',
@@ -344,7 +343,6 @@ static const uint8_t shift_qcode_to_ascii[]= {
 
     [Q_KEY_CODE_SPC]            = ' '
 };
-#endif
 #else   /* previous keyboard I/O */
 static const uint8_t keycode_to_asciilc[128]= {
     /* keymap for UK QWERTY keyboard - NB. repo.or.cz uses its
@@ -438,20 +436,30 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
             }
             else
             {
+              const uint8_t     *conv_table= qcode_to_ascii;
+              int               conv_table_size;
               uint8_t           ch= '\0';
               ZaphodUARTState   *uart_mux;
 
-                if (qcode < (sizeof qcode_to_ascii/sizeof qcode_to_ascii[0]))
-                    ch= qcode_to_ascii[qcode];
-#if 1   /* WmT - TRACE */
-;DPRINTF("*** INFO: key-down event (scancode %d, qcode_to_ascii[] value %d) ***\n", scancodes[0], ch);
-#endif
-
-                /* TODO: implement per-modifier lookup tables indexed by
-                 * qcode, and only force upper case if caps lock is active
-                 */
                 if (zis->modifiers & 3)
-                    ch= toupper(ch);
+                {
+                    conv_table= shift_qcode_to_ascii;
+                    conv_table_size= sizeof shift_qcode_to_ascii
+                                    / sizeof shift_qcode_to_ascii[0];
+                }
+                else
+                {
+                    conv_table_size= sizeof qcode_to_ascii
+                                    / sizeof qcode_to_ascii[0];
+                }
+
+                if (qcode < conv_table_size)
+                {
+                    ch= conv_table[qcode];
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** INFO: key-down event (scancode %d, val %d) from source device %p ***\n", scancodes[0], ch, dev);
+#endif
+                }
 
                 if ( ch && (uart_mux= zms->uart_acia) != NULL )
                 {
