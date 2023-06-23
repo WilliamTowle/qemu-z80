@@ -382,6 +382,19 @@ void zaphod_screen_putchar(ZaphodScreenState *zss, uint8_t ch)
      * old position but it will need rendering immediately where it
      * moved to
      */
+#if 1   /* HACK: test need for cursor-move visibility check? */
+#if 1   /* WmT - TRACE */
+;DPRINTF("*** DEBUG: Reached %s() cursor visibility check - currently %s ***\n", __func__, (zss->cursor_visible)?"ON":"OFF");
+#endif
+    if (zss->cursor_visible && !zss->cursor_dirty)
+    {
+        /* TODO: undraw cursor (and ensure this is only done once) */
+        zaphod_screen_toggle_cursor(zss,
+                             zss->curs_posr, zss->curs_posc);
+        zss->cursor_dirty= true;
+    }
+#endif
+
     if (++zss->curs_posc == ZAPHOD_TEXT_COLS)
     {
         zss->curs_posc= 0;
