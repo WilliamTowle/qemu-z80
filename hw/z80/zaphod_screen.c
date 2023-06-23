@@ -47,6 +47,38 @@ uint8_t zaphod_rgb_palette[][3]= {
 };
 
 
+static
+void zaphod_screen_toggle_cursor(void *opaque, int row, int col)
+{
+    ZaphodScreenState   *zss= ZAPHOD_SCREEN(opaque);
+    DisplaySurface      *ds = qemu_console_surface(zss->display);
+    int                 bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
+    uint8_t             *dmem;
+    int                 ix, iy;
+
+    dmem= surface_data(ds);
+    dmem+= col * FONT_WIDTH * bypp;
+    dmem+= row * FONT_HEIGHT * surface_stride(ds);
+
+    for (ix= 0; ix < FONT_HEIGHT; ix++)
+    {
+        /* for bypp = 4 */
+        for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
+        {
+            *(dmem + iy)^= zaphod_rgb_palette[0][2] ^ zaphod_rgb_palette[1][2];
+            *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
+            *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
+        }
+        dmem+= surface_stride(ds);
+    }
+
+    /* update display to redraw cursor in given location */
+    dpy_gfx_update(zss->display,
+            col * FONT_WIDTH,
+            row * FONT_HEIGHT,
+            FONT_WIDTH, FONT_HEIGHT);
+}
+
 static void zaphod_screen_invalidate_display(void *opaque)
 {
 ;DPRINTF("[%s:%d] Reached UNIMPLEMENTED %s()\n", __FILE__, __LINE__, __func__);
@@ -76,32 +108,7 @@ static void zaphod_screen_update_display(void *opaque)
 ;DPRINTF("INFO: Cursor visible -> %s\n", zss->cursor_visible?"ON":"OFF");
 
         /* effect "blink" step (toggle cursor visibility) */
-        {
-            DisplaySurface *ds = qemu_console_surface(zss->display);
-            int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
-            uint8_t *dmem;
-            int ix, iy;
-
-            dmem= surface_data(ds);
-            /* TODO: adjust dmem pointer according to cursor position */
-
-            for (ix= 0; ix < FONT_HEIGHT; ix++)
-            {
-                /* for bypp = 4 */
-                for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
-                {
-                    *(dmem + iy)^= zaphod_rgb_palette[0][2] ^ zaphod_rgb_palette[1][2];
-                    *(dmem + iy+1)^= zaphod_rgb_palette[0][1] ^ zaphod_rgb_palette[1][1];
-                    *(dmem + iy+2)^= zaphod_rgb_palette[0][0] ^ zaphod_rgb_palette[1][0];
-                }
-                dmem+= surface_stride(ds);
-            }
-
-            /* redraw cursor in its present location */
-            dpy_gfx_update(zss->display,
-                    0, 0,                       /* ulx, uly */
-                    FONT_WIDTH, FONT_HEIGHT);   /* xsz, ysz */
-        }
+        zaphod_screen_toggle_cursor(opaque, 0, 0);
     }
 }
 
