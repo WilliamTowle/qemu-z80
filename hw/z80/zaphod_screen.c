@@ -229,32 +229,11 @@ static void zaphod_screen_update_display(void *opaque)
 
     if (cursor_dirty)
     {
-        /* FIXME: call to zaphod_screen_toggle_cursor()? */
-        /* cursor moved, was erased, or changed visibility status */
-        DisplaySurface *ds = qemu_console_surface(zss->display);
-        int       bypp= (surface_bits_per_pixel(ds) + 7) >> 3;
-        uint8_t *dmem;
-        int ix, iy;
-
-        dmem= surface_data(ds);
-        /* TODO: adjust dmem pointer according to cursor position */
-
-        for (ix= 0; ix < FONT_HEIGHT; ix++)
-        {
-            /* for bypp = 4 */
-            for (iy= 0; iy < FONT_WIDTH * bypp; iy+= bypp)
-            {
-                *(dmem + iy)^= zss->rgb_bg[2] ^ zss->rgb_fg[2];
-                *(dmem + iy+1)^= zss->rgb_bg[1] ^ zss->rgb_fg[1];
-                *(dmem + iy+2)^= zss->rgb_bg[0] ^ zss->rgb_fg[0];
-            }
-            dmem+= surface_stride(ds);
-        }
-
-        /* update display to redraw cursor in its present location */
-        dpy_gfx_update(zss->display,
-                0, 0,                       /* ulx, uly */
-                FONT_WIDTH, FONT_HEIGHT);   /* xsz, ysz */
+        /* cursor was erased or changed visibility status above */
+        zaphod_screen_toggle_cursor(opaque,
+                            0,  /* TODO: zss->curs_posr */
+                            0   /* TODO: zss->curs_posc */
+                            );
     }
 }
 
