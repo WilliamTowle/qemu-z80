@@ -244,22 +244,104 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
  * TODO: must account for modifier keys
  */
 static const uint8_t qcode_to_ascii[]= {
+    /* TODO: '`' */
     [Q_KEY_CODE_1]              = '1',
+    [Q_KEY_CODE_2]              = '2',
+    [Q_KEY_CODE_3]              = '3',
+    [Q_KEY_CODE_4]              = '4',
+    [Q_KEY_CODE_5]              = '5',
+    [Q_KEY_CODE_6]              = '6',
+    [Q_KEY_CODE_7]              = '7',
+    [Q_KEY_CODE_8]              = '8',
+    [Q_KEY_CODE_9]              = '9',
+    [Q_KEY_CODE_0]              = '0',
+    /* TODO: '-', '=' */
     [Q_KEY_CODE_BACKSPACE]      = 127,
+
     [Q_KEY_CODE_Q]              = 'q',
+    [Q_KEY_CODE_W]              = 'w',
+    [Q_KEY_CODE_E]              = 'e',
+    [Q_KEY_CODE_R]              = 'r',
+    [Q_KEY_CODE_T]              = 't',
+    [Q_KEY_CODE_Y]              = 'y',
+    [Q_KEY_CODE_U]              = 'u',
+    [Q_KEY_CODE_I]              = 'i',
+    [Q_KEY_CODE_O]              = 'o',
+    [Q_KEY_CODE_P]              = 'p',
+    /* TODO: '[', ']' */
+
     [Q_KEY_CODE_A]              = 'a',
+    [Q_KEY_CODE_S]              = 's',
+    [Q_KEY_CODE_D]              = 'd',
+    [Q_KEY_CODE_F]              = 'f',
+    [Q_KEY_CODE_G]              = 'g',
+    [Q_KEY_CODE_H]              = 'h',
+    [Q_KEY_CODE_J]              = 'j',
+    [Q_KEY_CODE_K]              = 'k',
+    [Q_KEY_CODE_L]              = 'l',
+    /* TODO: ';', '\'', '#' */
     [Q_KEY_CODE_RET]            = '\r',
+
     [Q_KEY_CODE_Z]              = 'z',
+    [Q_KEY_CODE_X]              = 'x',
+    [Q_KEY_CODE_C]              = 'c',
+    [Q_KEY_CODE_V]              = 'v',
+    [Q_KEY_CODE_B]              = 'b',
+    [Q_KEY_CODE_N]              = 'n',
+    [Q_KEY_CODE_M]              = 'm',
+    /* TODO: ',', '.', '/' */
+
     [Q_KEY_CODE_SPC]            = ' '
 };
 #if 0   /* TODO: further table(s) for modifier combinations */
 static const uint8_t shift_qcode_to_ascii[]= {
+    /* TODO: '`' */
     [Q_KEY_CODE_1]              = '!',
+    [Q_KEY_CODE_2]              = '"',
+    [Q_KEY_CODE_3]              = '\xa3',   /* UK pound */
+    [Q_KEY_CODE_4]              = '$',
+    [Q_KEY_CODE_5]              = '%',
+    [Q_KEY_CODE_6]              = '^',
+    [Q_KEY_CODE_7]              = '&',
+    [Q_KEY_CODE_8]              = '*',
+    [Q_KEY_CODE_9]              = '(',
+    [Q_KEY_CODE_0]              = ')',
+    /* TODO: '-', '=' */
     [Q_KEY_CODE_BACKSPACE]      = 127,
+
     [Q_KEY_CODE_Q]              = 'Q',
+    [Q_KEY_CODE_W]              = 'W',
+    [Q_KEY_CODE_E]              = 'E',
+    [Q_KEY_CODE_R]              = 'R',
+    [Q_KEY_CODE_T]              = 'T',
+    [Q_KEY_CODE_Y]              = 'Y',
+    [Q_KEY_CODE_U]              = 'U',
+    [Q_KEY_CODE_I]              = 'I',
+    [Q_KEY_CODE_O]              = 'O',
+    [Q_KEY_CODE_P]              = 'P',
+    /* TODO: '[', ']' */
+
     [Q_KEY_CODE_A]              = 'A',
+    [Q_KEY_CODE_S]              = 'S',
+    [Q_KEY_CODE_D]              = 'D',
+    [Q_KEY_CODE_F]              = 'F',
+    [Q_KEY_CODE_G]              = 'G',
+    [Q_KEY_CODE_H]              = 'H',
+    [Q_KEY_CODE_J]              = 'J',
+    [Q_KEY_CODE_K]              = 'K',
+    [Q_KEY_CODE_L]              = 'L',
+    /* TODO: ';', '\'', '#' */
     [Q_KEY_CODE_RET]            = '\r',
+
     [Q_KEY_CODE_Z]              = 'Z',
+    [Q_KEY_CODE_X]              = 'X',
+    [Q_KEY_CODE_C]              = 'C',
+    [Q_KEY_CODE_V]              = 'V',
+    [Q_KEY_CODE_B]              = 'B',
+    [Q_KEY_CODE_N]              = 'N',
+    [Q_KEY_CODE_M]              = 'M',
+    /* TODO: ',', '.', '/' */
+
     [Q_KEY_CODE_SPC]            = ' '
 };
 #endif
