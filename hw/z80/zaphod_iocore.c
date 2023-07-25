@@ -256,7 +256,11 @@ static const MemoryRegionPortio zaphod_iocore_portio_acia[] = {
 /* Tables for mapping qcode of keypress to corresponding ascii
  * TODO: must account for modifier keys
  */
+#define NO_KEY                  0xff
+
 static const uint8_t qcode_to_ascii[]= {
+    [0 ... 0xff]                = NO_KEY,
+
     /* TODO: '`' */
     [Q_KEY_CODE_1]              = '1',
     [Q_KEY_CODE_2]              = '2',
@@ -307,6 +311,8 @@ static const uint8_t qcode_to_ascii[]= {
     [Q_KEY_CODE_SPC]            = ' '
 };
 static const uint8_t shift_qcode_to_ascii[]= {
+    [0 ... 0xff]                = NO_KEY,
+
     /* TODO: '`' */
     [Q_KEY_CODE_1]              = '!',
     [Q_KEY_CODE_2]              = '"',
@@ -461,7 +467,7 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
             {
               const uint8_t     *conv_table= qcode_to_ascii;
               int               conv_table_size;
-              uint8_t           ch= '\0';
+              uint8_t           ch= NO_KEY;
               ZaphodUARTState   *uart_mux;
 
                 if (zis->modifiers & 3)
@@ -484,12 +490,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 #endif
                 }
 
-                if ( ch && (uart_mux= zms->uart_acia) != NULL )
+                if ( (ch != NO_KEY) && (uart_mux= zms->uart_acia) != NULL )
                 {
                     if (zaphod_iocore_can_receive_acia(zms->iocore))
                         zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
                 }
-                else if ( ch && (uart_mux= zms->uart_stdio) != NULL )
+                else if ( (ch != NO_KEY) && (uart_mux= zms->uart_stdio) != NULL )
                 {
                     if (zaphod_iocore_can_receive_stdio(zms->iocore))
                         zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
