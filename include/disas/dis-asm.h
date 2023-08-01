@@ -251,7 +251,8 @@ enum bfd_architecture
 #define bfd_mach_rx_v3         0x77
   bfd_arch_z80,
 #define bfd_mach_z80_z80        0x01    /* Zilog Z80 */
-    /* TODO: also differentiate Mitsui R800 */
+    /* for differentiating Mitsui R800 from Zilog Z80: */
+#define bfd_mach_z80_r800      1
   bfd_arch_last
   };
 #define bfd_mach_s390_31 31
