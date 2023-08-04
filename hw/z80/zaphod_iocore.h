@@ -39,4 +39,6 @@ typedef struct {
     OBJECT_CHECK(ZaphodIOCoreState, obj, TYPE_ZAPHOD_IOCORE)
 
 
+ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis);
+
 #endif  /* HW_Z80_ZAPHOD_IOCORE_H */

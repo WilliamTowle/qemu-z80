@@ -106,6 +106,14 @@ static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
     PORTIO_END_OF_LIST()
 };
 
+
+ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis)
+{
+    if (zis->screen) return zis->screen;
+
+    return zis->screen= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
+}
+
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
@@ -135,9 +143,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 #if 1   /* WmT - TRACE */
 ;DPRINTF("INFO: %s() about to do screen init/add...\n", __func__);
 #endif
-    zis->screen= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
+    if (zis->screen)
 #if QEMU_VERSION_MAJOR < 5
-    qdev_init_nofail(DEVICE(zis->screen));
+        qdev_init_nofail(DEVICE(zis->screen));
 #else
     qdev_realize(DEVICE(zis->screen), NULL, NULL);
 #endif
