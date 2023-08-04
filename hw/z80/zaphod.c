@@ -81,16 +81,37 @@ static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
     return dev;
 }
 
-/* Create IOCore object (to manage IO ports/IRQ) */
-static DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
-{
-    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
-    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
 
+static
+void zaphod_screen_init(ZaphodScreenState *zss, int board_type)
+{
+    switch (board_type)
+    {
+    //case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", false);
+        break;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+    default:
+        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", true);
+    }
+}
+
+/* Prepare the IOCore for configuration (IO ports/IRQ and UARTs) */
+static ZaphodIOCoreState *zaphod_iocore_init(ZaphodMachineState *zms)
+{
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
+    ZaphodIOCoreState *zis;
+
+    /* create object and set internal board reference */
+    zis= ZAPHOD_IOCORE(object_new(TYPE_ZAPHOD_IOCORE));
     zis->board= zms;
 
-    qdev_init_nofail(dev);
-    return dev;
+    /* initialise screen */
+    zaphod_screen_init(zaphod_iocore_get_screen(zis), zmc->board_type);
+
+    qdev_init_nofail(DEVICE(zis));
+    return zis;
 }
 
 
@@ -149,7 +170,7 @@ static void zaphod_board_init(MachineState *ms)
 /* NB. we can get a serial0 and a serial1 with:
  *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
  */
-    zms->iocore= ZAPHOD_IOCORE(zaphod_iocore_new(zms));
+    zms->iocore= zaphod_iocore_init(zms);
 #endif
 
 
