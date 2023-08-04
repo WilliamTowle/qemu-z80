@@ -10,6 +10,7 @@
 #include "zaphod.h"
 
 #include "qemu/error-report.h"
+#include "hw/qdev-properties.h"
 #include "ui/console.h"
 
 
@@ -173,12 +174,22 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 }
 
 
+static Property zaphod_screen_properties[] = {
+    DEFINE_PROP_BOOL("simple-escape-codes", ZaphodScreenState, simple_escape_codes, true),
+    DEFINE_PROP_END_OF_LIST()
+};
+
 static void zaphod_screen_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc= DEVICE_CLASS(klass);
 
     dc->desc= "Zaphod screen device";
     dc->realize= zaphod_screen_realizefn;
+#if QEMU_VERSION_MAJOR < 5
+    dc->props = zaphod_screen_properties;
+#else
+    device_class_set_props(dc, zaphod_screen_properties);
+#endif
     set_bit(DEVICE_CATEGORY_DISPLAY, dc->categories);
 }
 
