@@ -128,6 +128,10 @@ void zaphod_screen_putchar(void *opaque, uint8_t ch)
 DeviceState *zaphod_screen_new(void)
 {
     DeviceState *dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+    MachineClass        *mc= MACHINE_GET_CLASS(qdev_get_machine());
+    ZaphodMachineClass  *zmc= ZAPHOD_MACHINE_CLASS(OBJECT_CLASS(mc));
+
+    qdev_prop_set_bit(dev, "simple-escape-codes", zmc->has_simple_screen);
 
     qdev_init_nofail(dev);
     return dev;
@@ -144,9 +148,6 @@ static void zaphod_screen_reset(void *opaque)
 static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodScreenState *zss= ZAPHOD_SCREEN(dev);
-    MachineClass        *mc= MACHINE_GET_CLASS(qdev_get_machine());
-    ZaphodMachineClass  *zmc= ZAPHOD_MACHINE_CLASS(OBJECT_CLASS(mc));
-
 
     /* NB. our text mode is essentially VGA-like; is QEmu's
      * common display code useful?
@@ -161,7 +162,7 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
      * attributes including "block mosaic" graphics character mode
      */
     zss->rgb_bg= zaphod_rgb_palette[0];
-    if (zmc->has_simple_screen)
+    if (object_property_get_bool(OBJECT(dev), "simple-escape-codes", NULL))
         zss->rgb_fg= zaphod_rgb_palette[1];
     else
         zss->rgb_fg= zaphod_rgb_palette[2];
