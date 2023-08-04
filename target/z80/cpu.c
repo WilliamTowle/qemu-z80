@@ -60,6 +60,7 @@ void z80_cpu_list(void)
     qemu_printf("Available CPUs:\n");
 
     list = object_class_get_list(TYPE_Z80_CPU, false);
+    //list = object_class_get_list_sorted(TYPE_Z80_CPU, false);
     g_slist_foreach(list, z80_cpu_list_entry, NULL);
     g_slist_free(list);
 }
