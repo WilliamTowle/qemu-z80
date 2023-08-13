@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board/machine family
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -13,6 +13,9 @@
 
 
 /* Config-related defines - see also z80-softmmu.mak */
+#if 1   /* not fully implemented */
+#define ZAPHOD_HAS_MACHINE_SELECTION
+#endif
 
 #define CONFIG_ZAPHOD_HAS_IOCORE
 #define CONFIG_ZAPHOD_HAS_UART
@@ -43,13 +46,24 @@
 #define Z80_MAX_RAM_SIZE    (64 * KiB)
 
 
+enum zaphod_board_type_t {
+    ZAPHOD_BOARD_TYPE_ZAPHOD_1,     /* Phil Brown emulator */
+//    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
+    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV	/* Board for development/testing */
+};
+
+
+#ifndef ZAPHOD_HAS_MACHINE_SELECTION
+typedef MachineClass ZaphodMachineClass;
+#else
 typedef struct {
     /*< private >*/
     MachineClass parent;
 
     /*< public >*/
-    /* TODO: board configuration here */
+    int             board_type;
 } ZaphodMachineClass;
+#endif
 
 struct ZaphodMachineState {
     /*< private >*/

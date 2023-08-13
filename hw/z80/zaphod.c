@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -182,18 +182,34 @@ static void zaphod_machine_state_init(Object *obj)
 #endif
 }
 
+static const char *board_type_name(const int board_type)
+{
+    const char *names[]= {
+        [ZAPHOD_BOARD_TYPE_ZAPHOD_1]    = "Zaphod 1 (Phil Brown emulator)",
+//        [ZAPHOD_BOARD_TYPE_ZAPHOD_2]    = "Zaphod 2 (Grant Searle SBC)",
+        [ZAPHOD_BOARD_TYPE_ZAPHOD_DEV]  = "Zaphod Development"
+    };
 
-/* Machine class initialisation: zaphod_machine_class_init() */
+    if (board_type < ARRAY_SIZE(names))
+        return names[board_type];
 
-static void zaphod_machine_class_init(ObjectClass *oc, void *data)
+    return names[0];
+}
+
+static void zaphod_common_machine_class_init(ObjectClass *oc,
+                                    bool set_default, int board_type)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
     /* Set description, init function, default CPU */
 
-    mc->desc= "Zaphod development board";
+    mc->desc= g_strdup_printf("Zaphod - %s", board_type_name(board_type));
     mc->init= zaphod_board_init;
-    mc->is_default= 1;
+    if (set_default)
+    {
+        mc->alias= "zaphod";
+        mc->is_default= 1;
+    }
 
     /* TODO: Z80, but want R800 option if requested and available */
     //mc->default_cpu_type= Z80_CPU_TYPE_NAME("z80");
@@ -215,25 +231,60 @@ static void zaphod_machine_class_init(ObjectClass *oc, void *data)
     mc->no_sdcard= 1;
 }
 
-
-static const TypeInfo zaphod_machine_type_generic = {
-    /* Provide a "generic" board definition. Use of
-     * TYPE_ZAPHOD_MACHINE means this board name is "zaphod"
-     * TODO: expand to support board variants when the relevant
-     * peripheral types are available
-     */
-    .name           = TYPE_ZAPHOD_MACHINE,
-    .parent         = TYPE_MACHINE,
-    .abstract       = false,
-    .class_init     = zaphod_machine_class_init,
-    .class_size     = sizeof(ZaphodMachineClass),
-    .instance_init  = zaphod_machine_state_init,
-    .instance_size  = sizeof(ZaphodMachineState)
-};
-
-static void zaphod_machine_register_types(void)
+static void zaphod_pb_machine_class_init(ObjectClass *oc, void *data)
 {
-    type_register_static(&zaphod_machine_type_generic);
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(oc);
+
+    zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_1;
+
+    zaphod_common_machine_class_init(oc, false, zmc->board_type);
 }
 
-type_init(zaphod_machine_register_types)
+/* TODO: also support Grant Searle board (ZAPHOD_BOARD_TYPE_ZAPHOD_2) */
+
+static void zaphod_dev_machine_class_init(ObjectClass *oc, void *data)
+{
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(oc);
+
+    zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_DEV;
+
+    zaphod_common_machine_class_init(oc, true, zmc->board_type);
+}
+
+
+/* TODO: support board variants:
+ * - "zaphod-pb" -- Phil Brown machine simulation
+ * - "zaphod-gs" -- Grant Searle SBC
+ * - "zaphod-dev" machine (includes development features/config)
+ */
+static const TypeInfo zaphod_machine_types[]= {
+    {
+        .name           = TYPE_ZAPHOD_MACHINE,
+        .parent         = TYPE_MACHINE,
+#ifdef ZAPHOD_HAS_MACHINE_SELECTION
+        .abstract       = true,
+#else
+        .abstract       = false,
+#endif
+        .class_size     = sizeof(ZaphodMachineClass),
+#ifndef ZAPHOD_HAS_MACHINE_SELECTION
+        .class_init     = zaphod_machine_class_init,
+#endif
+        .instance_size  = sizeof(ZaphodMachineState),
+        .instance_init  = zaphod_machine_state_init,
+#ifdef ZAPHOD_HAS_MACHINE_SELECTION
+    }, {    /* Phil Brown emulator */
+        .name= MACHINE_TYPE_NAME("zaphod-pb"),
+        .parent= TYPE_ZAPHOD_MACHINE,
+        .class_size     = sizeof(ZaphodMachineClass),
+        .class_init= zaphod_pb_machine_class_init
+    }, {    /* Sample board for development/testing */
+        .name= MACHINE_TYPE_NAME("zaphod-dev"),
+        .parent= TYPE_ZAPHOD_MACHINE,
+        .class_size     = sizeof(ZaphodMachineClass),
+        .class_init= zaphod_dev_machine_class_init
+#endif
+    }
+};
+
+DEFINE_TYPES(zaphod_machine_types)
