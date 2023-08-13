@@ -1,5 +1,5 @@
 /*
- * QEmu Zaphod sample board/machine family
+ * QEmu Zaphod machine family
  * vim: ft=c sw=4 ts=4 et :
  *
  * [...William Towle c. 2013-2022, under GPL...]
@@ -40,12 +40,19 @@
 #define Z80_MAX_RAM_SIZE    (64 * KiB)
 
 
+enum zaphod_board_type_t {
+    ZAPHOD_BOARD_TYPE_ZAPHOD_1,     /* Phil Brown emulator */
+//    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
+    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV	/* Board for development/testing */
+};
+
+
 typedef struct {
     /*< private >*/
     MachineClass parent;
 
     /*< public >*/
-    /* TODO: board type identifier here */
+    int             board_type;
 } ZaphodMachineClass;
 
 typedef struct ZaphodMachineState {
