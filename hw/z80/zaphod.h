@@ -15,6 +15,7 @@
 /* Config-related defines - see also z80-softmmu.mak */
 #if 1   /* not fully implemented */
 #define ZAPHOD_HAS_MACHINE_SELECTION
+//#define ENABLE_PRELIMINARY_ZAPHODGS
 #endif
 
 #define CONFIG_ZAPHOD_HAS_IOCORE
@@ -47,8 +48,10 @@
 
 enum zaphod_board_type_t {
     ZAPHOD_BOARD_TYPE_ZAPHOD_1,     /* Phil Brown emulator */
-//    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
-    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV	/* Board for development/testing */
+#ifdef ENABLE_PRELIMINARY_ZAPHODGS
+    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
+#endif
+    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV    /* Board for development/testing */
 };
 
 
