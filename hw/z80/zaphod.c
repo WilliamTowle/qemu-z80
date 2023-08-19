@@ -87,7 +87,7 @@ void zaphod_screen_init(ZaphodScreenState *zss, int board_type)
 {
     switch (board_type)
     {
-    //case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
     case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
         qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", false);
         break;
@@ -191,7 +191,7 @@ static const char *board_type_name(const int board_type)
 {
     const char *names[]= {
         [ZAPHOD_BOARD_TYPE_ZAPHOD_1]    = "Zaphod 1 (Phil Brown emulator)",
-//        [ZAPHOD_BOARD_TYPE_ZAPHOD_2]    = "Zaphod 2 (Grant Searle SBC)",
+        [ZAPHOD_BOARD_TYPE_ZAPHOD_2]    = "Zaphod 2 (Grant Searle SBC)",
         [ZAPHOD_BOARD_TYPE_ZAPHOD_DEV]  = "Zaphod Development"
     };
 
@@ -245,7 +245,14 @@ static void zaphod_pb_machine_class_init(ObjectClass *oc, void *data)
     zaphod_common_machine_class_init(oc, false, zmc->board_type);
 }
 
-/* TODO: also support Grant Searle board (ZAPHOD_BOARD_TYPE_ZAPHOD_2) */
+static void zaphod_gs_machine_class_init(ObjectClass *oc, void *data)
+{
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(oc);
+
+    zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_2;
+
+    zaphod_common_machine_class_init(oc, false, zmc->board_type);
+}
 
 static void zaphod_dev_machine_class_init(ObjectClass *oc, void *data)
 {
@@ -276,6 +283,11 @@ static const TypeInfo zaphod_machine_types[]= {
         .parent= TYPE_ZAPHOD_MACHINE,
         .class_size     = sizeof(ZaphodMachineClass),
         .class_init= zaphod_pb_machine_class_init
+    }, {    /* Grant Searle SBC sim */
+        .name= MACHINE_TYPE_NAME("zaphod-gs"),
+        .parent= TYPE_ZAPHOD_MACHINE,
+        .class_size     = sizeof(ZaphodMachineClass),
+        .class_init= zaphod_gs_machine_class_init
     }, {    /* Sample board for development/testing */
         .name= MACHINE_TYPE_NAME("zaphod-dev"),
         .parent= TYPE_ZAPHOD_MACHINE,
