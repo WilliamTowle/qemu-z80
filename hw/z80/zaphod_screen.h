@@ -28,6 +28,8 @@ typedef DeviceClass ZaphodScreenClass;
 typedef struct {
     DeviceState     parent;
 
+    bool            simple_escape_codes;
+
     QemuConsole     *display;
     bool            cursor_visible;
     int64_t         cursor_blink_time;    /* millisec */

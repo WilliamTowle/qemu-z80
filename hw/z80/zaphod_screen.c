@@ -10,6 +10,7 @@
 #include "zaphod.h"
 
 #include "include/sysemu/reset.h"
+#include "hw/qdev-properties.h"
 #include "ui/console.h"
 
 
@@ -151,7 +152,13 @@ static void zaphod_screen_realizefn(DeviceState *dev, Error **errp)
 }
 
 
-/* TODO: zaphod_screen_properties[] */
+static Property zaphod_screen_properties[] = {
+    /* Properties for device "zaphod-screen"
+     * Can set with '-global zaphod-screen.NAME=VALUE'
+     */
+    DEFINE_PROP_BOOL("simple-escape-codes", ZaphodScreenState, simple_escape_codes, false),
+    DEFINE_PROP_END_OF_LIST()
+};
 
 static void zaphod_screen_class_init(ObjectClass *oc, void *data)
 {
@@ -159,16 +166,17 @@ static void zaphod_screen_class_init(ObjectClass *oc, void *data)
 
     dc->desc= "Zaphod screen device";
     dc->realize= zaphod_screen_realizefn;
-    /* TODO: set properties */
+#if QEMU_VERSION_MAJOR < 5
+    dc->props= zaphod_screen_properties;
+#else
+    device_class_set_props(dc, zaphod_screen_properties);
+#endif
     set_bit(DEVICE_CATEGORY_DISPLAY, dc->categories);
 }
 
 static void zaphod_screen_instance_init(Object *obj)
 {
-#if 0   /* TODO: implement init support */
-    ZaphodScreenState *zms= ZAPHOD_SCREEN(obj);
-    /* ... */
-#endif
+    /* Nothing to do - properties to be set on object init */
 }
 
 
