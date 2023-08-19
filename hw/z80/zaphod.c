@@ -97,9 +97,25 @@ static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
  * otherwise). Due to a design limitation, the serial0 console is
  * always paired with the latter.
  */
-static DeviceState *zaphod_screen_new(void)
+static DeviceState *zaphod_screen_new(int board_type)
 {
-    DeviceState *dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+    DeviceState *dev;
+
+    /* initialise new device object with board-specific defaults */
+
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+        dev= DEVICE(object_new_with_props(TYPE_ZAPHOD_SCREEN,
+                    object_get_objects_root(), "screen", NULL,
+                    "simple-escape-codes", "true",
+                    NULL));
+        break;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+    default:    /* prevent "'dev' uninitialized" warning */
+        dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
+        break;
+    }
 
     qdev_init_nofail(dev);
     return dev;
@@ -111,6 +127,7 @@ static DeviceState *zaphod_screen_new(void)
 static void zaphod_board_init(MachineState *ms)
 {
     ZaphodMachineState *zms = ZAPHOD_MACHINE(ms);
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
     const char *kernel_filename = ms->kernel_filename;
     MemoryRegion *address_space_mem;
     MemoryRegion *ram;
@@ -148,7 +165,7 @@ static void zaphod_board_init(MachineState *ms)
     /* Initialise ports/devices */
 
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new());
+    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new(zmc->board_type));
 #endif
 
     if (serial_hds[0])
