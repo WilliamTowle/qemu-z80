@@ -48,8 +48,8 @@
 
 enum zaphod_board_type_t {
     ZAPHOD_BOARD_TYPE_ZAPHOD_1,     /* Phil Brown emulator */
-//    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
-    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV	/* Board for development/testing */
+    ZAPHOD_BOARD_TYPE_ZAPHOD_2,     /* Grant Searle SBC sim */
+    ZAPHOD_BOARD_TYPE_ZAPHOD_DEV    /* Board for development/testing */
 };
 
 

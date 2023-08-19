@@ -116,6 +116,12 @@ static DeviceState *zaphod_screen_new(ZaphodMachineState *zms, int board_type)
                     "simple-escape-codes", "true",
                     NULL));
         break;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+        dev= DEVICE(object_new_with_props(TYPE_ZAPHOD_SCREEN,
+                    object_get_objects_root(), "screen", NULL,
+                    "simple-escape-codes", "false",
+                    NULL));
+        break;
     case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
     default:    /* prevent "'dev' uninitialized" warning */
         dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
@@ -229,7 +235,7 @@ static const char *board_type_name(const int board_type)
 {
     const char *names[]= {
         [ZAPHOD_BOARD_TYPE_ZAPHOD_1]    = "Zaphod 1 (Phil Brown emulator)",
-//        [ZAPHOD_BOARD_TYPE_ZAPHOD_2]    = "Zaphod 2 (Grant Searle SBC)",
+        [ZAPHOD_BOARD_TYPE_ZAPHOD_2]    = "Zaphod 2 (Grant Searle SBC)",
         [ZAPHOD_BOARD_TYPE_ZAPHOD_DEV]  = "Zaphod Development"
     };
 
@@ -304,7 +310,14 @@ static void zaphod_pb_machine_class_init(ObjectClass *oc, void *data)
     zaphod_common_machine_class_init(oc, false, zmc->board_type);
 }
 
-/* TODO: also support Grant Searle board (ZAPHOD_BOARD_TYPE_ZAPHOD_2) */
+static void zaphod_gs_machine_class_init(ObjectClass *oc, void *data)
+{
+    ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(oc);
+
+    zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_2;
+
+    zaphod_common_machine_class_init(oc, false, zmc->board_type);
+}
 
 static void zaphod_dev_machine_class_init(ObjectClass *oc, void *data)
 {
@@ -342,6 +355,11 @@ static const TypeInfo zaphod_machine_types[]= {
         .parent= TYPE_ZAPHOD_MACHINE,
         .class_size     = sizeof(ZaphodMachineClass),
         .class_init= zaphod_pb_machine_class_init
+    }, {    /* Grant Searle SBC sim */
+        .name= MACHINE_TYPE_NAME("zaphod-gs"),
+        .parent= TYPE_ZAPHOD_MACHINE,
+        .class_size     = sizeof(ZaphodMachineClass),
+        .class_init= zaphod_gs_machine_class_init
     }, {    /* Sample board for development/testing */
         .name= MACHINE_TYPE_NAME("zaphod-dev"),
         .parent= TYPE_ZAPHOD_MACHINE,
