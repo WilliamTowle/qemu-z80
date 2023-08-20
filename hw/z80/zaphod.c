@@ -340,6 +340,8 @@ static void zaphod_pb_machine_class_init(ObjectClass *oc, void *data)
 
     zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_1;
 
+    zmc->has_acia= false;
+
     zaphod_common_machine_class_init(oc, false, zmc->board_type);
 }
 
@@ -350,6 +352,7 @@ static void zaphod_gs_machine_class_init(ObjectClass *oc, void *data)
 
     zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_2;
 
+    zmc->has_acia= false;
 
     zaphod_common_machine_class_init(oc, false, zmc->board_type);
 }
@@ -360,6 +363,8 @@ static void zaphod_dev_machine_class_init(ObjectClass *oc, void *data)
     ZaphodMachineClass *zmc= ZAPHOD_MACHINE_CLASS(oc);
 
     zmc->board_type= ZAPHOD_BOARD_TYPE_ZAPHOD_DEV;
+
+    zmc->has_acia= true;
 
     zaphod_common_machine_class_init(oc, true, zmc->board_type);
 }

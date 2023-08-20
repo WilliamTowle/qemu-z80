@@ -64,6 +64,7 @@ typedef struct {
 
     /*< public >*/
     int             board_type;
+    bool has_acia;
 } ZaphodMachineClass;
 #endif
 
