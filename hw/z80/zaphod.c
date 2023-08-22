@@ -215,6 +215,22 @@ static const char *board_type_name(const int board_type)
     return names[0];
 }
 
+static char *zaphod_machine_get_screen_id(Object *obj, Error **errp)
+{
+    ZaphodMachineState  *zms= ZAPHOD_MACHINE(obj);
+
+    return g_strdup(zms->screen_id);
+}
+
+static void zaphod_machine_set_screen_id(Object *obj, const char *value,
+                                        Error **errp)
+{
+    ZaphodMachineState  *zms= ZAPHOD_MACHINE(obj);
+
+    g_free(zms->screen_id);
+    zms->screen_id = g_strdup(value);
+}
+
 static void zaphod_common_machine_class_init(ObjectClass *oc,
                                     bool set_default, int board_type)
 {
@@ -248,6 +264,11 @@ static void zaphod_common_machine_class_init(ObjectClass *oc,
     mc->no_serial= 1;
 #endif
     mc->no_sdcard= 1;
+
+    object_class_property_add_str(oc, "screen-id",
+        zaphod_machine_get_screen_id, zaphod_machine_set_screen_id, NULL);
+    object_class_property_set_description(oc, "screen-id",
+        "Set zaphod-screen device to use", NULL);
 }
 
 static void zaphod_pb_machine_class_init(ObjectClass *oc, void *data)
