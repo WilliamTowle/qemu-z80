@@ -79,6 +79,7 @@ struct ZaphodMachineState {
 #endif
 
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
+    char                *screen_id;
     ZaphodScreenState    *screen;
 #endif
 };
