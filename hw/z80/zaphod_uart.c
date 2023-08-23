@@ -32,6 +32,9 @@ int zaphod_uart_portstatus(void *opaque)
     value|= 0x08;                       /* CTS [Clear to Send] */
     /* FrameErr|Overrun|ParityErr|IrqReq not emulated */
 
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() for opaque %p calculated value %d\n", __func__, opaque, value);
+#endif
     return value;
 }
 
@@ -62,7 +65,11 @@ void zaphod_uart_receive(void *opaque, const uint8_t *buf, int len)
 
 void zaphod_uart_putchar(ZaphodUARTState *zus, const unsigned char ch)
 {
-;DPRINTF("INFO: %s() write of character '%c' (connected? %s)\n", __func__, ch, qemu_chr_fe_backend_connected(&zus->chr)?"y":"n");
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() write of character '%c' requested, vua UART at zus=%p\n", __func__, ch, zus);
+;DPRINTF("INFO: %s() backend connected? %s\n", __func__, qemu_chr_fe_backend_connected(&zus->chr)?"y":"n");
+//;exit(1);
+#endif
     if (unlikely(!qemu_chr_fe_backend_connected(&zus->chr)))
         return;     /* CPU IOPort write without console window */
 
