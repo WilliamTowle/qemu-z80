@@ -75,13 +75,25 @@ void zaphod_iocore_receive_acia(void *opaque, const uint8_t *buf, int len)
 
 static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
 {
+    static ZaphodUARTState  *zus= NULL;
+    static bool             vc_present= false;
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
     int                 value;
+
+    if (!vc_present)
+    {   /* check a VC exists for input; simulate one otherwise */
+        if ( (zus= zis->board->uart_stdio) )
+        {
+            vc_present= true;
+        }
+    }
 
     switch (addr)
     {
     case 0x00:      /* stdin */
-        value= zaphod_uart_get_inkey(zis->board->uart_stdio, true);
+        value= 0x00;
+        if (vc_present)
+            value= zaphod_uart_get_inkey(zus, true);
         return value;
     default:
 #if 1   /* WmT - TRACE */
@@ -95,7 +107,8 @@ static
 void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
 {
 #ifdef CONFIG_ZAPHOD_HAS_UART
-        zaphod_uart_putchar(zis->board->uart_stdio, ch);
+        if (zis->board->uart_stdio)
+            zaphod_uart_putchar(zis->board->uart_stdio, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
         /* mux to screen (TODO: not if ACIA set? make configurable?) */
