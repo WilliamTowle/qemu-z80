@@ -151,19 +151,35 @@ ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis)
 
 static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
 {
+    static ZaphodUARTState  *zus= NULL;
+    static bool             vc_present= false;
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
     int                 value;
+
+    if (!vc_present)
+    {
+        if ( (zus= zis->board->uart_acia) )
+        {   /* QEmu has a VC for input */
+            vc_present= true;
+        }
+    }
 
     switch (addr)
     {
     case 0x80:      /* ACIA: read UART PortStatus */
-        return zaphod_uart_portstatus(zis->board->uart_acia);
+        if (vc_present)
+            return zaphod_uart_portstatus(zus);
+        else
+            return 0x0f;
 
     case 0x81:      /* ACIA: read UART RxData */
-        value= zaphod_uart_get_inkey(zis->board->uart_acia, true);
-        if (zis->irq_acia)
-            qemu_irq_lower(*zis->irq_acia);
-;DPRINTF("DEBUG: %s() read ACIA UART RXData (port 0x%02x) -> inkey ch-value %d\n", __func__, addr, value);
+        value= 0x00;
+        if (vc_present)
+        {
+            value= zaphod_uart_get_inkey(zus, true);
+            if (zis->irq_acia)
+                qemu_irq_lower(*zis->irq_acia);
+        }
         return value? value : 0xff;
 
     default:
@@ -178,7 +194,8 @@ static
 void zaphod_iocore_putchar_acia(ZaphodIOCoreState *zis, const unsigned char ch)
 {
 #ifdef CONFIG_ZAPHOD_HAS_UART
-        zaphod_uart_putchar(zis->board->uart_acia, ch);
+        if (zis->board->uart_acia)
+            zaphod_uart_putchar(zis->board->uart_acia, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
         /* mux to screen (TODO: make configurable) */
