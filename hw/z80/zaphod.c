@@ -13,6 +13,8 @@
 
 #include "qapi/error.h"
 #include "qemu/error-report.h"
+#include "qemu/config-file.h"
+#include "qemu/option.h"
 #include "hw/boards.h"
 #include "hw/loader.h"
 #include "hw/char/serial.h"
@@ -97,9 +99,12 @@ static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
  * otherwise). Due to a design limitation, the serial0 console is
  * always paired with the latter.
  */
-static DeviceState *zaphod_screen_new(int board_type)
+static DeviceState *zaphod_screen_new(ZaphodMachineState *zms, int board_type)
 {
     DeviceState *dev;
+    QemuOpts *opts;
+    char *id;
+    const char *setting;
 
     /* initialise new device object with board-specific defaults */
 
@@ -116,6 +121,26 @@ static DeviceState *zaphod_screen_new(int board_type)
         dev= DEVICE(object_new(TYPE_ZAPHOD_SCREEN));
         break;
     }
+
+    /* add any user-specified properties */
+
+    id= object_property_get_str(OBJECT(zms), "screen-id", NULL);
+    opts= id? qemu_opts_find(qemu_find_opts("device"), id) : NULL;
+    setting= opts? qemu_opt_get(opts, "simple-escape-codes") : NULL;
+    if (setting)
+    {
+        object_set_props(OBJECT(dev), NULL,
+                            "simple-escape-codes", setting, NULL);
+    }
+
+    if (id)
+        g_free(id);
+
+    if (opts)
+    {
+        qemu_opts_del(opts);
+    }
+
 
     qdev_init_nofail(dev);
     return dev;
@@ -165,7 +190,8 @@ static void zaphod_board_init(MachineState *ms)
     /* Initialise ports/devices */
 
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new(zmc->board_type));
+    //zms->screen= ZAPHOD_SCREEN(zaphod_screen_new(zmc->board_type));
+    zms->screen= ZAPHOD_SCREEN(zaphod_screen_new(zms, zmc->board_type));
 #endif
 
     if (serial_hds[0])
