@@ -102,6 +102,19 @@ static bool zaphod_board_has_acia(int board_type)
     }
 }
 
+static bool zaphod_board_has_screen(int board_type)
+{
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+        return false;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+    default:
+        return true;
+    }
+}
+
 static bool zaphod_board_has_stdio(int board_type)
 {
     switch (board_type)
@@ -158,6 +171,10 @@ static DeviceState *zaphod_screen_new(ZaphodMachineState *zms, int board_type)
     char *id;
     const char *setting;
 
+    id= object_property_get_str(OBJECT(zms), "screen-id", NULL);
+    if (! (strlen(id) || zaphod_board_has_screen(board_type)) )
+        return NULL;
+
     /* initialise new device object with board-specific defaults */
 
     switch (board_type)
@@ -182,7 +199,6 @@ static DeviceState *zaphod_screen_new(ZaphodMachineState *zms, int board_type)
 
     /* add any user-specified properties */
 
-    id= object_property_get_str(OBJECT(zms), "screen-id", NULL);
     opts= id? qemu_opts_find(qemu_find_opts("device"), id) : NULL;
     setting= opts? qemu_opt_get(opts, "simple-escape-codes") : NULL;
     if (setting)
