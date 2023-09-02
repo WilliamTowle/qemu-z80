@@ -229,17 +229,14 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     /* TODO: permit disabling stdin [in which case don't bail, but
      * don't set up the handlers either]
      */
-    if (!zis->board->uart_stdio)
-    {
-        error_setg(errp, "initialisation error - zis->board->uart_stdio NULL");
-        return;
-    }
 
-    qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
+    if (zis->board->uart_stdio)
+    {
+        qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
-
+    }
 
     /* ACIA setup */
 
