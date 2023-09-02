@@ -123,7 +123,11 @@ static void zaphod_uart_init(ZaphodUARTState *zus, Chardev *chr_fallback, const 
 {
     if (chr_fallback == NULL)
     {
+#if QEMU_VERSION_MAJOR < 5
         chr_fallback= qemu_chr_new(label, "vc:" TOSTRING(ZAPHOD_TEXT_COLS) "Cx" TOSTRING(ZAPHOD_TEXT_ROWS) "C");
+#else
+        chr_fallback= qemu_chr_new(label, "vc:" TOSTRING(ZAPHOD_TEXT_COLS) "Cx" TOSTRING(ZAPHOD_TEXT_ROWS) "C", NULL);
+#endif
     }
 
     qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
