@@ -32,6 +32,9 @@
  */
 #define ZAPHOD_RAM_SIZE     Z80_MAX_RAM_SIZE
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 
 void zaphod_interrupt_request(void *opaque, int source, int level)
 {   /* ACIA has received input */
@@ -85,6 +88,33 @@ static void main_cpu_reset(void *opaque)
 }
 
 
+/* Per-board feature configuration */
+
+static bool zaphod_board_has_acia(int board_type)
+{
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool zaphod_board_has_stdio(int board_type)
+{
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+        return true;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    default:
+        return false;
+    }
+}
+
 static DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_IOCORE));
@@ -100,10 +130,15 @@ static DeviceState *zaphod_iocore_new(ZaphodMachineState *zms)
  * serial1 became the MC6850, if configured. This basic UART can
  * serve either purpose, with IOCore managing the IRQ for the latter.
  */
-static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
+static DeviceState *zaphod_uart_new(Chardev *chr_fallback, const char *label)
 {
     DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_UART));
     ZaphodUARTState     *zus= ZAPHOD_UART(dev);
+
+    if (chr_fallback == NULL)
+    {
+        chr_fallback= qemu_chr_new(label, "vc:" TOSTRING(ZAPHOD_TEXT_COLS) "Cx" TOSTRING(ZAPHOD_TEXT_ROWS) "C");
+    }
 
     qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
 
@@ -180,7 +215,7 @@ static void zaphod_board_init(MachineState *ms)
     MemoryRegion *address_space_mem;
     MemoryRegion *ram;
     CPUState *cs;
-
+    int uart_count;
 
     /* Init CPU/set reset callback */
 
@@ -217,15 +252,17 @@ static void zaphod_board_init(MachineState *ms)
     zms->screen= ZAPHOD_SCREEN(zaphod_screen_new(zms, zmc->board_type));
 #endif
 
-    if (serial_hds[0])
+    uart_count= 0;
+    if (zaphod_board_has_stdio(zmc->board_type))
     {   /* QEmu's main serial console is available */
-        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[0]));
-;DPRINTF("INFO: UART0 [stdio] created OK - device at %p [zms %p] has chr.chr %p\n", zms->uart_stdio, zms, zms->uart_stdio->chr.chr);
+        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hds[uart_count], "zaphod.uart-stdio"));
+        if (zms->uart_stdio) uart_count++;
     }
 
-    if (serial_hds[1]) {
-        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[1]));
-;DPRINTF("INFO: UART1 [ACIA] created OK - device at %p [zms %p] has chr.chr %p\n", zms->uart_acia, zms, zms->uart_acia->chr.chr);
+    if (zaphod_board_has_acia(zmc->board_type))
+    {   /* A QEmu serial console can be used */
+        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hds[uart_count], "zaphod.uart-acia"));
+        if (zms->uart_acia) uart_count++;
     }
 
 
@@ -309,12 +346,7 @@ static void zaphod_common_machine_class_init(ObjectClass *oc,
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
     mc->no_parallel= 1;
-#if defined(CONFIG_ZAPHOD_HAS_IOCORE)
-    /* Allow QEmu's 'serial0' window for input/output */
     mc->no_serial= 0;
-#else
-    mc->no_serial= 1;
-#endif
     mc->no_sdcard= 1;
 
     object_class_property_add_str(oc, "screen-id",
