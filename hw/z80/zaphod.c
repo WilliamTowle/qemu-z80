@@ -225,7 +225,7 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
         if (!qemu_chr_fe_backend_connected(&zms->uart_stdio->chr))
         {
             zaphod_uart_init(zms->uart_stdio,
-                        serial_hds[uart_count], "zaphod.uart-stdio");
+                        serial_hd(uart_count), "zaphod.uart-stdio");
         }
         qdev_init_nofail(DEVICE(zms->uart_stdio));
         if (zms->uart_stdio /* ? is connected? */) uart_count++;
@@ -238,7 +238,7 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
         if (!qemu_chr_fe_backend_connected(&zms->uart_acia->chr))
         {
             zaphod_uart_init(zms->uart_acia,
-                        serial_hds[uart_count], "zaphod.uart-acia");
+                        serial_hd(uart_count), "zaphod.uart-acia");
         }
         qdev_init_nofail(DEVICE(zms->uart_acia));
         if (zms->uart_acia /* ? is connected? */) uart_count++;
