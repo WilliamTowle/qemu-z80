@@ -3388,16 +3388,16 @@ SRST
 ERST
 
 
-
+#if defined(TARGET_Z80)
 DEFHEADING(Zaphod board specific:)
 
 DEF("zaphod-io", HAS_ARG, QEMU_OPTION_zaphod_io, \
     "-zaphod-io     configure Zaphod stdio/ACIA I/O\n", QEMU_ARCH_Z80)
-HXCOMM [QEmu v5 permits detail]
-HXCOMM SRST
-HXCOMM ``-zaphod-io``
-HXCOMM     Test Zaphod custom options functionality.
-HXCOMM ERST
+SRST
+``-zaphod-io``
+    Test Zaphod custom options functionality.
+ERST
+#endif
 
 
 DEFHEADING()

@@ -3797,6 +3797,15 @@ void qemu_init(int argc, char **argv, char **envp)
             case QEMU_OPTION_nouserconfig:
                 /* Nothing to be parsed here. Especially, do not error out below. */
                 break;
+#if defined(TARGET_Z80)
+            case QEMU_OPTION_zaphod_io:
+                opts= qemu_opts_parse_noisily(qemu_find_opts("zaphod-io-config"), optarg, true);
+                if (!opts)
+                {
+                    exit(1);
+                }
+                break;
+#endif
             default:
                 if (os_parse_cmd_args(popt->index, optarg)) {
                     error_report("Option not supported in this build");
