@@ -10,6 +10,8 @@
 #include "zaphod.h"
 #include "cpu.h"
 
+#include "qemu/config-file.h"
+#include "qemu/option.h"
 #include "exec/address-spaces.h"
 #include "hw/hw.h"
 #include "hw/boards.h"
@@ -19,7 +21,6 @@
 #include "sysemu/reset.h"
 #include "qapi/error.h"
 #include "qemu/units.h"
-
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 0
@@ -33,6 +34,24 @@
  */
 #define ZAPHOD_RAM_SIZE     Z80_MAX_RAM_SIZE
 
+static QemuOptsList zaphod_io_opts = {
+    .name = "zaphod-io-config",
+    .implied_opt_name = "mode",
+    .head = QTAILQ_HEAD_INITIALIZER(zaphod_io_opts.head),
+    .desc = {
+        {
+            .name = "mode",
+            .type = QEMU_OPT_STRING,
+            .help = "Specify 'stdio' or 'acia' configuration options",
+        },
+        {
+            .name = "chardev",
+            .type = QEMU_OPT_STRING,
+            .help = "Character device ID",
+        },
+        { /* end of list */ }
+    }
+};
 
 static void zaphod_load_kernel(const char *kernel_filename)
 {
@@ -317,3 +336,11 @@ static const TypeInfo zaphod_machine_types[]= {
 };
 
 DEFINE_TYPES(zaphod_machine_types)
+
+
+static void zaphod_register_opts(void)
+{
+    qemu_add_opts(&zaphod_io_opts);
+}
+
+opts_init(zaphod_register_opts)
