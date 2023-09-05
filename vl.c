@@ -4060,6 +4060,13 @@ int main(int argc, char **argv, char **envp)
                     exit(1);
                 }
                 break;
+            case QEMU_OPTION_zaphod_io:
+                opts= qemu_opts_parse_noisily(qemu_find_opts("zaphod-io-config"), optarg, true);
+                if (!opts)
+                {
+                    exit(1);
+                }
+                break;
             default:
                 os_parse_cmd_args(popt->index, optarg);
             }
