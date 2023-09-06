@@ -11,6 +11,7 @@
 
 #include "zaphod.h"
 #include "zaphod_screen.h"
+#include "zaphod_uart.h"
 
 #include "exec/ioport.h"
 #include "hw/irq.h"
@@ -31,6 +32,10 @@ typedef struct {
     PortioList          *ioports_stdio;
     PortioList          *ioports_acia;
     qemu_irq            *irq_acia;
+#ifdef CONFIG_ZAPHOD_HAS_UART
+    ZaphodUARTState     *uart_stdio;
+    ZaphodUARTState     *uart_acia;
+#endif
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
 #if 1   /* IOCORE-KEYBIO */
     QemuInputHandlerState *ihs;
@@ -52,5 +57,9 @@ typedef struct {
 
 
 ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis);
+
+ZaphodUARTState *zaphod_iocore_get_stdio_uart(ZaphodIOCoreState *zis);
+ZaphodUARTState *zaphod_iocore_get_acia_uart(ZaphodIOCoreState *zis);
+
 
 #endif  /* HW_Z80_ZAPHOD_IOCORE_H */

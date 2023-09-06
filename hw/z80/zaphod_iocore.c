@@ -44,7 +44,7 @@ void zaphod_iocore_receive_stdio(void *opaque, const uint8_t *buf, int len)
 {
     ZaphodIOCoreState *zis= (ZaphodIOCoreState *)opaque;
 
-    zaphod_uart_set_inkey(zis->board->uart_stdio, buf[0], true);
+    zaphod_uart_set_inkey(zis->uart_stdio, buf[0], true);
 }
 
 
@@ -68,12 +68,12 @@ void zaphod_iocore_receive_acia(void *opaque, const uint8_t *buf, int len)
          * injects '\n' in the input stream for Q_KEY_CODE_RET rather
          * than '\r' as before. Send the latter.
          */
-        zaphod_uart_set_inkey(zis->board->uart_acia, '\r', true);
+        zaphod_uart_set_inkey(zis->uart_acia, '\r', true);
     }
     else
 #endif
     {
-        zaphod_uart_set_inkey(zis->board->uart_acia, buf[0], true);
+        zaphod_uart_set_inkey(zis->uart_acia, buf[0], true);
     }
     if (zis->irq_acia)
         qemu_irq_raise(*zis->irq_acia);
@@ -91,7 +91,7 @@ static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
 
     if (!vc_present)
     {   /* check a VC exists for input; simulate one otherwise */
-        if ( (zus= zis->board->uart_stdio) )
+        if ( (zus= zis->uart_stdio) )
         {
             vc_present= true;
         }
@@ -116,8 +116,8 @@ static
 void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
 {
 #ifdef CONFIG_ZAPHOD_HAS_UART
-    if (zis->board->uart_stdio)
-        zaphod_uart_putchar(zis->board->uart_stdio, ch);
+    if (zis->uart_stdio)
+        zaphod_uart_putchar(zis->uart_stdio, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
     zaphod_screen_putchar(zis->screen, ch);
@@ -166,7 +166,7 @@ static uint32_t zaphod_iocore_read_acia(void *opaque, uint32_t addr)
 
     if (!vc_present)
     {
-        if ( (zus= zis->board->uart_acia) )
+        if ( (zus= zis->uart_acia) )
         {   /* QEmu has a VC for input */
             vc_present= true;
         }
@@ -202,8 +202,8 @@ static
 void zaphod_iocore_putchar_acia(ZaphodIOCoreState *zis, const unsigned char ch)
 {
 #ifdef CONFIG_ZAPHOD_HAS_UART
-    if (zis->board->uart_acia)
-        zaphod_uart_putchar(zis->board->uart_acia, ch);
+    if (zis->uart_acia)
+        zaphod_uart_putchar(zis->uart_acia, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
     zaphod_screen_putchar(zis->screen, ch);
@@ -437,10 +437,10 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 
             if (!key->down)
             {
-                if (zms->uart_acia)
-                    zaphod_uart_set_inkey(zms->uart_acia, 0, false);
+                if (zis->uart_acia)
+                    zaphod_uart_set_inkey(zis->uart_acia, 0, false);
                 else
-                    zaphod_uart_set_inkey(zms->uart_stdio, 0, false);
+                    zaphod_uart_set_inkey(zis->uart_stdio, 0, false);
             }
             else
             {
@@ -469,12 +469,12 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 #endif
                 }
 
-                if ( (ch != NO_KEY) && (uart_mux= zms->uart_acia) != NULL )
+                if ( (ch != NO_KEY) && (uart_mux= zis->uart_acia) != NULL )
                 {
                     if (zaphod_iocore_can_receive_acia(zms->iocore))
                         zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
                 }
-                else if ( (ch != NO_KEY) && (uart_mux= zms->uart_stdio) != NULL )
+                else if ( (ch != NO_KEY) && (uart_mux= zis->uart_stdio) != NULL )
                 {
                     if (zaphod_iocore_can_receive_stdio(zms->iocore))
                         zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
@@ -482,6 +482,22 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
             }
         }
     }
+}
+
+ZaphodUARTState *zaphod_iocore_get_stdio_uart(ZaphodIOCoreState *zis)
+{
+    if (!zis->has_stdio) return NULL;
+    if (zis->uart_stdio) return zis->uart_stdio;
+
+    return zis->uart_stdio= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+}
+
+ZaphodUARTState *zaphod_iocore_get_acia_uart(ZaphodIOCoreState *zis)
+{
+    if (!zis->has_acia) return NULL;
+    if (zis->uart_acia) return zis->uart_acia;
+
+    return zis->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
 }
 
 static QemuInputHandler zaphod_kbd_handler = {
@@ -518,7 +534,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     if (zis->has_stdio)
     {
-        qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
+        qdev_init_nofail(DEVICE(zis->uart_stdio));
+
+        qemu_chr_fe_set_handlers(&zis->uart_stdio->chr,
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
@@ -533,7 +551,9 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     if (zis->has_acia)
     {
-        qemu_chr_fe_set_handlers(&zis->board->uart_acia->chr,
+        qdev_init_nofail(DEVICE(zis->uart_acia));
+
+        qemu_chr_fe_set_handlers(&zis->uart_acia->chr,
                     zaphod_iocore_can_receive_acia, zaphod_iocore_receive_acia,
                     NULL,
                     NULL, zis, NULL, true);
