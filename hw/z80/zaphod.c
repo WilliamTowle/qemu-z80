@@ -34,6 +34,9 @@
  */
 #define ZAPHOD_RAM_SIZE     Z80_MAX_RAM_SIZE
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 static QemuOptsList zaphod_io_opts = {
     .name = "zaphod-io-config",
     .implied_opt_name = "mode",
@@ -88,23 +91,83 @@ static void main_cpu_reset(void *opaque)
 }
 
 
-/* Create UART object. Previously serial0 was always mapped to the
- * stdio UART and serial1 to the MC6850 (if present). This basic UART
- * serves either purpose [with IOCore managing ioports and ACIA IRQ]
- */
-static DeviceState *zaphod_uart_new(Chardev *chr_fallback)
+/* Per-board feature configuration */
+
+static bool zaphod_board_has_acia(int board_type)
 {
-    DeviceState         *dev= DEVICE(object_new(TYPE_ZAPHOD_UART));
-    ZaphodUARTState     *zus= ZAPHOD_UART(dev);
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool zaphod_board_has_stdio(int board_type)
+{
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+        return true;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+    default:
+        return false;
+    }
+}
+
+/* Initialise UART object */
+static void zaphod_uart_init(ZaphodUARTState *zus, Chardev *chr_fallback, const char *label)
+{
+    if (chr_fallback == NULL)
+    {
+        chr_fallback= qemu_chr_new(label, "vc:" TOSTRING(ZAPHOD_TEXT_COLS) "Cx" TOSTRING(ZAPHOD_TEXT_ROWS) "C");
+    }
 
     qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
+}
 
-#if QEMU_VERSION_MAJOR < 5
-    qdev_init_nofail(dev);
-#else
-    qdev_realize(dev, NULL, NULL);
-#endif
-    return dev;
+static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
+{
+    ZaphodMachineState *zms= (ZaphodMachineState *)opaque;
+    const char *mode, *chardev;
+
+    mode= qemu_opt_get(opts, "mode");
+    chardev= qemu_opt_get(opts, "chardev");
+
+    if (mode)
+    {
+        Chardev *cd= NULL;
+
+        if (chardev)
+        {
+            cd= qemu_chr_find(chardev);
+            if (!cd)
+            {
+                error_printf("zaphod: chardev '%s' not found\n", chardev);
+                abort();
+            }
+        }
+
+        if (strcmp(mode, "stdio") == 0)
+        {   /* stdio devices requested */
+            qdev_prop_set_bit(DEVICE(zms->iocore), "has-stdio", true);
+            /* TODO: refactor UART new/realize into IOCore */
+            zms->uart_stdio= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+            qdev_prop_set_chr(DEVICE(zms->uart_stdio), "chardev", cd);
+        }
+        if (strcmp(mode, "acia") == 0)
+        {   /* ACIA devices requested */
+            qdev_prop_set_bit(DEVICE(zms->iocore), "has-acia", true);
+            /* TODO: refactor UART new/realize into IOCore */
+            zms->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+            qdev_prop_set_chr(DEVICE(zms->uart_acia), "chardev", cd);
+        }
+    }
+
+    return 0;
 }
 
 
@@ -124,24 +187,62 @@ void zaphod_screen_init(ZaphodScreenState *zss, int board_type)
 }
 
 /* Prepare the IOCore for configuration (IO ports/IRQ and UARTs) */
-static ZaphodIOCoreState *zaphod_iocore_init(ZaphodMachineState *zms)
+static void zaphod_iocore_init(ZaphodMachineState *zms)
 {
     ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
-    ZaphodIOCoreState *zis;
+    int uart_count;
+    QemuOptsList *olist;
 
     /* create object and set internal board reference */
-    zis= ZAPHOD_IOCORE(object_new(TYPE_ZAPHOD_IOCORE));
-    zis->board= zms;
+    zms->iocore= ZAPHOD_IOCORE(object_new(TYPE_ZAPHOD_IOCORE));
+    zms->iocore->board= zms;
+
+    /* Prepare UARTs */
+
+    qdev_prop_set_bit(DEVICE(zms->iocore), "has-stdio",
+                        zaphod_board_has_stdio(zmc->board_type));
+    qdev_prop_set_bit(DEVICE(zms->iocore), "has-acia",
+                        zaphod_board_has_acia(zmc->board_type));
+
+
+    /* Enable stdio and ACIA UARTs if relevant opts are used */
+    olist= qemu_find_opts("zaphod-io-config");
+
+    qemu_opts_foreach(olist, zaphod_peripherals_init, zms, NULL);
+
+    /* Ensure UART/s are configured and realized */
+    uart_count= 0;
+    /* FIXME: '-M zaphod-pb -zaphod-io stdio' creates a UART with nothing connected :( */
+;DPRINTF("*** DEBUG: uart %p/by-property %s/chardev connected? %s ***\n", zms->uart_stdio, object_property_get_bool(OBJECT(zms->iocore), "has-stdio", NULL)?"y":"n", zms->uart_stdio?(qemu_chr_fe_backend_connected(&zms->uart_stdio->chr)?"y":"n"):"N/A");
+    if (object_property_get_bool(OBJECT(zms->iocore), "has-stdio", NULL))
+    {   /* Create/assign stdio UART? */
+        if (!zms->uart_stdio)
+            zms->uart_stdio= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+        if (!qemu_chr_fe_backend_connected(&zms->uart_stdio->chr))
+        {
+            zaphod_uart_init(zms->uart_stdio,
+                        serial_hds[uart_count], "zaphod.uart-stdio");
+        }
+        qdev_init_nofail(DEVICE(zms->uart_stdio));
+        if (zms->uart_stdio /* ? is connected? */) uart_count++;
+    }
+
+    if (object_property_get_bool(OBJECT(zms->iocore), "has-acia", NULL))
+    {   /* Create/assign ACIA UART? */
+        if (!zms->uart_acia)
+            zms->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+        if (!qemu_chr_fe_backend_connected(&zms->uart_acia->chr))
+        {
+            zaphod_uart_init(zms->uart_acia,
+                        serial_hds[uart_count], "zaphod.uart-acia");
+        }
+        qdev_init_nofail(DEVICE(zms->uart_acia));
+        if (zms->uart_acia /* ? is connected? */) uart_count++;
+    }
+
 
     /* initialise screen */
-    zaphod_screen_init(zaphod_iocore_get_screen(zis), zmc->board_type);
-
-#if QEMU_VERSION_MAJOR < 5
-    qdev_init_nofail(DEVICE(zis));
-#else
-    qdev_realize(DEVICE(zis), NULL, NULL);
-#endif
-    return zis;
+    zaphod_screen_init(zaphod_iocore_get_screen(zms->iocore), zmc->board_type);
 }
 
 
@@ -186,32 +287,15 @@ static void zaphod_board_init(MachineState *ms)
 
     /* Initialise ports/devices */
 
-    if (serial_hd(0))
-    {   /* QEmu's main serial console is available */
-        zms->uart_stdio= ZAPHOD_UART(zaphod_uart_new(serial_hd(0)));
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: UART0 [stdio] created OK - device at %p has chr.chr %p\n", zms->uart_stdio, zms->uart_stdio->chr.chr);
-#endif
-    }
-
-    if (serial_hd(1)) {
-        zms->uart_acia= ZAPHOD_UART(zaphod_uart_new(serial_hd(1)));
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: UART1 [ACIA] created OK - device at %p has chr.chr %p\n", zms->uart_acia, zms->uart_acia->chr.chr);
-#endif
-    }
-
-
 #ifdef CONFIG_ZAPHOD_HAS_IOCORE
     /* Initialise IOCore subsystem */
-;DPRINTF("*** INFO: %s() - about to do iocore init... ***\n", __func__);
 /* NB. we can get a serial0 and a serial1 with:
  *$ ./z80-softmmu/qemu-system-z80 -M zaphod-dev -chardev vc,id=vc0 -chardev vc,id=vc1 -serial chardev:vc0 -serial chardev:vc1 -kernel wills/system/zaphodtt.bin
  */
-
-    zms->iocore= zaphod_iocore_init(zms);
+    zaphod_iocore_init(zms);
+    /* early zaphod_iocore_init() leaves realize() to do */
+    qdev_init_nofail(DEVICE(zms->iocore));
 #endif
-
 
     /* Populate RAM */
 
@@ -266,12 +350,7 @@ static void zaphod_common_machine_class_init(ObjectClass *oc,
     mc->no_floppy= 1;
     mc->no_cdrom= 1;
     mc->no_parallel= 1;
-#if defined(CONFIG_ZAPHOD_HAS_IOCORE)
-    /* Allow QEmu's 'serial0' window for input/output */
     mc->no_serial= 0;
-#else
-    mc->no_serial= 1;
-#endif
     mc->no_sdcard= 1;
 }
 
