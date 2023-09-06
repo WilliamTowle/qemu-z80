@@ -23,6 +23,7 @@ typedef struct {
 
     ZaphodMachineState  *board;
 
+    bool                has_stdio, has_acia;
     PortioList          *ioports_stdio;
     PortioList          *ioports_acia;
     qemu_irq            *irq_acia;
