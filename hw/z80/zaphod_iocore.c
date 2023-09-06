@@ -147,7 +147,7 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 #if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zis->screen));
 #else
-    qdev_realize(DEVICE(zis->screen), NULL, NULL);
+        qdev_realize(DEVICE(zis->screen), NULL, NULL);
 #endif
 }
 
