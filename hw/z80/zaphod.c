@@ -154,6 +154,7 @@ static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
     if (mode)
     {
         Chardev *cd= NULL;
+        ZaphodUARTState	*zus;
 
         if (chardev)
         {
@@ -169,15 +170,15 @@ static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
         {   /* stdio devices requested */
             qdev_prop_set_bit(DEVICE(zms->iocore), "has-stdio", true);
             /* TODO: refactor UART new/realize into IOCore */
-            zms->uart_stdio= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
-            qdev_prop_set_chr(DEVICE(zms->uart_stdio), "chardev", cd);
+            zus= zaphod_iocore_get_stdio_uart(zms->iocore);
+            qdev_prop_set_chr(DEVICE(zus), "chardev", cd);
         }
         if (strcmp(mode, "acia") == 0)
         {   /* ACIA devices requested */
             qdev_prop_set_bit(DEVICE(zms->iocore), "has-acia", true);
             /* TODO: refactor UART new/realize into IOCore */
-            zms->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
-            qdev_prop_set_chr(DEVICE(zms->uart_acia), "chardev", cd);
+            zus= zaphod_iocore_get_acia_uart(zms->iocore);
+            qdev_prop_set_chr(DEVICE(zus), "chardev", cd);
         }
     }
 
@@ -226,32 +227,32 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
 
     /* Ensure UART/s are configured and realized */
     uart_count= 0;
-    /* FIXME: '-M zaphod-pb -zaphod-io stdio' creates a UART with nothing connected :( */
-;DPRINTF("*** DEBUG: uart %p/by-property %s/chardev connected? %s ***\n", zms->uart_stdio, object_property_get_bool(OBJECT(zms->iocore), "has-stdio", NULL)?"y":"n", zms->uart_stdio?(qemu_chr_fe_backend_connected(&zms->uart_stdio->chr)?"y":"n"):"N/A");
     if (object_property_get_bool(OBJECT(zms->iocore), "has-stdio", NULL))
     {   /* Create/assign stdio UART? */
-        if (!zms->uart_stdio)
-            zms->uart_stdio= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
-        if (!qemu_chr_fe_backend_connected(&zms->uart_stdio->chr))
+        ZaphodUARTState        *zus;
+
+        zus= zaphod_iocore_get_stdio_uart(zms->iocore);
+        if (!qemu_chr_fe_backend_connected(&zus->chr))
         {
-            zaphod_uart_init(zms->uart_stdio,
+            zaphod_uart_init(zus,
                         serial_hds[uart_count], "zaphod.uart-stdio");
+            if (qemu_chr_fe_backend_connected(&zus->chr))
+                uart_count++;
         }
-        qdev_init_nofail(DEVICE(zms->uart_stdio));
-        if (zms->uart_stdio /* ? is connected? */) uart_count++;
     }
 
     if (object_property_get_bool(OBJECT(zms->iocore), "has-acia", NULL))
     {   /* Create/assign ACIA UART? */
-        if (!zms->uart_acia)
-            zms->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
-        if (!qemu_chr_fe_backend_connected(&zms->uart_acia->chr))
+        ZaphodUARTState        *zus;
+
+        zus= zaphod_iocore_get_acia_uart(zms->iocore);
+        if (!qemu_chr_fe_backend_connected(&zus->chr))
         {
-            zaphod_uart_init(zms->uart_acia,
+            zaphod_uart_init(zus,
                         serial_hds[uart_count], "zaphod.uart-acia");
+            if (qemu_chr_fe_backend_connected(&zus->chr))
+                uart_count++;
         }
-        qdev_init_nofail(DEVICE(zms->uart_acia));
-        if (zms->uart_acia /* ? is connected? */) uart_count++;
     }
 
 
