@@ -132,7 +132,11 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 ;DPRINTF("INFO: %s() about to do screen init/add...\n", __func__);
 #endif
     zis->screen= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
+#if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(DEVICE(zis->screen));
+#else
+    qdev_realize(DEVICE(zis->screen), NULL, NULL);
+#endif
 }
 
 #if 0
