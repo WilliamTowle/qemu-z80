@@ -220,11 +220,13 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     /* TODO: configuration of stdin and ACIA inputs from command line */
 
-    qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
+    if (zis->has_stdio)
+    {
+        qemu_chr_fe_set_handlers(&zis->board->uart_stdio->chr,
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
-
+    }
 
     /* ACIA setup */
 
@@ -233,19 +235,15 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     zis, "zaphod.acia");
     portio_list_add(zis->ioports_acia, get_system_io(), 0x00);
 
-    /* TODO: permit disabling acia [in which case don't bail, but
-     * don't set up the handlers either]
-     */
-    if (!zis->board->uart_acia)
+    if (zis->has_acia)
     {
-        error_setg(errp, "initialisation error - zis->board->uart_acia NULL");
-        return;
-    }
-
-    qemu_chr_fe_set_handlers(&zis->board->uart_acia->chr,
+        qemu_chr_fe_set_handlers(&zis->board->uart_acia->chr,
                     zaphod_iocore_can_receive_acia, zaphod_iocore_receive_acia,
                     NULL,
                     NULL, zis, NULL, true);
+
+        /* TODO: set ACIA IRQ */
+    }
 
     /* TODO: correlate screen(s) to stdio/acia input; enable (and
      * configure) screen to suit command line arguments
