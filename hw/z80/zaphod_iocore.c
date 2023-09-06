@@ -306,6 +306,7 @@ static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
     dc->props= zaphod_iocore_properties;
 #endif
 
+#if QEMU_VERSION_MAJOR < 5
     object_class_property_add_bool(oc, "has-stdio",
         zaphod_iocore_get_has_stdio, zaphod_iocore_set_has_stdio, NULL);
     object_class_property_set_description(oc, "has-stdio",
@@ -314,6 +315,16 @@ static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
         zaphod_iocore_get_has_acia, zaphod_iocore_set_has_acia, NULL);
     object_class_property_set_description(oc, "has-acia",
         "Configure IOCore with ACIA devices", NULL);
+#else
+    object_class_property_add_bool(oc, "has-stdio",
+        zaphod_iocore_get_has_stdio, zaphod_iocore_set_has_stdio);
+    object_class_property_set_description(oc, "has-stdio",
+        "Configure IOCore with stdio devices");
+    object_class_property_add_bool(oc, "has-acia",
+        zaphod_iocore_get_has_acia, zaphod_iocore_set_has_acia);
+    object_class_property_set_description(oc, "has-acia",
+        "Configure IOCore with ACIA devices");
+#endif
 }
 
 static void zaphod_iocore_instance_init(Object *obj)
