@@ -264,6 +264,37 @@ static Property zaphod_iocore_properties[]= {
 };
 #endif
 
+static bool zaphod_iocore_get_has_stdio(Object *obj, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(obj);
+
+    return zis->has_stdio;
+}
+
+static void zaphod_iocore_set_has_stdio(Object *obj, bool value, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(obj);
+
+    /* TODO: bail if inited and new setting is off */
+    zis->has_stdio= value;
+}
+
+static bool zaphod_iocore_get_has_acia(Object *obj, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(obj);
+
+    /* TODO: bail if inited and new setting is off? */
+    return zis->has_acia;
+}
+
+static void zaphod_iocore_set_has_acia(Object *obj, bool value, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(obj);
+
+    /* TODO: bail if inited and new setting is off? */
+    zis->has_acia= value;
+}
+
 static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
 {
     DeviceClass *dc= DEVICE_CLASS(oc);
@@ -274,6 +305,15 @@ static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
     /* TODO: initialisation in dc->reset? */
     dc->props= zaphod_iocore_properties;
 #endif
+
+    object_class_property_add_bool(oc, "has-stdio",
+        zaphod_iocore_get_has_stdio, zaphod_iocore_set_has_stdio, NULL);
+    object_class_property_set_description(oc, "has-stdio",
+        "Configure IOCore with stdio devices", NULL);
+    object_class_property_add_bool(oc, "has-acia",
+        zaphod_iocore_get_has_acia, zaphod_iocore_set_has_acia, NULL);
+    object_class_property_set_description(oc, "has-acia",
+        "Configure IOCore with ACIA devices", NULL);
 }
 
 static void zaphod_iocore_instance_init(Object *obj)
