@@ -17,7 +17,7 @@
 
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
-#define EMIT_DEBUG 0
+#define EMIT_DEBUG 1
 #define DPRINTF(fmt, ...) \
     do { if (EMIT_DEBUG) error_printf("zaphod_iocore: " fmt , ## __VA_ARGS__); } while(0)
 
@@ -120,7 +120,8 @@ void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
         zaphod_uart_putchar(zis->uart_stdio, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-    zaphod_screen_putchar(zis->screen, ch);
+    if (zis->screen_stdio)
+        zaphod_screen_putchar(zis->screen_stdio, ch);
 #endif
 }
 
@@ -147,13 +148,6 @@ static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
     PORTIO_END_OF_LIST()
 };
 
-
-ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis)
-{
-    if (zis->screen) return zis->screen;
-
-    return zis->screen= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
-}
 
 /* ACIA ioport handlers */
 
@@ -206,7 +200,8 @@ void zaphod_iocore_putchar_acia(ZaphodIOCoreState *zis, const unsigned char ch)
         zaphod_uart_putchar(zis->uart_acia, ch);
 #endif
 #ifdef CONFIG_ZAPHOD_HAS_SCREEN
-    zaphod_screen_putchar(zis->screen, ch);
+    if (zis->screen_acia)
+        zaphod_screen_putchar(zis->screen_acia, ch);
 #endif
 }
 
@@ -421,7 +416,7 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
         if (key->down)
             zis->modifiers|= modifier_bit;
     }
-    else if (zis->screen)
+    else if (zis->screen_stdio || zis->screen_acia)
     {
         /* Put character - convert to ASCII and inject into ACIA or
          * stdio stream via the relevant chardev's receive functions.
@@ -437,7 +432,7 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 
             if (!key->down)
             {
-                if (zis->uart_acia)
+                if (src == zis->screen_acia->display)
                     zaphod_uart_set_inkey(zis->uart_acia, 0, false);
                 else
                     zaphod_uart_set_inkey(zis->uart_stdio, 0, false);
@@ -447,7 +442,9 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
               const uint8_t     *conv_table= qcode_to_ascii;
               int               conv_table_size;
               uint8_t           ch= NO_KEY;
+#if QEMU_VERSION_MAJOR == 2 /* bug? src parameter always NULL */
               ZaphodUARTState   *uart_mux;
+#endif
 
                 if (zis->modifiers & 3)
                 {
@@ -469,12 +466,20 @@ static void zaphod_kbd_event(DeviceState *dev, QemuConsole *src,
 #endif
                 }
 
+#if QEMU_VERSION_MAJOR == 2
                 if ( (ch != NO_KEY) && (uart_mux= zis->uart_acia) != NULL )
+#else
+                if ( (ch != NO_KEY) && (src == zis->screen_acia->display) )
+#endif
                 {
                     if (zaphod_iocore_can_receive_acia(zms->iocore))
                         zaphod_iocore_receive_acia(zms->iocore, &ch, 1);
                 }
+#if QEMU_VERSION_MAJOR == 2
                 else if ( (ch != NO_KEY) && (uart_mux= zis->uart_stdio) != NULL )
+#else
+                if ( (ch != NO_KEY) && (src == zis->screen_stdio->display) )
+#endif
                 {
                     if (zaphod_iocore_can_receive_stdio(zms->iocore))
                         zaphod_iocore_receive_stdio(zms->iocore, &ch, 1);
@@ -498,6 +503,22 @@ ZaphodUARTState *zaphod_iocore_get_acia_uart(ZaphodIOCoreState *zis)
     if (zis->uart_acia) return zis->uart_acia;
 
     return zis->uart_acia= ZAPHOD_UART(object_new(TYPE_ZAPHOD_UART));
+}
+
+ZaphodScreenState *zaphod_iocore_get_stdio_screen(ZaphodIOCoreState *zis)
+{
+    if (!zis->has_stdio) return NULL;
+    if (zis->screen_stdio) return zis->screen_stdio;
+
+    return zis->screen_stdio= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
+}
+
+ZaphodScreenState *zaphod_iocore_get_acia_screen(ZaphodIOCoreState *zis)
+{
+    if (!zis->has_acia) return NULL;
+    if (zis->screen_acia) return zis->screen_acia;
+
+    return zis->screen_acia= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
 }
 
 static QemuInputHandler zaphod_kbd_handler = {
@@ -574,18 +595,10 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     qemu_input_handler_activate(zis->ihs);
 #endif
 
-    /* TODO: correlate screen(s) to stdio/acia input; enable (and
-     * configure) screen to suit command line arguments
-     */
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: %s() about to do screen init/add...\n", __func__);
-#endif
-    if (zis->screen)
-#if QEMU_VERSION_MAJOR < 5
-        qdev_init_nofail(DEVICE(zis->screen));
-#else
-        qdev_realize(DEVICE(zis->screen), NULL, NULL);
-#endif
+    if (zis->screen_stdio)
+        qdev_realize(DEVICE(zis->screen_stdio), NULL, NULL);
+    if (zis->screen_acia)
+        qdev_realize(DEVICE(zis->screen_acia), NULL, NULL);
 
     qemu_register_reset(zaphod_iocore_reset, zis);
 }

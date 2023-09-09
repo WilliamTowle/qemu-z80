@@ -36,6 +36,8 @@ typedef struct {
     ZaphodUARTState     *uart_stdio;
     ZaphodUARTState     *uart_acia;
 #endif
+    ZaphodScreenState	*screen_stdio;
+    ZaphodScreenState	*screen_acia;
     /* FIXME: stdio/ACIA/KEYBIO muxing configuration is missing */
 #if 1   /* IOCORE-KEYBIO */
     QemuInputHandlerState *ihs;
@@ -56,10 +58,11 @@ typedef struct {
     OBJECT_CHECK(ZaphodIOCoreState, obj, TYPE_ZAPHOD_IOCORE)
 
 
-ZaphodScreenState *zaphod_iocore_get_screen(ZaphodIOCoreState *zis);
-
 ZaphodUARTState *zaphod_iocore_get_stdio_uart(ZaphodIOCoreState *zis);
 ZaphodUARTState *zaphod_iocore_get_acia_uart(ZaphodIOCoreState *zis);
+
+ZaphodScreenState *zaphod_iocore_get_stdio_screen(ZaphodIOCoreState *zis);
+ZaphodScreenState *zaphod_iocore_get_acia_screen(ZaphodIOCoreState *zis);
 
 
 #endif  /* HW_Z80_ZAPHOD_IOCORE_H */

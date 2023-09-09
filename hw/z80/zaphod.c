@@ -52,6 +52,11 @@ static QemuOptsList zaphod_io_opts = {
             .type = QEMU_OPT_STRING,
             .help = "Character device ID",
         },
+        {
+            .name = "screen-type",
+            .type = QEMU_OPT_STRING,
+            .help = "Screen type identifier",
+        },
         { /* end of list */ }
     }
 };
@@ -122,6 +127,19 @@ static bool zaphod_board_has_acia(int board_type)
     }
 }
 
+static bool zaphod_board_has_screen(int board_type)
+{
+    switch (board_type)
+    {
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
+        return false;
+    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
+    default:
+        return true;
+    }
+}
+
 static bool zaphod_board_has_stdio(int board_type)
 {
     switch (board_type)
@@ -150,18 +168,37 @@ static void zaphod_uart_init(ZaphodUARTState *zus, Chardev *chr_fallback, const 
     qdev_prop_set_chr(DEVICE(zus), "chardev", chr_fallback);
 }
 
+
+static
+void zaphod_screen_set_type(ZaphodScreenState *zss, const char *type_id, const char *mode)
+{
+    if ( (type_id && strcmp(type_id, "simple") == 0)
+            || (!type_id && strcmp(mode, "stdio") == 0) )
+    {
+        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", true);
+    }
+    else if ( (type_id && strcmp(type_id, "graphics") == 0)
+            || (!type_id && strcmp(mode, "acia") == 0) )
+    {
+        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", false);
+    }
+}
+
 static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
 {
     ZaphodMachineState *zms= (ZaphodMachineState *)opaque;
-    const char *mode, *chardev;
+    ZaphodMachineClass *zmc = ZAPHOD_MACHINE_GET_CLASS(zms);
+    const char *mode, *chardev, *screen_type;
 
     mode= qemu_opt_get(opts, "mode");
     chardev= qemu_opt_get(opts, "chardev");
+    screen_type= qemu_opt_get(opts, "screen-type");
 
     if (mode)
     {
         Chardev *cd= NULL;
         ZaphodUARTState	*zus;
+        ZaphodScreenState *zss;
 
         if (chardev)
         {
@@ -179,6 +216,13 @@ static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
             /* TODO: refactor UART new/realize into IOCore */
             zus= zaphod_iocore_get_stdio_uart(zms->iocore);
             qdev_prop_set_chr(DEVICE(zus), "chardev", cd);
+
+            if ( (screen_type && (strcmp(screen_type,"none") != 0))
+                || zaphod_board_has_screen(zmc->board_type) )
+            {
+                zss= zaphod_iocore_get_stdio_screen(zms->iocore);
+                zaphod_screen_set_type(zss, screen_type, mode);
+            }
         }
         if (strcmp(mode, "acia") == 0)
         {   /* ACIA devices requested */
@@ -186,27 +230,19 @@ static int zaphod_peripherals_init(void *opaque, QemuOpts *opts, Error **errp)
             /* TODO: refactor UART new/realize into IOCore */
             zus= zaphod_iocore_get_acia_uart(zms->iocore);
             qdev_prop_set_chr(DEVICE(zus), "chardev", cd);
+
+            if ( (screen_type && (strcmp(screen_type,"none") != 0))
+                || zaphod_board_has_screen(zmc->board_type) )
+            {
+                zss= zaphod_iocore_get_acia_screen(zms->iocore);
+                zaphod_screen_set_type(zss, screen_type, mode);
+            }
         }
     }
 
     return 0;
 }
 
-
-static
-void zaphod_screen_init(ZaphodScreenState *zss, int board_type)
-{
-    switch (board_type)
-    {
-    case ZAPHOD_BOARD_TYPE_ZAPHOD_2:
-    case ZAPHOD_BOARD_TYPE_ZAPHOD_DEV:
-        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", false);
-        break;
-    case ZAPHOD_BOARD_TYPE_ZAPHOD_1:
-    default:
-        qdev_prop_set_bit(DEVICE(zss), "simple-escape-codes", true);
-    }
-}
 
 /* Prepare the IOCore for configuration (IO ports/IRQ and UARTs) */
 static void zaphod_iocore_init(ZaphodMachineState *zms)
@@ -261,10 +297,6 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
                 uart_count++;
         }
     }
-
-
-    /* initialise screen */
-    zaphod_screen_init(zaphod_iocore_get_screen(zms->iocore), zmc->board_type);
 }
 
 
