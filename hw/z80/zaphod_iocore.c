@@ -113,10 +113,6 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
     }
 
     /* stdio setup */
-
-#if 1   /* WmT - TRACE */
-;DPRINTF("INFO: %s() about to do stdio init/add...\n", __func__);
-#endif
     zis->ioports_stdio = g_new(PortioList, 1);
     portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
                     zis, "zaphod.stdio");
@@ -128,6 +124,15 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
                     NULL,
                     NULL, zis, NULL, true);
+
+    /* TODO: correlate screen(s) to stdio/acia input; enable (and
+     * configure) screen to suit command line arguments
+     */
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() about to do screen init/add...\n", __func__);
+#endif
+    zis->screen= ZAPHOD_SCREEN(object_new(TYPE_ZAPHOD_SCREEN));
+    qdev_init_nofail(DEVICE(zis->screen));
 }
 
 #if 0
