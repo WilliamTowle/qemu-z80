@@ -10,6 +10,7 @@
 #include "zaphod.h"
 
 #include "qapi/error.h"
+#include "exec/address-spaces.h"
 
 
 //#define EMIT_DEBUG ZAPHOD_DEBUG
@@ -32,6 +33,57 @@
  */
 
 
+/* stdio ioport handlers */
+
+static uint32_t zaphod_iocore_read_stdio(void *opaque, uint32_t addr)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(opaque);
+    int                 value;
+
+    switch (addr)
+    {
+    case 0x00:      /* stdin */
+        value= zaphod_uart_get_inkey(zis->board->uart_stdio, true);
+        return value;
+    default:
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() Unexpected read, with port=%d\n", __func__, addr);
+#endif
+        return 0x00;
+    }
+}
+
+static
+void zaphod_iocore_putchar_stdio(ZaphodIOCoreState *zis, const unsigned char ch)
+{
+#ifdef CONFIG_ZAPHOD_HAS_UART
+    zaphod_uart_putchar(zis->board->uart_stdio, ch);
+#endif
+}
+
+static void zaphod_iocore_write_stdio(void *opaque, uint32_t addr, uint32_t value)
+{
+    ZaphodIOCoreState   *zis= (ZaphodIOCoreState *)opaque;
+
+    switch (addr)
+    {
+    case 0x01:      /* stdout */
+        zaphod_iocore_putchar_stdio(zis, value & 0xff);
+        break;
+    default:
+#if 1   /* WmT - TRACE */
+;DPRINTF("DEBUG: %s() Unexpected write, port 0x%02x, value %d\n", __func__, addr, value);
+#endif
+        break;
+    }
+}
+
+static const MemoryRegionPortio zaphod_iocore_portio_stdio[] = {
+    { 0x00, 1, 1, .read = zaphod_iocore_read_stdio },     /* stdin */
+    { 0x01, 1, 1, .write = zaphod_iocore_write_stdio, },  /* stdout */
+    PORTIO_END_OF_LIST()
+};
+
 static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 {
     ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
@@ -41,6 +93,16 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
         error_setg(errp, "initialisation error - zis->board NULL");
         return;
     }
+
+    /* stdio setup */
+
+#if 1   /* WmT - TRACE */
+;DPRINTF("INFO: %s() about to do stdio init/add...\n", __func__);
+#endif
+    zis->ioports_stdio = g_new(PortioList, 1);
+    portio_list_init(zis->ioports_stdio, OBJECT(zis), zaphod_iocore_portio_stdio,
+                    zis, "zaphod.stdio");
+    portio_list_add(zis->ioports_stdio, get_system_io(), 0x00);
 }
 
 #if 0

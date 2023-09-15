@@ -12,7 +12,6 @@
 //#include "zaphod.h"
 
 #include "chardev/char-fe.h"
-#include "exec/ioport.h"
 
 
 typedef DeviceClass ZaphodUARTClass;

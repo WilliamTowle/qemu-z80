@@ -11,6 +11,7 @@
 
 #include "zaphod.h"
 
+#include "exec/ioport.h"
 
 typedef struct ZaphodMachineState ZaphodMachineState;
 
@@ -20,6 +21,8 @@ typedef struct {
     DeviceState     parent;
 
     ZaphodMachineState  *board;
+
+    PortioList          *ioports_stdio;
 } ZaphodIOCoreState;
 
 
