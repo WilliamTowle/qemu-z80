@@ -117,7 +117,11 @@ static ZaphodIOCoreState *zaphod_iocore_init(ZaphodMachineState *zms)
     /* initialise screen */
     zaphod_screen_init(zaphod_iocore_get_screen(zis), zmc->board_type);
 
+#if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(DEVICE(zis));
+#else
+    qdev_realize(DEVICE(zis), NULL, NULL);
+#endif
     return zis;
 }
 
