@@ -9,6 +9,9 @@
 #include "qemu/osdep.h"
 #include "zaphod.h"
 
+#include "qapi/error.h"
+
+
 //#define EMIT_DEBUG ZAPHOD_DEBUG
 #define EMIT_DEBUG 0
 #define DPRINTF(fmt, ...) \
@@ -28,6 +31,18 @@
  * code.
  */
 
+
+static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
+{
+    ZaphodIOCoreState   *zis= ZAPHOD_IOCORE(dev);
+
+    if (!zis->board)
+    {
+        error_setg(errp, "initialisation error - zis->board NULL");
+        return;
+    }
+}
+
 #if 0
 static Property zaphod_iocore_properties[]= {
     /* "has-stdio" set in zaphod_iocore_init() */
@@ -41,8 +56,8 @@ static void zaphod_iocore_class_init(ObjectClass *oc, void *data)
     DeviceClass *dc= DEVICE_CLASS(oc);
 
     dc->desc= "Zaphod IOCore subsystem";
-#if 0
     dc->realize= zaphod_iocore_realizefn;
+#if 0
     /* TODO: initialisation in dc->reset? */
     dc->props= zaphod_iocore_properties;
 #endif
