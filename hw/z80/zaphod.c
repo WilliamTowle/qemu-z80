@@ -227,7 +227,11 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
             zaphod_uart_init(zms->uart_stdio,
                         serial_hd(uart_count), "zaphod.uart-stdio");
         }
+#if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zms->uart_stdio));
+#else
+        qdev_realize(DEVICE(zms->uart_stdio), NULL, NULL);
+#endif
         if (zms->uart_stdio /* ? is connected? */) uart_count++;
     }
 
@@ -240,7 +244,11 @@ static void zaphod_iocore_init(ZaphodMachineState *zms)
             zaphod_uart_init(zms->uart_acia,
                         serial_hd(uart_count), "zaphod.uart-acia");
         }
+#if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zms->uart_acia));
+#else
+        qdev_realize(DEVICE(zms->uart_acia), NULL, NULL);
+#endif
         if (zms->uart_acia /* ? is connected? */) uart_count++;
     }
 
@@ -298,7 +306,11 @@ static void zaphod_board_init(MachineState *ms)
  */
     zaphod_iocore_init(zms);
     /* early zaphod_iocore_init() leaves realize() to do */
+#if QEMU_VERSION_MAJOR < 5
     qdev_init_nofail(DEVICE(zms->iocore));
+#else
+    qdev_realize(DEVICE(zms->iocore), NULL, NULL);
+#endif
 #endif
 
     /* Populate RAM */
