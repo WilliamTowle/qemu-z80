@@ -1205,9 +1205,10 @@ next_byte:
                 if (is_indexed(r2)
 #ifdef __GNUC__     /* avoid gcc "'d' may be used uninitialised" */
 #if __GNUC__ == 6   /* suppress warning for v6.3.0 */
-                    && !is_indexed(r1))
+                    && !is_indexed(r1)
 #endif
 #endif
+                    )
                 {
                     gen_movb_idx_v(r2, cpu_T[0], d);
                 } else {
