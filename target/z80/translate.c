@@ -85,7 +85,7 @@ static target_ulong disas_insn(DisasContext *s, CPUState *cpu)
      * to have side effects on internal state/interrupt configuration
      */
     return s->pc;
- unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
+__asm__ volatile("unknown_op:");    /* "bad insn" case (Z80: normally unreachable) */
     gen_unknown_opcode(env, s);
 #endif
 #if 1   /* WmT - TRACE */
