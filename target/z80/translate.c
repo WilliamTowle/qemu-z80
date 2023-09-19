@@ -1825,7 +1825,7 @@ next_byte:
 #endif
     return s->pc;
 
- unknown_op:    /* "bad insn" case (Z80: normally unreachable) */
+__asm__ volatile("unknown_op:");    /* "bad insn" case (Z80: normally unreachable) */
     gen_unknown_opcode(env, s);
 #if 1   /* WmT - TRACE */
 ;DPRINTF("** EXIT %s() - unknown opcode 0x%02x seen - next s->pc 0x%04x **\n", __func__, b, s->pc);
