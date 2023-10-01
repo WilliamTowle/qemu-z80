@@ -534,7 +534,11 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     if (zis->has_stdio)
     {
+#if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zis->uart_stdio));
+#else
+        qdev_realize(DEVICE(zis->uart_stdio), NULL, NULL);
+#endif
 
         qemu_chr_fe_set_handlers(&zis->uart_stdio->chr,
                     zaphod_iocore_can_receive_stdio, zaphod_iocore_receive_stdio,
@@ -551,7 +555,11 @@ static void zaphod_iocore_realizefn(DeviceState *dev, Error **errp)
 
     if (zis->has_acia)
     {
+#if QEMU_VERSION_MAJOR < 5
         qdev_init_nofail(DEVICE(zis->uart_acia));
+#else
+        qdev_realize(DEVICE(zis->uart_acia), NULL, NULL);
+#endif
 
         qemu_chr_fe_set_handlers(&zis->uart_acia->chr,
                     zaphod_iocore_can_receive_acia, zaphod_iocore_receive_acia,
